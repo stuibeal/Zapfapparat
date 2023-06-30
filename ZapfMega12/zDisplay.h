@@ -15,10 +15,11 @@
 #define USE_SDFAT
 #endif
 
-#ifndef USE_SPECIAL
-#define USE_SPECIAL
-#define USE_MEGA_8BIT_PROTOSHIELD
-#endif
+/*
+Für Display folgendes abändern in der Library:
+in mcufriend_shield.h: #define USE_SPECIAL
+in mcufriend_special.h: #define USE_MEGA_8BIT_PROTOSHIELD
+*/
 
 #include "Arduino.h"
 #include "SdFat.h"
@@ -26,7 +27,6 @@
 #include "stdio.h"
 #include <string.h>
 #include "Adafruit_GFX.h" // Hardware-specific library
-
 #include "MCUFRIEND_kbv.h"
 #include "tempsens.h"
 #include "benutzer.h"
@@ -73,9 +73,6 @@
   // Assign human-readable names to some common 16-bit color values:
   #define BLACK   0x0000
   #define BLUE    0x001F
-
-
-
   #define RED     0xF800
   #define GREEN   0x07E0
   #define CYAN    0x07FF
