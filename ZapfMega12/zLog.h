@@ -28,6 +28,7 @@ public:
 	void begin(SdFat *psd, benutzer *puser);
 	DateTime dateTime;
 	//enum { LOG=0, DEBUG };
+	enum wochadog {MODA, ERDA, MIGGA, PFINSDA, FREIDA, SAMSDA, SUNDA};
 
 private:
 
