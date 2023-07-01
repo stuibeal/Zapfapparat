@@ -8,8 +8,9 @@
 #include "zLog.h"
 
 zLog::zLog() {
-	// TODO Auto-generated constructor stub
-
+	DateTime dateTime = DateTime(0, 1, 1, DateTime::SATURDAY, 0, 0, 0);
+	_psd = nullptr;
+	_puser = nullptr;
 }
 
 zLog::~zLog() {
@@ -19,6 +20,4 @@ zLog::~zLog() {
 zLog::begin(SDFAT *psd) {
 	_sd = psd;
 }
-
-
 

@@ -8,6 +8,7 @@
  *      - log Zapfung
  *      - log ab und zu (voltage etc)
  *      - print Debug msg (on off var!)
+ *      - DCF hier integrieren
  *
  */
 
@@ -16,12 +17,19 @@
 
 #include "SdFat.h"
 #include "benutzer.h"
+#include "DCF_77.h"
+
 
 class zLog {
 public:
 	zLog();
 	virtual ~zLog();
 	void begin(SDFAT *psd, benutzer *puser);
+	DateTime dateTime;
+	enum { LOG=0, DEBUG }
+
+private:
+
 
 protected:
 	SDFAT *_psd;
