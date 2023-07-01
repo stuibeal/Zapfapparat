@@ -17,7 +17,8 @@ zLog::~zLog() {
 	// TODO Auto-generated destructor stub
 }
 
-zLog::begin(SDFAT *psd) {
-	_sd = psd;
+void zLog::begin(SdFat *psd, benutzer *puser) {
+	_psd = psd;  //Save pointer
+	_puser = puser;
 }
 

@@ -17,22 +17,23 @@
 
 #include "SdFat.h"
 #include "benutzer.h"
-#include "DCF_77.h"
-
+#include "./libraries/RTC_DCF/DateTime.h"   // ELV RTC mit DCF
+#include "./libraries/RTC_DCF/RealTimeClock_DCF.h"
+#include "gemein.h"
 
 class zLog {
 public:
 	zLog();
 	virtual ~zLog();
-	void begin(SDFAT *psd, benutzer *puser);
+	void begin(SdFat *psd, benutzer *puser);
 	DateTime dateTime;
-	enum { LOG=0, DEBUG }
+	//enum { LOG=0, DEBUG };
 
 private:
 
 
 protected:
-	SDFAT *_psd;
+	SdFat *_psd;
 	benutzer *_puser;
 
 };
