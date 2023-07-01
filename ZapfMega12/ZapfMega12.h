@@ -3,6 +3,13 @@
  *
  *  Created on: 29.05.2023
  *      Author: alfred3
+ *
+ *      TODO: write Zapfdata to EEPROM after Zapfung
+ *      TODO: Debug/logging class (tbd) on of call 33284 for DEBUG
+ *      TODO: audio!
+ *      TODO: logging before MIDI AUDIO! (sd!!!)
+ *
+ *
  */
 
 #ifndef ZAPFMEGA12_H_

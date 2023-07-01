@@ -23,7 +23,6 @@
  - Drucker
  - Uhr
  - Datenlogging
- - Update MCUFRIEND Library! (leave IDE, install from Bib)
 
  HARDWARE:
  - WS READY von 19 auf 33 (bisher PULS)
@@ -462,8 +461,10 @@ void waehlFunktionen() {
 		ZD.printText();
 		ZD._tft.println(buf);
 		break;
-	case 463663: //GODOFF
+	case 463633: //GODOFF
 		user.setGodMode(0);
+		ZD.userShow(&user);
+		break;
 	case 43373: //IDDQD
 		user.setGodMode(1);
 		ZD.userShow(&user);
@@ -510,6 +511,16 @@ void waehlFunktionen() {
 		break;
 
 	default:
+		uint16_t varSet = kienmuehle / 1000; //ersten zwei zahlen
+		uint16_t varContent = kienmuehle % 1000; // letzten drei zahlen
+		switch (varSet) {
+		case 9: //Mediaplayer
+
+			break;
+		case 11:
+
+		break;
+		}
 		if (kienmuehle > 10000) {
 			if (kienmuehle > 11000 && kienmuehle < 11999) {
 				consKp = kienmuehle - 11000;

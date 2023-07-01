@@ -145,3 +145,7 @@ void audio::midiReset() {
 void audio::setStandby(bool stby) {
 	standby = stby;
 }
+
+void audio::mp3Play(int folder, int song) {
+
+}
