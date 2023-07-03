@@ -27,7 +27,7 @@ in mcufriend_special.h: #define USE_MEGA_8BIT_PROTOSHIELD
 #include "stdio.h"
 #include <string.h>
 #include "Adafruit_GFX.h" // Hardware-specific library
-#include "MCUFRIEND_kbv.h"
+#include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
 #include "tempsens.h"
 #include "benutzer.h"
 
@@ -35,7 +35,7 @@ in mcufriend_special.h: #define USE_MEGA_8BIT_PROTOSHIELD
 #include <Fonts/FreeSans9pt7b.h>
 #include <Fonts/FreeSans12pt7b.h>
 #include <Fonts/FreeSansBold12pt7b.h>
-#include <FreeDefaultFonts.h>
+#include "./zLibraries/MCUFRIEND_kbv/FreeDefaultFonts.h"
 
 
 // TFT-DISPLAY

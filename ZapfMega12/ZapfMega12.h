@@ -29,8 +29,8 @@
 #include <MD_YX5300.h>  // MP3-Player
 #include <MD_MIDIFile.h> // MIDI SMF Player
 #include <Adafruit_PWMServoDriver.h>   //PWM LED wählscheibe
-#include "./libraries/RTC_DCF/DateTime.h"   // ELV RTC mit DCF
-#include "./libraries/RTC_DCF/RealTimeClock_DCF.h"
+#include "./zLibraries/RTC_DCF/DateTime.h"   // ELV RTC mit DCF
+#include "./zLibraries/RTC_DCF/RealTimeClock_DCF.h"
 #include <Adafruit_Thermal.h> //Thermal Printer
 #include "benutzer.h"
 #include "tempsens.h"

@@ -17,22 +17,22 @@
 
 #include "SdFat.h"
 #include "benutzer.h"
-#include "DCF_77.h"
+#include "gemein.h"
+#include "./zLibraries/RTC_DCF/DateTime.h"
+#include "./zLibraries/RTC_DCF/RealTimeClock_DCF.h"
 
 
 class zLog {
 public:
 	zLog();
 	virtual ~zLog();
-	void begin(SDFAT *psd, benutzer *puser);
+	void begin(SdFat *psd, benutzer *puser);
 	DateTime dateTime;
-	enum { LOG=0, DEBUG }
-
-private:
+	enum { LOG=0, DEBUG };
 
 
 protected:
-	SDFAT *_psd;
+	SdFat *_psd;
 	benutzer *_puser;
 
 };
