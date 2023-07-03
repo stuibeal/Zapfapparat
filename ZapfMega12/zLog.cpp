@@ -14,11 +14,11 @@ zLog::zLog() {
 }
 
 zLog::~zLog() {
-	// TODO Auto-generated destructor stub
+	// Auto-generated destructor stub
 }
 
 void zLog::begin(SdFat *psd, benutzer *puser) {
-	_psd = psd;
+	_psd = psd;  //Save pointer
 	_puser = puser;
 }
 
