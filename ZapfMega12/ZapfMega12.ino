@@ -143,7 +143,7 @@ long oldPosition = 0; //Fuer Drehgeber
 DateTime dateTime = DateTime(0, 1, 1, DateTime::SATURDAY, 0, 0, 0);
 
 //Printer
-Adafruit_Thermal printer(&Serial2); //Hardware Serial2
+Adafruit_Thermal printer(&Serial2, PRINTER_DTR); //Hardware Serial2
 
 //PWM Board
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(); // called this way, it uses the default address 0x40
@@ -1285,6 +1285,7 @@ void printerTest() {
  */
 void printerSetup() {
 	pinMode(PRINTER_ON_PIN, OUTPUT);
+	pinMode(PRINTER_DTR, INPUT);
 	digitalWrite(PRINTER_ON_PIN, HIGH);
 	Serial2.begin(9600);
 	printer.begin();

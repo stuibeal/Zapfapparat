@@ -29,8 +29,6 @@ const uint8_t ONE_WIRE_BUS34 = 34;
 const uint8_t ONE_WIRE_BUS35 = 35;
 const uint8_t ONE_WIRE_BUS36 = 36;
 
-
-
 //Thermodrucker
 #define PRINTER_ON_PIN    38 // Schaltet Printer ein, Printer ist an Serial2 (RX17, TX16)
 #define printerBaudRate   9600
