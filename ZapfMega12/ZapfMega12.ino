@@ -12,7 +12,6 @@
  MEGA2560:
  - MIDI File output
  - MIDI note output
- - evtl andere MP3 YX5300 bib einbinden
  - UI verbessern
  - Valve auf/Zu noch machen oder nicht mehr?
  - Druck

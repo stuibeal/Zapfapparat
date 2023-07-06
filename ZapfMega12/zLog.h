@@ -20,22 +20,42 @@
 #include "gemein.h"
 #include "./zLibraries/RTC_DCF/DateTime.h"
 #include "./zLibraries/RTC_DCF/RealTimeClock_DCF.h"
+#include "tempsens.h"
 
-
-class zLog {
+class zLog
+{
 public:
-	zLog();
-	virtual ~zLog();
-	void begin(SdFat *psd, benutzer *puser);
-	DateTime dateTime;
-	enum { LOG=0, DEBUG };
-	enum wochadog {MODA, ERDA, MIGGA, PFINSDA, FREIDA, SAMSDA, SUNDA};
+  zLog ();
+  virtual
+  ~zLog ();
+  void
+  begin (SdFat *psd, benutzer *puser);
+  inline void
+  setLogState(uint8_t state) {logState = state}
+  inline uint8_t
+  getlogState() {return logState:}
 
+
+  DateTime dateTime;
+
+  enum
+  {
+    LOG = 0, DEBUG
+  };
+  enum wochadog
+  {
+    MODA, ERDA, MIGGA, PFINSDA, FREIDA, SAMSDA, SUNDA
+  };
+
+
+private:
+  uint8_t logState
 
 
 protected:
-	SdFat *_psd;
-	benutzer *_puser;
+  SdFat *_psd;
+  benutzer *_puser;
+
 
 };
 
