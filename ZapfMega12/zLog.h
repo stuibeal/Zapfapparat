@@ -33,7 +33,7 @@ public:
   inline void
   setLogState(uint8_t state) {logState = state}
   inline uint8_t
-  getlogState() {return logState:}
+  getlogState() {return logState;}
 
 
   DateTime dateTime;
