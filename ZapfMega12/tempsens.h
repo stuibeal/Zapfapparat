@@ -12,6 +12,14 @@
 #include <OneWire.h> //alte Version nehmen!!!!!!!
 #include "DS18B20.h"  //DS18B20_RT vom Rob Tilaart
 #include "gemein.h"
+// One Wire Temperatursensoren Pins
+const uint8_t ONE_WIRE_BUS30 = 30;
+const uint8_t ONE_WIRE_BUS32 = 32;
+const uint8_t ONE_WIRE_BUS34 = 34;
+const uint8_t ONE_WIRE_BUS35 = 35;
+const uint8_t ONE_WIRE_BUS36 = 36;
+
+
 
 class tempsens
 {
@@ -24,14 +32,17 @@ public:
   int16_t zulaufTemp;
   int16_t hahnTemp;
   int16_t kuehlwasserTemp;
-  int16_t block1Temp;   //PT100 am Block aussen
-  int16_t block2Temp;   //PT100 am Block innen
+  uint16_t getInVoltage();
+  unsigned int getBlock1Temp();   //PT100 am Block aussen
+  unsigned int getBlock2Temp();   //PT100 am Block innen
   void
   begin ();
   void
   request ();
   void
   requestBlock ();
+  void
+  requestVoltage();
   void
   checkAndSet ();
 
@@ -48,20 +59,11 @@ private:
   DS18B20 *zulauf;
   DS18B20 *kuehlwasser;
 
-  //OneWire oneWire30(uint8_t ONE_WIRE_BUS30);
+  unsigned int block1Temp;   //PT100 am Block aussen
+  unsigned int block2Temp;   //PT100 am Block innen
+  uint16_t inVoltage;
+  unsigned int iDataGet(uint8_t befehl);
 
-  //OneWire oneWire32(uint8_t ONE_WIRE_BUS32);
-  //OneWire oneWire34(uint8_t ONE_WIRE_BUS34);
-  //OneWire oneWire35(uint8_t ONE_WIRE_BUS35);
-  //OneWire oneWire36(uint8_t ONE_WIRE_BUS36);
-
-  // DS18B20 Temperatursensoren
-  //DS18B20 auslauf(OneWire &);
-  //DS18B20 auslauf(const DS18B20 *);
-  //DS18B20 block(const DS18B20 *);
-  //DS18B20 gehaeuse(const DS18B20 *);
-  //DS18B20 zulauf(const DS18B20 *);
-  //DS18B20 kuehlwasser(const DS18B20 *);
 
 };
 

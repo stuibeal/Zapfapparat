@@ -22,13 +22,6 @@
 //SD Karte
 #define SD_CS     53 //CS Pin am MEGA für SPI
 
-// One Wire Temperatursensoren Pins
-const uint8_t ONE_WIRE_BUS30 = 30;
-const uint8_t ONE_WIRE_BUS32 = 32;
-const uint8_t ONE_WIRE_BUS34 = 34;
-const uint8_t ONE_WIRE_BUS35 = 35;
-const uint8_t ONE_WIRE_BUS36 = 36;
-
 //Thermodrucker
 #define PRINTER_ON_PIN    38 // Schaltet Printer ein, Printer ist an Serial2 (RX17, TX16)
 #define printerBaudRate   9600
@@ -188,6 +181,7 @@ const uint8_t LED_FUN_4 = 0x25; // progrämmsche GAUSELMANN, parameter: was für
 #define transmitAuslaufTemp     0x41  // Data send:   hahnTemp in °C*10
 const uint8_t GET_BLOCK_TEMP = 0x40;
 const uint8_t GET_AUSLAUF_TEMP = 0x41;
+const uint8_t GET_IN_VOLTAGE = 0x42;
 #define transmitPower           0x42  // Data send:   Leistung in W (power1+power2)
 #define transmitInVoltage       0x43  // Data send:   inVoltage in V*100
 #define transmitKuehlFlow       0x44  // Data send:   Durchfluss Kühlwasser (extern) pro 10000ms

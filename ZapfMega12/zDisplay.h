@@ -26,8 +26,8 @@
 #include "gemein.h"
 #include "stdio.h"
 #include <string.h>
-#include "Adafruit_GFX.h" // Hardware-specific library
 #include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
+//#include "Adafruit_GFX.h" // Hardware-specific library
 #include "tempsens.h"
 #include "benutzer.h"
 
@@ -88,6 +88,8 @@
 
 #define FONT "FreeSans12pt7b"
 #define BOLD "FreeSansBold12pt7b"
+#define NORMAL &FreeSans12pt7b
+#define FETT &FreeSansBold12pt7b
 
 // SHOW BMP
 #define NAMEMATCH ""         // "" matches any name
@@ -127,7 +129,6 @@ class zDisplay : public MCUFRIEND_kbv
   void
   infoscreen (tempsens *temp, benutzer *user);
   MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
-
 
 private:
   uint16_t

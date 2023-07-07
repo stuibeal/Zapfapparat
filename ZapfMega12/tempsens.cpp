@@ -9,6 +9,18 @@
 
 tempsens::tempsens ()
 {
+  auslauf = nullptr;
+  block = nullptr;
+  gehaeuse = nullptr;
+  zulauf = nullptr;
+  kuehlwasser = nullptr;
+
+  oneWire30 = nullptr;
+  oneWire32 = nullptr;
+  oneWire34 = nullptr;
+  oneWire35 = nullptr;
+  oneWire36 = nullptr;
+
   blockTemp = 0;
   hausTemp = 0;
   zulaufTemp = 0;
@@ -16,7 +28,7 @@ tempsens::tempsens ()
   kuehlwasserTemp = 0;
   block1Temp = 0;
   block2Temp = 0;
-
+  inVoltage = 0;
 }
 
 tempsens::~tempsens ()
@@ -82,28 +94,28 @@ tempsens::request ()
 
   if (auslauf->isConversionComplete ())
     {
-      hahnTemp = auslauf->getTempC () * 100;
+      hahnTemp = static_cast<int16_t> (auslauf->getTempC () * 100);
       auslauf->requestTemperatures ();
     }
 
   if (gehaeuse->isConversionComplete ())
     {
-      hausTemp = gehaeuse->getTempC () * 100;
+      hausTemp = static_cast<int16_t> (gehaeuse->getTempC () * 100);
       gehaeuse->requestTemperatures ();
     }
   if (zulauf->isConversionComplete ())
     {
-      zulaufTemp = zulauf->getTempC () * 100;
+      zulaufTemp = static_cast<int16_t> (zulauf->getTempC () * 100);
       zulauf->requestTemperatures ();
     }
   if (block->isConversionComplete ())
     {
-      blockTemp = block->getTempC () * 100;
+      blockTemp = static_cast<int16_t> (block->getTempC () * 100);
       block->requestTemperatures ();
     }
   if (kuehlwasser->isConversionComplete ())
     {
-      kuehlwasserTemp = kuehlwasser->getTempC () * 100;
+      kuehlwasserTemp = static_cast<int16_t> (kuehlwasser->getTempC () * 100);
       kuehlwasser->requestTemperatures ();
     }
 
@@ -115,10 +127,44 @@ tempsens::checkAndSet ()
   //dunno
 }
 
-void
-tempsens::requestBlock ()
-
+unsigned int
+tempsens::getBlock1Temp ()
 {
-
-
+  block1Temp = iDataGet (GET_BLOCK_TEMP);
+  return block1Temp;
 }
+
+unsigned int
+tempsens::getBlock2Temp ()
+{
+  block2Temp = iDataGet (GET_AUSLAUF_TEMP);
+  return block1Temp;
+}
+
+uint16_t
+tempsens::getInVoltage ()
+{
+  inVoltage = iDataGet (GET_IN_VOLTAGE);
+  return inVoltage;
+}
+
+unsigned int
+tempsens::iDataGet (uint8_t befehl)
+{
+  const uint8_t howManyBytes = 2;
+  uint8_t recieveByte[2];
+
+  Wire.beginTransmission (TEMP_I2C_ADDR); // transmit to device #18
+  Wire.write (befehl);        // hol mir die Millis
+  Wire.endTransmission ();    // stop transmitting
+
+  Wire.requestFrom (TEMP_I2C_ADDR, howManyBytes); // request 2 bytes from slave device
+  while (Wire.available ())   // slave may send less than requested
+    {
+      recieveByte[0] = Wire.read (); // receive a byte as character
+      recieveByte[1] = Wire.read (); // receive a byte as character
+    }
+
+  return (recieveByte[0] << 8) + recieveByte[1];
+}
+

@@ -76,7 +76,6 @@ void iBefehl(uint8_t empfaenger, uint8_t befehl) ;
 void iDataSend(byte empfaenger, byte befehl, unsigned int sendedaten) ;
 void i2cIntDataSend(byte empfaenger, byte befehl, unsigned int sendedaten) ;
 void flowDataSend(uint8_t befehl, uint8_t option1, uint8_t option2, 		uint16_t wert) ;
-unsigned int iDataGet(uint8_t empfaenger, uint8_t befehl) ;
 void anzeigeAmHauptScreen(void) ;
 void dataLogger(void) ;
 void printerSleep(void) ;
@@ -91,11 +90,6 @@ void printerSetup() ;
 void UserDataShow() ;
 void Drehgeber() ;
 void Einstellerumsteller_ISR() ;
-
-
-
-
-unsigned int iDataGet(uint8_t empfaenger, uint8_t befehl);
 void flowDataSend(uint8_t empfaenger, uint8_t option1, uint8_t option2, uint16_t wert);
 
 // Variablen

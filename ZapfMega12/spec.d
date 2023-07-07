@@ -1,2 +1,2 @@
 spec.o: \
- /home/alfred3/eclipse2-workspace/.metadata/.plugins/org.eclipse.cdt.managedbuilder.core/spec.cpp
+ C:/Users/Alfred3/Documents/sloeber-workspace/.metadata/.plugins/org.eclipse.cdt.managedbuilder.core/spec.cpp

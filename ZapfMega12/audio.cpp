@@ -183,5 +183,5 @@ audio::mp3Play (int folder, int song)
 void
 audio::bing ()
 {
-
+  _mp3->playTrack(1); //BING!
 }

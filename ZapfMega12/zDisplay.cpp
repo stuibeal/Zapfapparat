@@ -42,7 +42,7 @@ zDisplay::beginn (SdFat *psd)
   _tft.setRotation (1);
   _tft.setTextSize (2);
   _tft.fillScreen (TFT_WHITE);
-  _tft.setTextColor (ZGRUEN, BLACK);
+  _tft.setTextColor (ZGRUEN, WHITE);
 
   _tft.setCursor (10, 10); //Cursor setzen
 
@@ -301,7 +301,7 @@ zDisplay::print_val2 (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsr
   char buf[10];
   _canvas->setTextSize (1);
   _canvas->fillScreen (0);
-  _canvas->setCursor (5, 5);
+  _canvas->setCursor (1, 20);
   if (komma == 1)
     {
       sprintf (buf, "%d,%02d", val / 100, val % 100);
@@ -313,21 +313,21 @@ zDisplay::print_val2 (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsr
 
   if (c == 1) //schwarz fett
     {
-      _canvas->setFont (&FreeSansBold12pt7b);
+      _canvas->setFont (FETT);
       _canvas->print (buf);
       _tft.drawBitmap (x, y, _canvas->getBuffer (), _canvas->width (),
 		       _canvas->height (), BLACK, ZGRUEN);
     }
   else //weiß
     {
-      _canvas->setFont (&FreeSans12pt7b);
+      _canvas->setFont (NORMAL);
       _canvas->print (buf);
       _tft.drawBitmap (x, y, _canvas->getBuffer (), _canvas->width (),
 		       _canvas->height (), WHITE, ZGRUEN);
     }
   if (c == 2) //rot
     {
-      _canvas->setFont (&FreeSans12pt7b);
+      _canvas->setFont (NORMAL);
       _canvas->print (buf);
       _tft.drawBitmap (x, y, _canvas->getBuffer (), _canvas->width (),
 		       _canvas->height (), RED, ZGRUEN);
@@ -344,7 +344,6 @@ void
 zDisplay::setCursor (int16_t x, int16_t y)
 {
   _tft.setCursor (x, y);
-
 }
 
 void
@@ -383,13 +382,13 @@ zDisplay::userShow (benutzer *user)
     }
   showBMP (namebuf, 300, 50);
   _tft.setTextSize (1);
-  _tft.setFont (&FreeSansBold12pt7b);
+  _tft.setFont (FETT);
   _tft.setTextColor (ZGRUEN);
   _tft.setCursor (300, 175);
   //_tft.print(*userName);
   _tft.print (user->getName ()); //konvertiert den Pointer von userName in c-String
   //_tft.print(user->getName()->c_str());  //konvertiert den Pointer von userName in c-String
-  _tft.setFont (&FreeSans12pt7b);
+  _tft.setFont (NORMAL);
   int x = 300;
   int y = 210;
   _tft.fillRect (280, 190, 200, 130, ZGRUEN);
@@ -454,7 +453,7 @@ zDisplay::infoscreen (tempsens *temp, benutzer *user)
   delay(2000);
   _tft.setCursor(0, 60);
   _tft.setFont(0);
-  _tft.setTextSize(3);
+  _tft.setTextSize(2);
   _tft.print("block: ");
   _tft.println(temp->blockTemp);
   _tft.print("hahn:  ");
@@ -468,12 +467,9 @@ zDisplay::infoscreen (tempsens *temp, benutzer *user)
   temp->request();
   int16_t x1, y1;
   uint16_t w, h;
-  _tft.setTextSize (1);
-  _tft.setFont (&FreeSans12pt7b);
-
   _tft.getTextBounds ("00,00", 0, 0, &x1, &y1, &w, &h);
-  _tft.println(w);
-  _tft.println(h);
+  print_val2(w, 10, 200, 0, 0);
+  print_val2(h, 10, 230, 0, 1);
 
 
 

@@ -664,7 +664,7 @@ anfang (void)
   pwm.setPWM (0, 0, 16);   //helle LEDS abdunkeln grün
   pwm.setPWM (11, 0, 16);  //helle LEDS abdunkeln weiß
   DEBUGMSG("vor Usershow");
-    userShow ();
+  userShow ();
   mp3.playTrack (1); //Bing!
 
 }
@@ -744,7 +744,7 @@ seltencheck (void)
   //DEBUGMSG(buf);
 
   hell = analogRead (helligkeitSensor);
-  inVoltage = iDataGet (tempi2c, transmitInVoltage);
+  inVoltage = temp.getInVoltage();
 
   //Hier checken ob was gespielt wird, ansonsten audio aus
   //audio.check();
@@ -1034,7 +1034,7 @@ loop ()
 	  SMF.close ();
 	  midiSilence ();
 	  valveControl (2);
-	  mp3.playTrack (1); //Bing!
+	  sound.bing();
 
 	  //Sollte er abgebrochen haben:
 	  if (totalMilliLitres < user.menge ())
@@ -1180,36 +1180,18 @@ flowDataSend (uint8_t befehl, uint8_t option1, uint8_t option2, uint16_t wert)
   totalMilliLitres = (aRxBuffer[0] << 8) + aRxBuffer[1]; // da der Flow immer die aktuellen ml ausgibt kann man die gleich in die Variable schreiben
 }
 
-unsigned int
-iDataGet (uint8_t empfaenger, uint8_t befehl)
-{
-  const uint8_t howManyBytes = 2;
-
-  Wire.beginTransmission (empfaenger); // transmit to device #18
-  Wire.write (befehl);        // hol mir die Millis
-  Wire.endTransmission ();    // stop transmitting
-
-  Wire.requestFrom (empfaenger, howManyBytes); // request 2 bytes from slave device
-  while (Wire.available ())   // slave may send less than requested
-    {
-      recieveByte[0] = Wire.read (); // receive a byte as character
-      recieveByte[1] = Wire.read (); // receive a byte as character
-    }
-
-  return (recieveByte[0] << 8) + recieveByte[1];
-}
-
 void
 anzeigeAmHauptScreen (void)
 {
   //DEBUGMSG("vor transmitBlocktemp");
-  blockTemp = iDataGet (TEMP_I2C_ADDR, GET_BLOCK_TEMP);
-  ZD.print_val (blockTemp, 20, 100, 3, 1);
+  ZD.print_val (temp.getBlock1Temp (), 20, 100, 3, 1);
   //DEBUGMSG("vor transmitauslauf");
-  auslaufTemp = iDataGet (TEMP_I2C_ADDR, GET_AUSLAUF_TEMP);
   //DEBUGMSG("vor transmitauslauf");
-  ZD.print_val (auslaufTemp, 20, 125, 1, 1);
+  ZD.print_val (temp.getBlock2Temp (), 20, 125, 1, 1);
   ZD.print_val (totalMilliLitres, 20, 150, 1, 0);
+  ZD.printText ();
+
+
 }
 
 /* Name:			dataLogger
