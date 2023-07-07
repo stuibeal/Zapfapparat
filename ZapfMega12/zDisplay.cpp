@@ -16,12 +16,13 @@ zDisplay::zDisplay ():
 
 {
   _sd = nullptr;
+  _canvas = nullptr;
   r = 0;
   g = 0;
   b = 0;
   MCUFRIEND_kbv _tft;
   // Der Constructor für das ganze
-  GFXcanvas1* _canvas = new GFXcanvas1(70,28);
+  GFXcanvas1* _canvas = new GFXcanvas1(60,21);
 }
 
 zDisplay::~zDisplay ()
@@ -252,7 +253,7 @@ zDisplay::showBMP (char const *nm, int x, int y)
 }
 
 void
-zDisplay::print_val2 (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsroutine zum Daten anzeigen
+zDisplay::print_val (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsroutine zum Daten anzeigen
 {
   char buf[10];
   int16_t x1, y1;
@@ -295,7 +296,7 @@ zDisplay::print_val2 (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsr
 }
 
 void
-zDisplay::print_val (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsroutine zum Daten anzeigen
+zDisplay::print_val2 (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsroutine zum Daten anzeigen
 {
   char buf[10];
   _canvas->setTextSize (1);
@@ -432,6 +433,7 @@ zDisplay::setTextSize (uint8_t s)
 void
 zDisplay::infoscreen (tempsens *temp, benutzer *user)
 {
+  temp->request();
   _tft.fillScreen (BLACK);
   _tft.setTextColor (WHITE);
   _tft.setTextSize (1);
@@ -449,5 +451,32 @@ zDisplay::infoscreen (tempsens *temp, benutzer *user)
       _tft.print (user->bierTag[x]);
       _tft.println (" ml");
     }
+  delay(2000);
+  _tft.setCursor(0, 60);
+  _tft.setFont(0);
+  _tft.setTextSize(3);
+  _tft.print("block: ");
+  _tft.println(temp->blockTemp);
+  _tft.print("hahn:  ");
+  _tft.println(temp->hahnTemp);
+  _tft.print("haus:  ");
+  _tft.println(temp->hausTemp);
+  _tft.print("kuehlw:");
+  _tft.println(temp->kuehlwasserTemp);
+  _tft.print("zulauf:");
+  _tft.println(temp->zulaufTemp);
+  temp->request();
+  int16_t x1, y1;
+  uint16_t w, h;
+  _tft.setTextSize (1);
+  _tft.setFont (&FreeSans12pt7b);
+
+  _tft.getTextBounds ("00,00", 0, 0, &x1, &y1, &w, &h);
+  _tft.println(w);
+  _tft.println(h);
+
+
+
+
 
 }

@@ -28,8 +28,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/Adafruit_Thermal_Printer_Library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/Adafruit_PWM_Servo_Driver_Library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/DS18B20_RT/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/MCUFRIEND_kbv}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/MCUFRIEND_kbv/utility}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/SD/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/SoftwareSerial/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/Adafruit_GFX_Library}&quot;"/>
@@ -52,8 +50,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/Adafruit_Thermal_Printer_Library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/Adafruit_PWM_Servo_Driver_Library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/DS18B20_RT/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/MCUFRIEND_kbv}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/MCUFRIEND_kbv/utility}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/SD/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/SoftwareSerial/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/Adafruit_GFX_Library}&quot;"/>
@@ -76,8 +72,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/Adafruit_Thermal_Printer_Library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/Adafruit_PWM_Servo_Driver_Library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/DS18B20_RT/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/MCUFRIEND_kbv}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/MCUFRIEND_kbv/utility}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/SD/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/SoftwareSerial/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/Adafruit_GFX_Library}&quot;"/>

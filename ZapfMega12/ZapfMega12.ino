@@ -327,7 +327,7 @@ setup (void)
 
   SMF.load ("Ein-Prosit-1.mid");
   SMF.looping (false);
-
+  DEBUGMSG("vor prosit")
   sound.starte (&SMF, &mp3);
 
 }  //VOID SETUP
@@ -663,8 +663,8 @@ anfang (void)
     }
   pwm.setPWM (0, 0, 16);   //helle LEDS abdunkeln grün
   pwm.setPWM (11, 0, 16);  //helle LEDS abdunkeln weiß
-  //DEBUGMSG("vor Usershow");
-  userShow ();
+  DEBUGMSG("vor Usershow");
+    userShow ();
   mp3.playTrack (1); //Bing!
 
 }
