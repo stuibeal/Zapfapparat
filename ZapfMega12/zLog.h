@@ -31,7 +31,7 @@ public:
   void
   begin (SdFat *psd, benutzer *puser);
   inline void
-  setLogState(uint8_t state) {logState = state}
+  setLogState(uint8_t state) {logState = state;}
   inline uint8_t
   getlogState() {return logState;}
 
@@ -49,7 +49,7 @@ public:
 
 
 private:
-  uint8_t logState
+  uint8_t logState;
 
 
 protected:

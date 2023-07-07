@@ -10,8 +10,10 @@
 
 #include "zDisplay.h"
 
-zDisplay::zDisplay () :
-    MCUFRIEND_kbv (0, 0, 0, 0, 0)
+zDisplay::zDisplay ():
+ MCUFRIEND_kbv (0, 0, 0, 0, 0)
+ //GFXcanvas1(70,28)
+
 {
   _sd = nullptr;
   r = 0;
@@ -19,6 +21,7 @@ zDisplay::zDisplay () :
   b = 0;
   MCUFRIEND_kbv _tft;
   // Der Constructor für das ganze
+  GFXcanvas1* _canvas = new GFXcanvas1(70,28);
 }
 
 zDisplay::~zDisplay ()
@@ -44,6 +47,8 @@ zDisplay::beginn (SdFat *psd)
 
   _tft.println ("Z-Apfapparat");
   _tft.println ("Version 0.5 BETA 2022/2023"); //Bootausgabe
+  _canvas->setTextWrap (false);
+
   //BMP SHOW
   root = _sd->open (namebuf);
   pathlen = strlen (namebuf);
@@ -148,7 +153,7 @@ zDisplay::showBMP (char const *nm, int x, int y)
 
       if (bmpDepth <= PALETTEDEPTH)
 	{   // these modes have separate palette
-	  //bmpFile.seek(BMPIMAGEOFFSET); //palette is always @ 54
+	    //bmpFile.seek(BMPIMAGEOFFSET); //palette is always @ 54
 	  bmpFile.seek (bmpImageoffset - (4 << bmpDepth)); //54 for regular, diff for colorsimportant
 	  bitmask = 0xFF;
 	  if (bmpDepth < 8)
@@ -247,7 +252,7 @@ zDisplay::showBMP (char const *nm, int x, int y)
 }
 
 void
-zDisplay::print_val (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsroutine zum Daten anzeigen
+zDisplay::print_val2 (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsroutine zum Daten anzeigen
 {
   char buf[10];
   int16_t x1, y1;
@@ -287,6 +292,45 @@ zDisplay::print_val (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsro
     }
   _tft.setCursor (x, y);
   _tft.print (buf);
+}
+
+void
+zDisplay::print_val (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsroutine zum Daten anzeigen
+{
+  char buf[10];
+  _canvas->setTextSize (1);
+  _canvas->fillScreen (0);
+  _canvas->setCursor (5, 5);
+  if (komma == 1)
+    {
+      sprintf (buf, "%d,%02d", val / 100, val % 100);
+    }
+  else
+    {
+      sprintf (buf, "%d", val);
+    }
+
+  if (c == 1) //schwarz fett
+    {
+      _canvas->setFont (&FreeSansBold12pt7b);
+      _canvas->print (buf);
+      _tft.drawBitmap (x, y, _canvas->getBuffer (), _canvas->width (),
+		       _canvas->height (), BLACK, ZGRUEN);
+    }
+  else //weiß
+    {
+      _canvas->setFont (&FreeSans12pt7b);
+      _canvas->print (buf);
+      _tft.drawBitmap (x, y, _canvas->getBuffer (), _canvas->width (),
+		       _canvas->height (), WHITE, ZGRUEN);
+    }
+  if (c == 2) //rot
+    {
+      _canvas->setFont (&FreeSans12pt7b);
+      _canvas->print (buf);
+      _tft.drawBitmap (x, y, _canvas->getBuffer (), _canvas->width (),
+		       _canvas->height (), RED, ZGRUEN);
+    }
 }
 
 /*
@@ -369,7 +413,7 @@ zDisplay::userShow (benutzer *user)
 void
 zDisplay::println (const char *text)
 {
-  zDisplay::printText();
+  zDisplay::printText ();
   _tft.println (text);
 }
 

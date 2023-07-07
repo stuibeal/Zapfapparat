@@ -53,6 +53,7 @@ public:
   setStandby (bool stby);
   void
   mp3Play (int folder, int song);
+  void bing();
   inline bool
   isOn ()
   {

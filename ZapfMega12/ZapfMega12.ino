@@ -666,6 +666,7 @@ anfang (void)
   //DEBUGMSG("vor Usershow");
   userShow ();
   mp3.playTrack (1); //Bing!
+
 }
 
 void
