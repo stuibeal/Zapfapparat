@@ -97,7 +97,7 @@
 #define BMPIMAGEOFFSET 54
 #define BUFFPIXEL      20
 
-class zDisplay : public MCUFRIEND_kbv
+class zDisplay : public MCUFRIEND_kbv, private GFXcanvas1
 {
   public:
   zDisplay (); //Constructor
@@ -131,6 +131,7 @@ class zDisplay : public MCUFRIEND_kbv
   MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
 
 private:
+  //friend class GFXcanvas1;
   uint16_t
   read16 (File &f);
   uint32_t
@@ -142,11 +143,12 @@ private:
   uint8_t r;
   uint8_t g;
   uint8_t b;
+  GFXcanvas1 *_canvas;
+  GFXcanvas1 myCanvas(uint16_t w, uint16_t h);
 
 
 protected:
   SdFat *_sd; 		// Pointer zum SD-Objekt vom Hauptprogramm
-  GFXcanvas1 *_canvas;
 
 
 //	File    _fd;      //SDFat file descriptor

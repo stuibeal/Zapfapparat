@@ -10,9 +10,9 @@
 
 #include "zDisplay.h"
 
-zDisplay::zDisplay ():
- MCUFRIEND_kbv (0, 0, 0, 0, 0)
- //GFXcanvas1(70,28)
+zDisplay::zDisplay () :
+ MCUFRIEND_kbv (0, 0, 0, 0, 0),
+ GFXcanvas1(60,21)
 
 {
   _sd = nullptr;
@@ -22,7 +22,8 @@ zDisplay::zDisplay ():
   b = 0;
   MCUFRIEND_kbv _tft;
   // Der Constructor für das ganze
-  GFXcanvas1* _canvas = new GFXcanvas1(60,21);
+  GFXcanvas1 myCanvas(60, 21);
+  _canvas = &myCanvas;
 }
 
 zDisplay::~zDisplay ()
@@ -48,6 +49,9 @@ zDisplay::beginn (SdFat *psd)
 
   _tft.println ("Z-Apfapparat");
   _tft.println ("Version 0.5 BETA 2022/2023"); //Bootausgabe
+  //GFXcanvas1 myCanvas (60, 21);
+  //_canvas = &myCanvas;
+
   _canvas->setTextWrap (false);
 
   //BMP SHOW
@@ -299,9 +303,12 @@ void
 zDisplay::print_val2 (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsroutine zum Daten anzeigen
 {
   char buf[10];
+  _tft.println ("vor canvas");
+  delay (5000);
   _canvas->setTextSize (1);
   _canvas->fillScreen (0);
   _canvas->setCursor (1, 20);
+  _tft.println ("nach canvas");
   if (komma == 1)
     {
       sprintf (buf, "%d,%02d", val / 100, val % 100);
@@ -432,7 +439,8 @@ zDisplay::setTextSize (uint8_t s)
 void
 zDisplay::infoscreen (tempsens *temp, benutzer *user)
 {
-  temp->request();
+  temp->request ();
+  _tft.setFont (NORMAL);
   _tft.fillScreen (BLACK);
   _tft.setTextColor (WHITE);
   _tft.setTextSize (1);
@@ -450,29 +458,25 @@ zDisplay::infoscreen (tempsens *temp, benutzer *user)
       _tft.print (user->bierTag[x]);
       _tft.println (" ml");
     }
-  delay(2000);
-  _tft.setCursor(0, 60);
-  _tft.setFont(0);
-  _tft.setTextSize(2);
-  _tft.print("block: ");
-  _tft.println(temp->blockTemp);
-  _tft.print("hahn:  ");
-  _tft.println(temp->hahnTemp);
-  _tft.print("haus:  ");
-  _tft.println(temp->hausTemp);
-  _tft.print("kuehlw:");
-  _tft.println(temp->kuehlwasserTemp);
-  _tft.print("zulauf:");
-  _tft.println(temp->zulaufTemp);
-  temp->request();
+  delay (2000);
+  _tft.setCursor (0, 60);
+  _tft.setFont (0);
+  _tft.setTextSize (2);
+  _tft.print ("block: ");
+  _tft.println (temp->blockTemp);
+  _tft.print ("hahn:  ");
+  _tft.println (temp->hahnTemp);
+  _tft.print ("haus:  ");
+  _tft.println (temp->hausTemp);
+  _tft.print ("kuehlw:");
+  _tft.println (temp->kuehlwasserTemp);
+  _tft.print ("zulauf:");
+  _tft.println (temp->zulaufTemp);
+  temp->request ();
   int16_t x1, y1;
   uint16_t w, h;
   _tft.getTextBounds ("00,00", 0, 0, &x1, &y1, &w, &h);
-  print_val2(w, 10, 200, 0, 0);
-  print_val2(h, 10, 230, 0, 1);
-
-
-
-
+  print_val2 (w, 10, 200, 0, 0);
+  print_val2 (h, 10, 230, 0, 1);
 
 }
