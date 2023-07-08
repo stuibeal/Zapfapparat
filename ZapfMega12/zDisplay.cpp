@@ -25,6 +25,7 @@ zDisplay::zDisplay () :
   //GFXcanvas1 myCanvas(60, 21);
   GFXcanvas1 myCanvas(60,22);
   _canvas = &myCanvas;
+  GFXcanvas1 myCanvas2 = GFXcanvas1(60,22);   //könnte auch gehen ohne Pointer?
 }
 
 zDisplay::~zDisplay ()
