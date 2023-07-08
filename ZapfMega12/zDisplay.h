@@ -97,7 +97,7 @@
 #define BMPIMAGEOFFSET 54
 #define BUFFPIXEL      20
 
-class zDisplay : public MCUFRIEND_kbv, private GFXcanvas1
+class zDisplay : public MCUFRIEND_kbv
 {
   public:
   zDisplay (); //Constructor
@@ -143,8 +143,8 @@ private:
   uint8_t r;
   uint8_t g;
   uint8_t b;
-  GFXcanvas1 *_canvas;
-  GFXcanvas1 myCanvas(uint16_t w, uint16_t h);
+  GFXcanvas1 * _canvas;
+
 
 
 protected:

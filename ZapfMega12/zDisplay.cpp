@@ -11,8 +11,8 @@
 #include "zDisplay.h"
 
 zDisplay::zDisplay () :
- MCUFRIEND_kbv (0, 0, 0, 0, 0),
- GFXcanvas1(60,21)
+ MCUFRIEND_kbv (0, 0, 0, 0, 0)
+//, GFXcanvas1(60,22)
 
 {
   _sd = nullptr;
@@ -22,7 +22,8 @@ zDisplay::zDisplay () :
   b = 0;
   MCUFRIEND_kbv _tft;
   // Der Constructor für das ganze
-  GFXcanvas1 myCanvas(60, 21);
+  //GFXcanvas1 myCanvas(60, 21);
+  GFXcanvas1 myCanvas(60,22);
   _canvas = &myCanvas;
 }
 
