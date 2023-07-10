@@ -478,7 +478,12 @@ zDisplay::infoscreen (tempsens *temp, benutzer *user)
   int16_t x1, y1;
   uint16_t w, h;
   _tft.getTextBounds ("00,00", 0, 0, &x1, &y1, &w, &h);
-  print_val2 (w, 10, 200, 0, 0);
-  print_val2 (h, 10, 230, 0, 1);
+  //print_val2 (w, 10, 200, 0, 0);
+  //print_val2 (h, 10, 230, 0, 1);
+  _tft.drawBitmap (10,200, myCanvas2.getBuffer (), myCanvas2.width (),
+  		       myCanvas2.height (), BLACK, ZGRUEN);
+  _tft.drawBitmap (10,230, _canvas->getBuffer (), _canvas->width (),
+  		       _canvas->height (), BLACK, ZGRUEN);
+
 
 }

@@ -144,7 +144,7 @@ private:
   uint8_t g;
   uint8_t b;
   GFXcanvas1 * _canvas;
-
+  GFXcanvas1 myCanvas2;
 
 
 protected:
