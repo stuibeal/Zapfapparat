@@ -14,15 +14,16 @@
 #include "string.h"
 
 #ifndef DEBUG_A
-#define DEBUG_A 0
+#define DEBUG_A 1
 #endif
 
 class audio
 {
 
 public:
-  static const long MIDI_RESET_WARTEZEIT = 400;
+  static const long MIDI_RESET_WARTEZEIT = 500;
   static const long AUDIO_WARTEZEIT = 1500;
+  static const long AUDIO_ON_WARTEZEIT = 500;
   static const long AUDIO_STANDBYZEIT = 30000;
   static const int AUDIO_ON = 0;
   static const int AUDIO_SHUTDOWN = 1;

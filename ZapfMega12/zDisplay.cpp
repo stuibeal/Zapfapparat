@@ -11,7 +11,8 @@
 #include "zDisplay.h"
 
 zDisplay::zDisplay () :
- MCUFRIEND_kbv (0, 0, 0, 0, 0)
+    MCUFRIEND_kbv (0, 0, 0, 0, 0), GFXcanvas1 (60,22)
+
 //, GFXcanvas1(60,22)
 
 {
@@ -20,13 +21,11 @@ zDisplay::zDisplay () :
   r = 0;
   g = 0;
   b = 0;
-  strcpy(namebuf, "/");
-  MCUFRIEND_kbv _tft;
-  // Der Constructor für das ganze
-  //GFXcanvas1 myCanvas(60, 21);
-  GFXcanvas1 myCanvas(60,22);
-  _canvas = &myCanvas;
-  GFXcanvas1 myCanvas2 = GFXcanvas1(60,22);   //könnte auch gehen ohne Pointer?
+  strcpy (namebuf, "/");
+  MCUFRIEND_kbv _tft;  //tft objekt
+  //myCanvas = new
+  _canvas = new GFXcanvas1 (60, 21);
+
 }
 
 zDisplay::~zDisplay ()
@@ -52,8 +51,6 @@ zDisplay::beginn (SdFat *psd)
 
   _tft.println ("Z-Apfapparat");
   _tft.println ("Version 0.5 BETA 2022/2023"); //Bootausgabe
-  //GFXcanvas1 myCanvas (60, 21);
-  //_canvas = &myCanvas;
 
   _canvas->setTextWrap (false);
 
@@ -481,10 +478,10 @@ zDisplay::infoscreen (tempsens *temp, benutzer *user)
   _tft.getTextBounds ("00,00", 0, 0, &x1, &y1, &w, &h);
   //print_val2 (w, 10, 200, 0, 0);
   //print_val2 (h, 10, 230, 0, 1);
-  _tft.drawBitmap (10,200, myCanvas2.getBuffer (), myCanvas2.width (),
-  		       myCanvas2.height (), BLACK, ZGRUEN);
-  _tft.drawBitmap (10,230, _canvas->getBuffer (), _canvas->width (),
-  		       _canvas->height (), BLACK, ZGRUEN);
 
+  _tft.drawBitmap (10, 200, _canvas->getBuffer (), _canvas->width (),
+		   _canvas->height (), BLACK, ZHELLGRUEN);
+  _tft.drawBitmap (10, 230, _canvas->getBuffer (), _canvas->width (),
+		   _canvas->height (), BLACK, ZDUNKELGRUEN);
 
 }

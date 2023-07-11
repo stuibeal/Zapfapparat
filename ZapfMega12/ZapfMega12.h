@@ -51,6 +51,9 @@
 #if DEBUGTO == 3
 #define DEBUGMSG(s) { ZD.printText(); ZD._tft.println(s); }
 #endif
+#ifndef DEBUG_A
+#define DEBUG_A 1 //Debug Audio
+#endif
 // Defines aus
 
 

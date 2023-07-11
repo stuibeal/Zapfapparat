@@ -44,7 +44,6 @@ unsigned int minTemp = 200;
 unsigned int zielTemp = 200;
 unsigned int totalMilliLitres = 0;
 volatile byte WSpulseCount = 0;
-byte AktuellerUser = 1; //legt Startuser 1 fest  (Gast1)
 unsigned long auswahlZeit;
 int aktuellerModus = 0;
 unsigned int hell;
@@ -859,22 +858,22 @@ belohnungsMusik ()
   if (user.tag () > 2000 && user.getMusik () == 0)
     {
       user.setMusik (1);
-      mp3.playSpecific (AktuellerUser, 1);
+      mp3.playSpecific (user.aktuell, 1);
     }
   if (user.tag () > 2500 && user.getMusik () == 1)
     {
       user.setMusik (2);
-      mp3.playSpecific (AktuellerUser, 2);
+      mp3.playSpecific (user.aktuell, 2);
     }
   if (user.tag () > 3000 && user.getMusik () == 2)
     {
       user.setMusik (3);
-      mp3.playSpecific (AktuellerUser, 3);
+      mp3.playSpecific (user.aktuell, 3);
     }
   if (user.tag () > 3500 && user.getMusik () == 3)
     {
       user.setMusik (0);
-      mp3.playSpecific (AktuellerUser, 4);
+      mp3.playSpecific (user.aktuell, 4);
       ZD.showBMP ("/bmp/back02.bmp", 0, 0);
       userShow ();
     }
@@ -1320,7 +1319,7 @@ printerZapfEnde (unsigned int zahl)
       printer.println (" ml gezapft!");
       printer.setSize ('S');
       printer.println (user.gesamt ());
-      if (AktuellerUser == 3)
+      if (user.aktuell == 3)
 	{
 	  printer.setSize ('L');
 	  printer.println ("OPTIMAL!");

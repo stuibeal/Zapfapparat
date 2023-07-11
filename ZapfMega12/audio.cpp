@@ -13,7 +13,8 @@ audio::audio ()
   audioMillis = millis ();
   _mp3 = nullptr;
   _SMF = nullptr;
-  state = 0;
+  state = AUDIO_RESTART;
+  standby = 0;
 }
 
 audio::~audio ()
@@ -59,8 +60,6 @@ audio::pruefe ()
 	  if ((status->code == MD_YX5300::STS_FILE_END)
 	      && (_SMF->isEOF () || (_SMF->getTrackCount () == 0)))
 	    {
-	      //strcpy(debugmessage, "Audio soll aus sein-1--");
-
 	      digitalWrite (AUDIO_AMP, LOW); //AMP aus
 	      audioMillis = millis ();
 	      state = AUDIO_SHUTDOWN;
@@ -72,7 +71,6 @@ audio::pruefe ()
       if (wartezeit > AUDIO_WARTEZEIT)
 	{
 	  digitalWrite (AUDIO_BOARD, LOW);  //board (midi usw) aus
-	  //strcpy(debugmessage, "Audio aus---");
 	  audioMillis = millis ();
 	  state = AUDIO_OFF;
 	}
@@ -84,7 +82,6 @@ audio::pruefe ()
 
     case AUDIO_RESTART: // audio soll wieder an sein
       _mp3->check ();
-      //strcpy(debugmessage, "Audio soll an sein---");
       digitalWrite (MIDI_RESET, HIGH); //midi Reset einschalten
       digitalWrite (AUDIO_BOARD, HIGH);
       audioMillis = millis ();
@@ -102,11 +99,10 @@ audio::pruefe ()
       break;
 
     case AUDIO_AMP_ON:
-      if (wartezeit > AUDIO_WARTEZEIT)
+      if (wartezeit > AUDIO_ON_WARTEZEIT)
 	{
 	  _mp3->check ();
 	  digitalWrite (AUDIO_AMP, HIGH);
-	  //strcpy(debugmessage, "Audio an---");
 	  audioMillis = millis ();
 	  if (standby)
 	    {
@@ -183,5 +179,5 @@ audio::mp3Play (int folder, int song)
 void
 audio::bing ()
 {
-  _mp3->playTrack(1); //BING!
+  _mp3->playTrack (1); //BING!
 }
