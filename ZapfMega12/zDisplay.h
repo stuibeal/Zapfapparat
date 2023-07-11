@@ -70,16 +70,18 @@
 #define LCD_RD A0 // LCD Read goes to Analog 0
 #define LCD_RESET A4 // Can alternately just connect to Arduino's reset pin
 // Assign human-readable names to some common 16-bit color values:
+//Hier RGB565 codierte Farben:
 #define BLACK   0x0000
-#define BLUE    0x001F
 #define RED     0xF800
 #define GREEN   0x07E0
-#define CYAN    0x07FF
-#define MAGENTA 0xF81F
-#define YELLOW  0xFFE0
 #define WHITE   0xFFFF
 #define WGRUEN  0x05AA
 #define ZGRUEN  0x06AB
+#define ZBRAUN  0xE6DA //dunkelbraun
+#define ZHELLBRAUN 0xEF3B //hell
+#define ZHELLGRUEN 	0x0428  //Zapf hell
+#define ZDUNKELGRUEN 	0x0326  //Zapf dunkel
+
 #define GREY    0x8410
 
 #ifndef min
@@ -136,7 +138,7 @@ private:
   read16 (File &f);
   uint32_t
   read32 (File &f);
-  char namebuf[32] = "/";   //BMP files in PIC Verzeichnis
+  char namebuf[32];   //BMP files in PIC Verzeichnis
   File root;
   int pathlen = 0;
   //File bmpfile;

@@ -20,6 +20,7 @@ zDisplay::zDisplay () :
   r = 0;
   g = 0;
   b = 0;
+  strcpy(namebuf, "/");
   MCUFRIEND_kbv _tft;
   // Der Constructor für das ganze
   //GFXcanvas1 myCanvas(60, 21);
