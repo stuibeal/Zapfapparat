@@ -44,14 +44,15 @@ audio::pruefePlaying ()
 void
 audio::pruefe ()
 {
-  unsigned int wartezeit = millis () - audioMillis;
+  unsigned long wartezeit = millis () - audioMillis;
   switch (state)
     {
     case AUDIO_ON: //Audio ist an
-      if (wartezeit > AUDIO_STANDBYZEIT)
+      if (wartezeit >= 12000)
 	{
 	  _mp3->check ();  //MP3 Player abfragen
 	  const MD_YX5300::cbData *status = _mp3->getStatus (); //statuspointer holen
+	  statuscode = status->code;
 	  /**
 	   * Wenn MP3 File End = true
 	   * UND
@@ -68,7 +69,7 @@ audio::pruefe ()
       break;
 
     case AUDIO_SHUTDOWN:
-      if (wartezeit > AUDIO_WARTEZEIT)
+      if (wartezeit >= AUDIO_WARTEZEIT)
 	{
 	  digitalWrite (AUDIO_BOARD, LOW);  //board (midi usw) aus
 	  audioMillis = millis ();
@@ -131,7 +132,8 @@ audio::pruefe ()
        (_SMF->getTrackCount() == 0),
        status->code, wartezeit,state);
        */
-      sprintf (debugmessage, "WZ: %5d S: %d", wartezeit, state);
+      sprintf (debugmessage, "WZ: %lu S: %d c: %u", wartezeit, state,
+	       statuscode);
     }
 
 }
@@ -171,13 +173,15 @@ audio::setStandby (bool stby)
 }
 
 void
-audio::mp3Play (int folder, int song)
+audio::mp3Play (uint8_t folder, uint8_t song)
 {
-
+  on ();
+  _mp3->playSpecific (folder, song);
 }
 
 void
 audio::bing ()
 {
+  on ();
   _mp3->playTrack (1); //BING!
 }

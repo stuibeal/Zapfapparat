@@ -589,7 +589,7 @@ waehlFunktionen ()
 
       if (kienmuehle > 9900)
 	{   //Plays songs from ordner 11
-	  mp3.playSpecific (11, kienmuehle - 9900);
+	  sound.mp3Play (11, kienmuehle - 9900);
 	}
 
     }
@@ -743,7 +743,7 @@ seltencheck (void)
   //DEBUGMSG(buf);
 
   hell = analogRead (helligkeitSensor);
-  inVoltage = temp.getInVoltage();
+  inVoltage = temp.getInVoltage ();
 
   //Hier checken ob was gespielt wird, ansonsten audio aus
   //audio.check();
@@ -951,12 +951,6 @@ loop ()
   //Valve Control
   valveControl (3);
 
-  sound.pruefe ();
-  if (DEBUG_A)
-    {
-      DEBUGMSG(sound.debugmessage);
-    }
-
   //Wenn die Wählscheibe betätigt wird
   if (digitalRead (WSready))
     {
@@ -982,12 +976,17 @@ loop ()
       waehlFunktionen ();
     }
 
-  if (SMF.isPaused () || user.getGodMode () == 0)
+  if (user.getGodMode () == 0)  //SMF.isPaused () ||
     {
       if ((millis () - oldTime > 1000))
 	{
 	  oldTime = millis ();
 	  anzeigeAmHauptScreen ();
+	  sound.pruefe ();
+	  if (DEBUG_A)
+	    {
+	      DEBUGMSG(sound.debugmessage);
+	    }
 
 	  //RTC_DCF.getDateTime(&dateTime);
 	  //printClock();
@@ -1033,7 +1032,7 @@ loop ()
 	  SMF.close ();
 	  midiSilence ();
 	  valveControl (2);
-	  sound.bing();
+	  sound.bing ();
 
 	  //Sollte er abgebrochen haben:
 	  if (totalMilliLitres < user.menge ())
@@ -1107,6 +1106,16 @@ valveControl (uint8_t onoff)
       valveZustand = 0; //ist zu
       digitalWrite (valveAuf, LOW);
       digitalWrite (valveZu, LOW);
+
+    }
+  if (onoff == 3 && valveZustand == 0)
+    {
+      if (analogRead (pressureSensor) < 400)
+	{
+	  digitalWrite (valveAuf, HIGH);
+	  delay (500);
+	  digitalWrite (valveAuf, LOW);
+	}
     }
 }
 
@@ -1183,13 +1192,13 @@ void
 anzeigeAmHauptScreen (void)
 {
   //DEBUGMSG("vor transmitBlocktemp");
-  ZD.print_val (temp.getBlock1Temp (), 20, 100, 3, 1);
+  ZD.print_val2 (temp.getBlock1Temp (), 20, 100, 3, 1);
   //DEBUGMSG("vor transmitauslauf");
   //DEBUGMSG("vor transmitauslauf");
-  ZD.print_val (temp.getBlock2Temp (), 20, 125, 1, 1);
-  ZD.print_val (totalMilliLitres, 20, 150, 1, 0);
+  ZD.print_val2 (temp.getBlock2Temp (), 20, 125, 1, 1);
+  ZD.print_val2 (totalMilliLitres, 20, 150, 1, 0);
   ZD.printText ();
-
+  ZD._tft.println (analogRead (pressureSensor));
 
 }
 
@@ -1276,7 +1285,7 @@ void
 printerSleep (void)
 {
   printer.sleep ();
-  digitalWrite (PRINTER_ON_PIN, LOW);
+  //digitalWrite (PRINTER_ON_PIN, LOW);
 }
 
 /*
@@ -1286,6 +1295,9 @@ void
 printerWakeUp (void)
 {
   digitalWrite (PRINTER_ON_PIN, HIGH);
+  //delay(1000);
+  //printer.begin();
+  //delay(1000);
   printer.wake ();       // MUST wake() before printing again, even if reset
   printer.setDefault (); // Restore printer to defaults
 }
@@ -1313,7 +1325,7 @@ printerZapfEnde (unsigned int zahl)
     {
       printerWakeUp ();
       printer.justify ('C');
-      printer.setSize ('M');
+      printer.setSize ('S');
       printer.println (user.getName ());
       printer.print (zahl);
       printer.println (" ml gezapft!");
@@ -1435,12 +1447,15 @@ void
 printerSetup ()
 {
   pinMode (PRINTER_ON_PIN, OUTPUT);
-  pinMode (PRINTER_DTR, INPUT);
+  //pinMode (PRINTER_DTR, INPUT);
   digitalWrite (PRINTER_ON_PIN, HIGH);
   Serial2.begin (9600);
+  delay (1000);
   printer.begin ();
+  delay (1000);
+  printer.println ("HONK");
   printer.sleep ();
-  digitalWrite (PRINTER_ON_PIN, LOW);
+  //digitalWrite (PRINTER_ON_PIN, LOW);
 
 }
 

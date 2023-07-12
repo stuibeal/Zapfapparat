@@ -303,12 +303,9 @@ void
 zDisplay::print_val2 (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsroutine zum Daten anzeigen
 {
   char buf[10];
-  _tft.println ("vor canvas");
-  delay (5000);
   _canvas->setTextSize (1);
   _canvas->fillScreen (0);
-  _canvas->setCursor (1, 20);
-  _tft.println ("nach canvas");
+  _canvas->setCursor (2, 20);
   if (komma == 1)
     {
       sprintf (buf, "%d,%02d", val / 100, val % 100);
@@ -323,21 +320,21 @@ zDisplay::print_val2 (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsr
       _canvas->setFont (FETT);
       _canvas->print (buf);
       _tft.drawBitmap (x, y, _canvas->getBuffer (), _canvas->width (),
-		       _canvas->height (), BLACK, ZGRUEN);
+		       _canvas->height (), BLACK, ZDUNKELGRUEN);
     }
   else //weiß
     {
       _canvas->setFont (NORMAL);
       _canvas->print (buf);
       _tft.drawBitmap (x, y, _canvas->getBuffer (), _canvas->width (),
-		       _canvas->height (), WHITE, ZGRUEN);
+		       _canvas->height (), WHITE, ZDUNKELGRUEN);
     }
   if (c == 2) //rot
     {
       _canvas->setFont (NORMAL);
       _canvas->print (buf);
       _tft.drawBitmap (x, y, _canvas->getBuffer (), _canvas->width (),
-		       _canvas->height (), RED, ZGRUEN);
+		       _canvas->height (), RED, ZDUNKELGRUEN);
     }
 }
 
@@ -473,15 +470,5 @@ zDisplay::infoscreen (tempsens *temp, benutzer *user)
   _tft.print ("zulauf:");
   _tft.println (temp->zulaufTemp);
   temp->request ();
-  int16_t x1, y1;
-  uint16_t w, h;
-  _tft.getTextBounds ("00,00", 0, 0, &x1, &y1, &w, &h);
-  //print_val2 (w, 10, 200, 0, 0);
-  //print_val2 (h, 10, 230, 0, 1);
-
-  _tft.drawBitmap (10, 200, _canvas->getBuffer (), _canvas->width (),
-		   _canvas->height (), BLACK, ZHELLGRUEN);
-  _tft.drawBitmap (10, 230, _canvas->getBuffer (), _canvas->width (),
-		   _canvas->height (), BLACK, ZDUNKELGRUEN);
 
 }

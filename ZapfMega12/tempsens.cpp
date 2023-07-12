@@ -138,7 +138,7 @@ unsigned int
 tempsens::getBlock2Temp ()
 {
   block2Temp = iDataGet (GET_AUSLAUF_TEMP);
-  return block1Temp;
+  return block2Temp;
 }
 
 uint16_t
