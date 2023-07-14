@@ -32,7 +32,7 @@
 
 //Input Pins
 #define helligkeitSensor  A6
-#define pressureSensor    A7
+#define PRESSURE_SENS_PIN    A7
 
 // Taster etc
 #define taste1            37  //Taster unterm Drehencoder (hardwareentprellt)
@@ -45,9 +45,9 @@
 
 //Output Pins
 #define otherMcOn         A5  //schaltet die anderen Microcontroller mit P-Mosfet ein
-#define valveAuf          42  //mach auf den Hahn, geht hardwaremäßig nur wenn valveZu aus
-#define valveZu           44  //mach zu den Hahn, geht hardwaremäßig nur wenn valveAuf aus
-#define oldPump           5   // PWM outputpin Pumpe -> Reinigung!
+#define VALVE_AUF_PIN          42  //mach auf den Hahn, geht hardwaremäßig nur wenn valveZu aus
+#define VALVE_ZU_PIN           44  //mach zu den Hahn, geht hardwaremäßig nur wenn valveAuf aus
+#define CLEAN_PUMP_PIN           5   // PWM outputpin Pumpe -> Reinigung!
 #define taste1Pwm         6   //Tastenbeleuchtung via Optokoppler (12VLed eingebaut)
 #define taste2Pwm         8   //Tastenbeleuchtung via Optokoppler (12VLed eingebaut)
 #define lcdBacklightPwm   4   //Hintergrundbeleuchtung Display

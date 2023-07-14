@@ -31,10 +31,7 @@
 
 #include "ZapfMega12.h"
 
-// SD-KARTE
-SdFat SD;
-
-// DISPLAY
+SdFat SD;  // SD-KARTE
 zDisplay ZD;   // neues zDisplay Objekt
 
 //Hier Variablen definieren
@@ -50,8 +47,6 @@ unsigned int hell;
 
 unsigned long oldTime = millis ();
 unsigned long nachSchauZeit = 0;
-unsigned int valveZustand = 0;
-unsigned long valveZeit;
 unsigned long hellZeit;
 unsigned int hellCount = 0;
 unsigned int dunkelCount = 0;
@@ -135,29 +130,15 @@ Encoder Dreher (rotaryDT, rotaryCLK); //PINS für Drehgeber
 volatile int DreherKnopfStatus = 0; //Da wird der Statatus vom Drehgeberknopf gelesen
 long oldPosition = 0; //Fuer Drehgeber
 
-//DCF RealTimeClock
-DateTime dateTime = DateTime (0, 1, 1, DateTime::SATURDAY, 0, 0, 0);
-
-//Printer
-Adafruit_Thermal printer (&Serial2, PRINTER_DTR); //Hardware Serial2
-
-//PWM Board
+DateTime dateTime = DateTime (0, 1, 1, DateTime::SATURDAY, 0, 0, 0); //DCF RealTimeClock DateTime Objekt
+Adafruit_Thermal printer (&Serial2, PRINTER_DTR); //PRINTERm, Hardware Serial2 DTR pin
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver (); // called this way, it uses the default address 0x40
-
-//MIDI SMF (Standard Midi File) Player
-const char fileName[] = "E2M3.mid";  //zum Testen
-MD_MIDIFile SMF;
-
-//MP3 MD_YX5300
-MD_YX5300 mp3 (MP3Stream); // starte Stream
-
-//Temperatursensorik
-tempsens temp;
-
-//Benutzer
-benutzer user;
-
-audio sound;
+MD_MIDIFile SMF;  //standard midi file objekt
+MD_YX5300 mp3 (MP3Stream); // starte MP3 Stream
+tempsens temp;	//Temperatursensorik
+benutzer user;  //Benutzer
+audio sound; 	//Audioobjekt
+zValve ventil; // Ventilsteuerung, Druck, Reinigungspumpe
 
 unsigned int tempAnzeigeZeit = millis (); //für zehnsekündige Temperaturanzeige
 
@@ -170,16 +151,9 @@ setup (void)
 
   //Pins herrichten
   pinMode (helligkeitSensor, INPUT);
-  pinMode (pressureSensor, INPUT);
-
   pinMode (lcdBacklightPwm, OUTPUT); //LCD Display Hintergrundbeleuchtung
   analogWrite (lcdBacklightPwm, 128);
-  pinMode (valveAuf, OUTPUT);
-  digitalWrite (valveAuf, LOW);
-  pinMode (valveZu, OUTPUT);
-  digitalWrite (valveZu, LOW);
-  pinMode (oldPump, OUTPUT);
-  digitalWrite (oldPump, LOW);
+
   // Tasten in der Front
   pinMode (taste1, INPUT);
   pinMode (taste2, INPUT);
@@ -187,8 +161,6 @@ setup (void)
   pinMode (taste2Pwm, OUTPUT);
   analogWrite (taste1Pwm, 10);
   analogWrite (taste2Pwm, 10);
-
-  //Check if DEBUG beide Tasten bei Start gedrückt: DEBUG MODE
 
   //Serial.begin(115200); //kein Serial!!! MIDI!!!!!!!!!
 
@@ -285,22 +257,10 @@ setup (void)
   SMF.setFileFolder ("/midi/");
   SMF.looping (true);
 
-  //Valve Test
-  ZD.println ("Start Test Magnetventil alt");
-  pinMode (oldValve, OUTPUT); // Magnetventil ausgang schalten
-  digitalWrite (oldValve, HIGH);
-  delay (100);
-  digitalWrite (oldValve, LOW);
-  digitalWrite (valveZu, HIGH);
-  delay (100);
-  digitalWrite (valveZu, LOW);
-  delay (500);
-  digitalWrite (valveAuf, HIGH);
-  delay (500);
-  digitalWrite (valveAuf, LOW);
-  digitalWrite (oldPump, HIGH);
-  delay (100);
-  digitalWrite (oldPump, LOW);
+  //Valve
+  ventil.begin ();
+  ventil.check ();   //dann sollte das aufgehen
+  ZD.println ("Ventilsteuerung aktiviert");
 
   //DCF RTC
   RTC_DCF.begin ();
@@ -346,7 +306,7 @@ waehlscheibe ()
       //wenn man sich verwählt hat bei der Nummerneingabe wirds gelöscht
       kienmuehle = 0;
 
-      valveControl (1); //mach auf die Dinge
+      ventil.openValve ();
       analogWrite (taste2Pwm, 10);
       //geh mal Zapfen
       iBefehl (tempi2c, beginZapf);
@@ -532,13 +492,27 @@ waehlFunktionen ()
       break;
     case 9413: //Telefonnummer
 	       //Start Reinigungsprogramm
-      ZD.printText ();
-      ZD._tft.println ("REINIGUNGSPROGRAMM");
-      iBefehl (tempi2c, zapfenStreich);
-      analogWrite (oldPump, 255); //pumpe an
-      valveControl (1);
-      delay (10000000);
-      ZD.println ("START");
+      { //hier braces damit die variablen allein hier sind
+	ZD.printText ();
+	ZD._tft.println ("        REINIGUNGSPROGRAMM");
+	iBefehl (tempi2c, zapfenStreich);
+	ventil.cleanPumpOn ();
+	unsigned long waitingTime = millis ();
+	int sekunden = 0;
+	while (!digitalRead (taste1))
+	  {
+	    if (waitingTime - millis () >= 1000)
+	      {
+		waitingTime = millis ();
+		sekunden++;
+		ZD.printText ();
+		ZD._tft.println (sekunden);
+	      }
+	    ventil.cleanPumpOff ();
+	    ZD.printText ();
+	    ZD._tft.println ("ENDE REINIGUNGSPROGRAMM      ");
+	  }
+      }
       break;
 
     default:
@@ -653,8 +627,8 @@ anfang (void)
 
   ZD.showBMP ("/bmp/back01.bmp", 0, 0);
 
-  analogWrite (taste2Pwm, 10);
-  analogWrite (taste1Pwm, 10);
+  analogWrite (TASTE2_LED, 10);
+  analogWrite (TASTE1_LED, 10);
   analogWrite (lcdBacklightPwm, 20);
   for (uint8_t pwmnum = 1; pwmnum < 11; pwmnum++)
     {
@@ -773,7 +747,7 @@ seltencheck (void)
 
       for (int x = 255; x >= 0; x--)
 	{
-	  analogWrite (taste1Pwm, x);
+	  analogWrite (TASTE1_LED, x);
 	  delay (50);
 	}
 
@@ -796,10 +770,12 @@ seltencheck (void)
       iBefehl (tempi2c, zapfenStreich);
       user.gesamtMengeTag = 0;
       aktuellerTag++;
-      digitalWrite (valveAuf, LOW);
-      digitalWrite (valveZu, HIGH);
-      delay (9000);
-      digitalWrite (valveZu, LOW);
+      ventil.closeValve ();
+      for (int x = 0; x <= 11; x++)
+	{
+	  ventil.check ();
+	  delay (1000);
+	}
 
       delay (130000); //dann ist gute nach Freunde aus
       mp3.playSpecific (12, aktuellerTag); //lied 2-7
@@ -949,7 +925,7 @@ loop ()
   Drehgeber ();
 
   //Valve Control
-  valveControl (3);
+  ventil.check ();
 
   //Wenn die Wählscheibe betätigt wird
   if (digitalRead (WSready))
@@ -1031,7 +1007,7 @@ loop ()
 	    }
 	  SMF.close ();
 	  midiSilence ();
-	  valveControl (2);
+	  ventil.check ();
 	  sound.bing ();
 
 	  //Sollte er abgebrochen haben:
@@ -1057,7 +1033,7 @@ loop ()
 	  beginZapfBool = false;
 	  sound.setStandby (beginZapfBool);
 	  iBefehl (tempi2c, endZapf);
-	  valveControl (2);
+	  ventil.check ();
 	  for (uint8_t pwmnum = 1; pwmnum < 11; pwmnum++)
 	    {
 	      pwm.setPWM (pwmnum, 0, 64); //alles leicht einschalten
@@ -1067,56 +1043,13 @@ loop ()
       if ((user.menge () - totalMilliLitres) < 30)
 	{
 	  iBefehl (tempi2c, kurzBevorZapfEnde);
-	  valveControl (2); //mach den Hahn zu
+	  ventil.check ();
 	}
     }
 
   //Check Knöpfe (Benutzer) -> Display up -> Zapfprogramm
 
   //Zwischendurch mal was protokollieren (alle 5 minuten oder so)
-}
-
-void
-valveControl (uint8_t onoff)
-{
-  if ((onoff == 1) && (valveZustand == 0))
-    {
-      valveZeit = millis ();
-      digitalWrite (valveZu, LOW);
-      digitalWrite (valveAuf, HIGH);
-      valveZustand = 1; //(macht grad auf)
-    }
-  if ((valveZustand == 1) && ((millis () - valveZeit) > 9000))
-    { //9 sec. damits auch ganz offen ist
-      valveZeit = millis ();
-      valveZustand = 2; //(offen, aus)
-      digitalWrite (valveAuf, LOW);
-    }
-  if ((onoff == 2) && (valveZustand == 2))
-    {
-      valveZeit = millis ();
-      valveZustand = 3; //schliesst gerade
-      digitalWrite (valveAuf, LOW); //sicherheitshalber, geht aber schon in Hardware nicht
-      digitalWrite (valveZu, HIGH);
-    }
-
-  if ((valveZustand == 3) && ((millis () - valveZeit) > 9000))
-    {
-      valveZeit = millis ();
-      valveZustand = 0; //ist zu
-      digitalWrite (valveAuf, LOW);
-      digitalWrite (valveZu, LOW);
-
-    }
-  if (onoff == 3 && valveZustand == 0)
-    {
-      if (analogRead (pressureSensor) < 400)
-	{
-	  digitalWrite (valveAuf, HIGH);
-	  delay (500);
-	  digitalWrite (valveAuf, LOW);
-	}
-    }
 }
 
 void
@@ -1198,7 +1131,7 @@ anzeigeAmHauptScreen (void)
   ZD.print_val2 (temp.getBlock2Temp (), 20, 125, 1, 1);
   ZD.print_val2 (totalMilliLitres, 20, 150, 1, 0);
   ZD.printText ();
-  ZD._tft.println (analogRead (pressureSensor));
+  ZD._tft.println (ventil.getPressure ());
 
 }
 

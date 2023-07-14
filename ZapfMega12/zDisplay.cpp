@@ -11,7 +11,7 @@
 #include "zDisplay.h"
 
 zDisplay::zDisplay () :
-    MCUFRIEND_kbv (0, 0, 0, 0, 0), GFXcanvas1 (60,22)
+    MCUFRIEND_kbv (0, 0, 0, 0, 0), GFXcanvas1 (65,22)
 
 //, GFXcanvas1(60,22)
 
@@ -24,7 +24,7 @@ zDisplay::zDisplay () :
   strcpy (namebuf, "/");
   MCUFRIEND_kbv _tft;  //tft objekt
   //myCanvas = new
-  _canvas = new GFXcanvas1 (60, 21);
+  _canvas = new GFXcanvas1 (65, 22);
 
 }
 

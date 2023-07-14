@@ -35,6 +35,7 @@
 #include "benutzer.h"
 #include "tempsens.h"
 #include "audio.h"
+#include "zValve.h"
 
 // Includes aus
 
@@ -73,7 +74,6 @@ void seltencheck(void) ;
 void belohnungsMusik() ;
 void infoseite(void) ;
 void loop() ;
-void valveControl(uint8_t onoff) ;
 void userShow(void) ;
 void iBefehl(uint8_t empfaenger, uint8_t befehl) ;
 void iDataSend(byte empfaenger, byte befehl, unsigned int sendedaten) ;
