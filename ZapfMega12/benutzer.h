@@ -19,7 +19,7 @@ public:
 	virtual ~benutzer();
 	uint8_t aktuell = 1;
     String username[arrayGroesse] =
-    		{ "Honk", "Gast", "NO-Y", "DJ R. Kentn", "Ebi", "Maex", "Didi", "Beda", "Basi", "Al" };
+    		{ "Honk", "Christoph", "NO-Y", "DJ R. Kentn", "Ebi", "Maex", "Didi", "Beda", "Basi", "Al" };
     uint16_t gesamtMengeTotal;
     uint16_t gesamtMengeTag;
     uint16_t bierTemp[arrayGroesse];

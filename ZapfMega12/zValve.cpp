@@ -36,11 +36,25 @@ zValve::begin ()
   pinMode (PRESSURE_SENS_PIN, INPUT);
   valveMillis = millis();
 }
-
+/*
+ * Druck
+ * atue		wert
+ * 0	120
+ * 1	270
+ * 1,2	290
+ * 1,4	321
+ * 1,6	350
+ * 1,8	380
+ * 2	405
+ * 2,2	440
+ * 2,4	470
+ * 2,5	480
+ * 3	552
+ */
 int
 zValve::getPressure ()
 {
-  druck = digitalRead (PRESSURE_SENS_PIN);
+  druck = analogRead (PRESSURE_SENS_PIN);
   return druck;
 }
 

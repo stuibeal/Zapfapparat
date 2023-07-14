@@ -497,21 +497,23 @@ waehlFunktionen ()
 	ZD._tft.println ("        REINIGUNGSPROGRAMM");
 	iBefehl (tempi2c, zapfenStreich);
 	ventil.cleanPumpOn ();
+	delay(500); //zum taste loslassen!
 	unsigned long waitingTime = millis ();
 	int sekunden = 0;
 	while (!digitalRead (taste1))
 	  {
-	    if (waitingTime - millis () >= 1000)
+	    if (millis()-waitingTime >= 1000)
 	      {
 		waitingTime = millis ();
 		sekunden++;
 		ZD.printText ();
 		ZD._tft.println (sekunden);
 	      }
-	    ventil.cleanPumpOff ();
-	    ZD.printText ();
-	    ZD._tft.println ("ENDE REINIGUNGSPROGRAMM      ");
+
 	  }
+	ventil.cleanPumpOff ();
+	ZD.printText ();
+	ZD._tft.println ("ENDE REINIGUNGSPROGRAMM      ");
       }
       break;
 
