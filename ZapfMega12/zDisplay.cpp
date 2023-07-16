@@ -11,7 +11,7 @@
 #include "zDisplay.h"
 
 zDisplay::zDisplay () :
-    MCUFRIEND_kbv (0, 0, 0, 0, 0), GFXcanvas1 (65,22)
+    MCUFRIEND_kbv (0, 0, 0, 0, 0), GFXcanvas1 (65, 22)
 
 //, GFXcanvas1(60,22)
 
@@ -90,9 +90,9 @@ zDisplay::read32 (File &f)
 
 /*!
  * @brief Liest BMPs von der SD Karte und gibt sie aus
- * @param nm
- * @param x
- * @param y
+ * @param nm	Filename
+ * @param x	X-Position am Screen
+ * @param y	Y-Position am Screen
  * @return
  */
 uint8_t
@@ -305,7 +305,7 @@ zDisplay::print_val2 (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsr
   char buf[10];
   _canvas->setTextSize (1);
   _canvas->fillScreen (0);
-  _canvas->setCursor (2, 20);
+  _canvas->setCursor (0, 20);  //Text Cursor bei Fonts ist unten
   if (komma == 1)
     {
       sprintf (buf, "%d,%02d", val / 100, val % 100);
@@ -314,35 +314,62 @@ zDisplay::print_val2 (int val, int16_t x, int16_t y, int c, bool komma) //Hilfsr
     {
       sprintf (buf, "%d", val);
     }
-
   if (c == 1) //schwarz fett
     {
-      _canvas->setFont (FETT);
+      _canvas->setFont (&FETT);
       _canvas->print (buf);
       _tft.drawBitmap (x, y, _canvas->getBuffer (), _canvas->width (),
 		       _canvas->height (), BLACK, ZDUNKELGRUEN);
     }
   else //weiß
     {
-      _canvas->setFont (NORMAL);
+      _canvas->setFont (&NORMAL);
       _canvas->print (buf);
       _tft.drawBitmap (x, y, _canvas->getBuffer (), _canvas->width (),
 		       _canvas->height (), WHITE, ZDUNKELGRUEN);
     }
   if (c == 2) //rot
     {
-      _canvas->setFont (NORMAL);
+      _canvas->setFont (&NORMAL);
       _canvas->print (buf);
       _tft.drawBitmap (x, y, _canvas->getBuffer (), _canvas->width (),
 		       _canvas->height (), RED, ZDUNKELGRUEN);
     }
 }
 
-/*
- void zDisplay::fillScreen(unsigned short int color) {
- _tft.fillScreen(color);
- }
+/**
+ * Schreibt einen INT in einen Canvas und Zeigt ihn an
+ * @param val 	der anzuzeigende Wert
+ * @param x	X Position des Canvas am Screen
+ * @param y	Y Position des Canvas am Screen
+ * @param textColor	Textfarbe
+ * @param backColor	Hintergrundfarbe
+ * @param _pfont	Pointer zur Schriftart
+ * @param komma		Darstellung mit oder ohne Komma (def KOMMA/GANZZAHL)
  */
+void
+zDisplay::printVal (int val, int16_t x, int16_t y, uint16_t textColor,
+		    uint16_t backColor, const GFXfont *_pfont, bool komma) //Hilfsroutine zum Daten anzeigen
+{
+  char buf[10];
+  _canvas->setTextSize (1);
+  _canvas->fillScreen (0);
+  _canvas->setCursor (0, 20);  //Text Cursor bei Fonts ist unten
+
+  if (komma)
+    {
+      sprintf (buf, "%d,%02d", val / 100, val % 100);
+    }
+  else
+    {
+      sprintf (buf, "%d", val);
+    }
+
+  _canvas->setFont (_pfont);
+  _canvas->print (buf);
+  _tft.drawBitmap (x, y, _canvas->getBuffer (), _canvas->width (),
+		   _canvas->height (), textColor, backColor);
+}
 
 void
 zDisplay::setCursor (int16_t x, int16_t y)
@@ -363,7 +390,11 @@ zDisplay::printInt (uint16_t wertInt)
   _tft.println (wert);
 
 }
-
+/**
+ * Hilfsroutine um die Userdaten anzuzeigen. Sinnvoll nachdem
+ * der User gewählt hat
+ * @param user 	Pointer zum Benutzerobjekt
+ */
 void
 zDisplay::userShow (benutzer *user)
 {
@@ -386,13 +417,13 @@ zDisplay::userShow (benutzer *user)
     }
   showBMP (namebuf, 300, 50);
   _tft.setTextSize (1);
-  _tft.setFont (FETT);
+  _tft.setFont (&FETT);
   _tft.setTextColor (ZGRUEN);
   _tft.setCursor (300, 175);
   //_tft.print(*userName);
   _tft.print (user->getName ()); //konvertiert den Pointer von userName in c-String
   //_tft.print(user->getName()->c_str());  //konvertiert den Pointer von userName in c-String
-  _tft.setFont (NORMAL);
+  _tft.setFont (&NORMAL);
   int x = 300;
   int y = 210;
   _tft.fillRect (280, 190, 200, 130, ZGRUEN);
@@ -437,7 +468,7 @@ void
 zDisplay::infoscreen (tempsens *temp, benutzer *user)
 {
   temp->request ();
-  _tft.setFont (NORMAL);
+  _tft.setFont (&NORMAL);
   _tft.fillScreen (BLACK);
   _tft.setTextColor (WHITE);
   _tft.setTextSize (1);

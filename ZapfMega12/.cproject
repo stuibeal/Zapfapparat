@@ -12,7 +12,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" cleanCommand="rm -f" description="" id="io.sloeber.core.sketch.0" name="Release" optionalBuildProperties="" parent="io.sloeber.core.configuration.release">
+				<configuration artifactName="${ProjName}" buildProperties="" cleanCommand="rm -f" description="" id="io.sloeber.core.sketch.0" name="Release" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.dockerdpath=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="io.sloeber.core.configuration.release">
 					<folderInfo id="io.sloeber.core.sketch.0." name="/" resourcePath="">
 						<toolChain id="io.sloeber.core.toolChain.release.1042367435" name="Arduino Toolchain (Sloeber edition)" superClass="io.sloeber.core.toolChain.release">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="io.sloeber.targetplatform.1803097876" name="Arduino Target" osList="all" superClass="io.sloeber.targetplatform"/>
@@ -24,6 +24,7 @@
 							<tool id="io.sloeber.tool.sketch.compiler.cpp.751822455" name="Arduino C++ Compiler" superClass="io.sloeber.tool.sketch.compiler.cpp">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.cpp.sketch.option.incpath.1636350666" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/MD_MIDIFile/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/common}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/SPI/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/Adafruit_Thermal_Printer_Library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/Adafruit_PWM_Servo_Driver_Library}&quot;"/>
@@ -46,6 +47,7 @@
 							<tool id="io.sloeber.tool.compiler.c.694633267" name="Arduino C Compiler" superClass="io.sloeber.tool.compiler.c">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.c.sketch.option.incpath.1194005982" name="Include Paths (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/MD_MIDIFile/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/common}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/SPI/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/Adafruit_Thermal_Printer_Library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega12/libraries/Adafruit_PWM_Servo_Driver_Library}&quot;"/>

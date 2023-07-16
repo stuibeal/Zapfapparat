@@ -11,7 +11,7 @@
 #include "Wire.h"
 #include <OneWire.h> //alte Version nehmen!!!!!!!
 #include "DS18B20.h"  //DS18B20_RT vom Rob Tilaart
-#include "gemein.h"
+#include "./common/gemein.h"
 // One Wire Temperatursensoren Pins
 const uint8_t ONE_WIRE_BUS30 = 30;
 const uint8_t ONE_WIRE_BUS32 = 32;

@@ -66,6 +66,24 @@ const uint8_t TASTE2_LED = 8;
 #define BEEP_OUT          11  // beeper out -> not really used?
 #define MIDI_RESET        A14 // Reset Knopf vom SCB-7 (high: reset)
 
+// Darstellung
+#define BLACK   0x0000
+#define RED     0xF800
+#define GREEN   0x07E0
+#define WHITE   0xFFFF
+#define WGRUEN  0x05AA
+#define ZGRUEN  0x06AB
+#define ZBRAUN  0xE6DA //dunkelbraun
+#define ZHELLBRAUN 0xEF3B //hell
+#define ZHELLGRUEN 	0x0428  //Zapf hell
+#define ZDUNKELGRUEN 	0x0326  //Zapf dunkel
+#define GREY    0x8410
+#define NORMAL FreeSans12pt7b
+#define FETT FreeSansBold12pt7b
+#define KOMMA 1
+#define GANZZAHL 0
+
+
 
 void setHardwareConstants(void);
 void setBenutzerDaten(void);

@@ -31,11 +31,12 @@
 #include <Adafruit_PWMServoDriver.h>   //PWM LED wählscheibe
 #include "./zLibraries/RTC_DCF/DateTime.h"   // ELV RTC mit DCF
 #include "./zLibraries/RTC_DCF/RealTimeClock_DCF.h"
-#include <Adafruit_Thermal.h> //Thermal Printer
+#include "./zLibraries/zPrinter/zPrinter.h"
 #include "benutzer.h"
 #include "tempsens.h"
 #include "audio.h"
 #include "zValve.h"
+
 
 // Includes aus
 
@@ -81,15 +82,6 @@ void i2cIntDataSend(byte empfaenger, byte befehl, unsigned int sendedaten) ;
 void flowDataSend(uint8_t befehl, uint8_t option1, uint8_t option2, 		uint16_t wert) ;
 void anzeigeAmHauptScreen(void) ;
 void dataLogger(void) ;
-void printerSleep(void) ;
-void printerWakeUp(void) ;
-void printerButtonPressed() ;
-void printerZapfEnde(unsigned int zahl) ;
-void printerErrorZapfEnde(unsigned int zahl) ;
-void printMessage(String printMessage) ;
-void printFeed(int feedrate) ;
-void printerTest() ;
-void printerSetup() ;
 void UserDataShow() ;
 void Drehgeber() ;
 void Einstellerumsteller_ISR() ;

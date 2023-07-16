@@ -15,6 +15,7 @@ audio::audio ()
   _SMF = nullptr;
   state = AUDIO_RESTART;
   standby = 0;
+  statuscode =0;
 }
 
 audio::~audio ()

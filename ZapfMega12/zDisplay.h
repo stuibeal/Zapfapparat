@@ -23,7 +23,7 @@
 
 #include "Arduino.h"
 #include "SdFat.h"
-#include "gemein.h"
+#include "./common/gemein.h"
 #include "stdio.h"
 #include <string.h>
 #include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
@@ -71,6 +71,9 @@
 #define LCD_RESET A4 // Can alternately just connect to Arduino's reset pin
 // Assign human-readable names to some common 16-bit color values:
 //Hier RGB565 codierte Farben:
+/*
+ *
+
 #define BLACK   0x0000
 #define RED     0xF800
 #define GREEN   0x07E0
@@ -81,17 +84,22 @@
 #define ZHELLBRAUN 0xEF3B //hell
 #define ZHELLGRUEN 	0x0428  //Zapf hell
 #define ZDUNKELGRUEN 	0x0326  //Zapf dunkel
-
 #define GREY    0x8410
+*
+*/
+
 
 #ifndef min
   #define min(a, b) (((a) < (b)) ? (a) : (b))
   #endif
 
-#define FONT "FreeSans12pt7b"
-#define BOLD "FreeSansBold12pt7b"
-#define NORMAL &FreeSans12pt7b
-#define FETT &FreeSansBold12pt7b
+//#define FONT "FreeSans12pt7b"
+//#define BOLD "FreeSansBold12pt7b"
+//#define NORMAL &FreeSans12pt7b
+//#define FETT &FreeSansBold12pt7b
+//#define KOMMA 1
+//#define GANZZAHL 0
+
 
 // SHOW BMP
 #define NAMEMATCH ""         // "" matches any name
@@ -116,6 +124,8 @@ class zDisplay : public MCUFRIEND_kbv, GFXcanvas1
   //void fillScreen(unsigned short int color);
   void
   print_val2 (int val, int16_t x, int16_t y, int c, bool komma);
+  void
+  printVal (int val, int16_t x, int16_t y, uint16_t textColor, uint16_t backColor, const GFXfont *_pfont, bool komma);
   void
   setCursor (int16_t x, int16_t y);
   void

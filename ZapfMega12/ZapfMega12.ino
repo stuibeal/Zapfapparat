@@ -35,7 +35,6 @@ SdFat SD;  // SD-KARTE
 zDisplay ZD;   // neues zDisplay Objekt
 
 //Hier Variablen definieren
-bool printerOn = true;
 byte aktuellerTag = 1;  //dann gehts mit der Musik aus
 unsigned int minTemp = 200;
 unsigned int zielTemp = 200;
@@ -131,7 +130,7 @@ volatile int DreherKnopfStatus = 0; //Da wird der Statatus vom Drehgeberknopf ge
 long oldPosition = 0; //Fuer Drehgeber
 
 DateTime dateTime = DateTime (0, 1, 1, DateTime::SATURDAY, 0, 0, 0); //DCF RealTimeClock DateTime Objekt
-Adafruit_Thermal printer (&Serial2, PRINTER_DTR); //PRINTERm, Hardware Serial2 DTR pin
+
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver (); // called this way, it uses the default address 0x40
 MD_MIDIFile SMF;  //standard midi file objekt
 MD_YX5300 mp3 (MP3Stream); // starte MP3 Stream
@@ -139,6 +138,7 @@ tempsens temp;	//Temperatursensorik
 benutzer user;  //Benutzer
 audio sound; 	//Audioobjekt
 zValve ventil; // Ventilsteuerung, Druck, Reinigungspumpe
+zPrinter drucker;
 
 unsigned int tempAnzeigeZeit = millis (); //für zehnsekündige Temperaturanzeige
 
@@ -187,7 +187,7 @@ setup (void)
   ZD.showBMP ("/bmp/z-logo.bmp", 200, 0);
 
   //Printer
-  printerSetup ();
+  drucker.initialise(&Serial2, &user, &buf[0]);
 
   //Temperaturfuehler
   temp.begin ();
@@ -277,12 +277,6 @@ setup (void)
   anfang ();
   oldTime = millis ();
   nachSchauZeit = millis ();
-
-  //printMessage("Z-Apfapparat Version 0.4");
-  //printMessage("ready!");
-  //printMessage("Prost!");
-  //printMessage("Ich weis nichts");  //programmiert von Käthe 30.7.22
-  //printFeed(4);
 
   SMF.load ("Ein-Prosit-1.mid");
   SMF.looping (false);
@@ -1015,12 +1009,12 @@ loop ()
 	  //Sollte er abgebrochen haben:
 	  if (totalMilliLitres < user.menge ())
 	    {
-	      printerErrorZapfEnde (totalMilliLitres);
+	      drucker.printerErrorZapfEnde (totalMilliLitres);
 	    }
 
 	  user.addBier (totalMilliLitres);
 
-	  printerZapfEnde (totalMilliLitres);
+	  drucker.printerZapfEnde (totalMilliLitres);
 	  UserDataShow ();
 	  beginZapfBool = false;
 	  sound.setStandby (beginZapfBool);
@@ -1127,7 +1121,8 @@ void
 anzeigeAmHauptScreen (void)
 {
   //DEBUGMSG("vor transmitBlocktemp");
-  ZD.print_val2 (temp.getBlock1Temp (), 20, 100, 3, 1);
+  //ZD.print_val2 (temp.getBlock1Temp (), 20, 100, 3, 1);
+  ZD.printVal (temp.getBlock1Temp (), 25, 100, WHITE, ZDUNKELGRUEN, &FETT, KOMMA);
   //DEBUGMSG("vor transmitauslauf");
   //DEBUGMSG("vor transmitauslauf");
   ZD.print_val2 (temp.getBlock2Temp (), 20, 125, 1, 1);
@@ -1216,183 +1211,6 @@ dataLogger (void)
 
 }
 
-void
-printerSleep (void)
-{
-  printer.sleep ();
-  //digitalWrite (PRINTER_ON_PIN, LOW);
-}
-
-/*
- * Command: wake up printer for action
- */
-void
-printerWakeUp (void)
-{
-  digitalWrite (PRINTER_ON_PIN, HIGH);
-  //delay(1000);
-  //printer.begin();
-  //delay(1000);
-  printer.wake ();       // MUST wake() before printing again, even if reset
-  printer.setDefault (); // Restore printer to defaults
-}
-
-/*
- * Command: run simple print job when button pressed
- */
-void
-printerButtonPressed ()
-{
-  printerWakeUp ();
-  printer.justify ('C');
-  printer.setSize ('L');
-  printer.println (F("Bier her"));
-  printer.println (F("Bier her"));
-  printer.println (F("oda I foll um"));
-  printer.feed (2);
-  printerSleep ();
-}
-
-void
-printerZapfEnde (unsigned int zahl)
-{
-  if (printerOn)
-    {
-      printerWakeUp ();
-      printer.justify ('C');
-      printer.setSize ('S');
-      printer.println (user.getName ());
-      printer.print (zahl);
-      printer.println (" ml gezapft!");
-      printer.setSize ('S');
-      printer.println (user.gesamt ());
-      if (user.aktuell == 3)
-	{
-	  printer.setSize ('L');
-	  printer.println ("OPTIMAL!");
-	}
-      printer.feed (20);
-      printerSleep ();
-    }
-}
-
-void
-printerErrorZapfEnde (unsigned int zahl)
-{
-  if (printerOn)
-    {
-      printerWakeUp ();
-      printer.justify ('C');
-      printer.setSize ('S');
-      sprintf (buf, "Du hast nur %d ml gezapft!", zahl);
-      printer.println (buf);
-      printer.setSize ('L');
-      printer.println (user.getName ());
-      printer.println ("Schämen Sie sich!");
-      printer.setSize ('S');
-      printer.feed (20);
-      printerSleep ();
-    }
-}
-
-void
-printMessage (String printMessage)
-{
-  printerWakeUp ();
-  printer.setSize ('S');
-  printer.justify ('L');
-  printer.println (printMessage);
-  printerSleep ();
-}
-
-void
-printFeed (int feedrate)
-{
-  printerWakeUp ();
-  printer.feed (feedrate);
-  printerSleep ();
-}
-
-/*
- * Command: run a test print job
- */
-void
-printerTest ()
-{
-  printerWakeUp ();
-
-  // Test inverse on & off
-  printer.inverseOn ();
-  printer.println (F("Inverse ON"));
-  printer.inverseOff ();
-
-  // Test character double-height on & off
-  printer.doubleHeightOn ();
-  printer.println (F("Double Height ON"));
-  printer.doubleHeightOff ();
-
-  // Set text justification (right, center, left) -- accepts 'L', 'C', 'R'
-  printer.justify ('R');
-  printer.println (F("Right justified"));
-  printer.justify ('C');
-  printer.println (F("Center justified"));
-  printer.justify ('L');
-  printer.println (F("Left justified"));
-
-  // Test more styles
-  printer.boldOn ();
-  printer.println (F("Bold text"));
-  printer.boldOff ();
-
-  printer.underlineOn ();
-  printer.println (F("Underlined text"));
-  printer.underlineOff ();
-
-  printer.setSize ('L');        // Set type size, accepts 'S', 'M', 'L'
-  printer.println (F("Large"));
-  printer.setSize ('M');
-  printer.println (F("Medium"));
-  printer.setSize ('S');
-  printer.println (F("Small"));
-
-  printer.justify ('C');
-  printer.println (F("normal\nline\nspacing"));
-  printer.setLineHeight (50);
-  printer.println (F("Taller\nline\nspacing"));
-  printer.setLineHeight (); // Reset to default
-  printer.justify ('L');
-
-  // CODE39 is the most common alphanumeric barcode:
-  printer.printBarcode ("LEAP", CODE39);
-  printer.setBarcodeHeight (100);
-  // Print UPC line on product barcodes:
-  printer.printBarcode ("123456789123", UPC_A);
-
-  // Print QR code bitmap:
-  //printer.printBitmap(qrcode_width, qrcode_height, qrcode_data);
-
-  printer.feed (2);
-  printerSleep ();
-}
-
-/*
- * Command: one-time setup
- */
-void
-printerSetup ()
-{
-  pinMode (PRINTER_ON_PIN, OUTPUT);
-  //pinMode (PRINTER_DTR, INPUT);
-  digitalWrite (PRINTER_ON_PIN, HIGH);
-  Serial2.begin (9600);
-  delay (1000);
-  printer.begin ();
-  delay (1000);
-  printer.println ("HONK");
-  printer.sleep ();
-  //digitalWrite (PRINTER_ON_PIN, LOW);
-
-}
 
 void
 UserDataShow ()
