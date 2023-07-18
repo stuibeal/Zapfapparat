@@ -8,14 +8,16 @@
 #include "audio.h"
 
 //Class c_audio
-audio::audio ()
+audio::audio () :
+    MD_YX5300 (MP3Stream), MD_MIDIFile ()
 {
   audioMillis = millis ();
   _mp3 = nullptr;
   _SMF = nullptr;
+  _sd = nullptr;
   state = AUDIO_RESTART;
   standby = 0;
-  statuscode =0;
+  statuscode = 0;
 }
 
 audio::~audio ()
@@ -26,8 +28,51 @@ audio::~audio ()
 void
 audio::starte (MD_MIDIFile *pSMF, MD_YX5300 *pmp3)
 {
+  //Überschreibt die Pointer mit den übergebenen Pointern
+  delete _mp3;
+  delete _SMF;
   _mp3 = pmp3;
   _SMF = pSMF;
+}
+void
+audio::starte (SdFat *pSD)
+{
+  _sd = pSD;
+  MIDI.begin (MIDI_SERIAL_RATE);
+  MD_YX5300 *_mp3 = new MD_YX5300 (MP3Stream);
+  MD_MIDIFile *_SMF = new MD_MIDIFile;
+
+  _SMF->begin (_sd);
+  _SMF->setMidiHandler (midiCallback);
+  _SMF->setSysexHandler (sysexCallback);
+  _SMF->setFileFolder ("/midi/");
+  _SMF->looping (true);
+
+  //MP3, Audio
+  //ZD.println ("Starte ROLAND SCB-7 daughterboard");
+  pinMode (MIDI_RESET, OUTPUT);  //MIDI Reset needs to be ~1 sec!
+  digitalWrite (MIDI_RESET, HIGH);
+
+  //ZD.println ("Starte Audio Amplificatrice");
+  pinMode (AUDIO_AMP, OUTPUT);
+  pinMode (AUDIO_BOARD, OUTPUT);
+
+  digitalWrite (AUDIO_BOARD, HIGH);
+
+  //MP3 Player
+  MP3Stream.begin (MD_YX5300::SERIAL_BPS);
+  _mp3->begin ();
+  _mp3->setSynchronous (true);
+  delay (500); //warten auf init
+  //ZD.println ("MP3 Player ready...");
+
+  digitalWrite (MIDI_RESET, LOW); // MIDI Reset off
+  delay (600);
+  digitalWrite (AUDIO_AMP, HIGH);
+  //ZD.println ("Harte Musik bereit");
+  _SMF->load ("Ein-Prosit-1.mid");
+  _SMF->looping (false);
+
 }
 bool
 audio::pruefePlaying ()
@@ -186,3 +231,88 @@ audio::bing ()
   on ();
   _mp3->playTrack (1); //BING!
 }
+
+void
+audio::midiCallback (midi_event *pev)
+// Called by the MIDIFile library when a file event needs to be processed
+// thru the midi communications interface.
+// This callback is set up in the setup() function.
+{
+  if ((pev->data[0] >= 0x80) && (pev->data[0] <= 0xe0))
+    {
+      MIDI.write (pev->data[0] | pev->channel);
+      MIDI.write (&pev->data[1], pev->size - 1);
+    }
+  else
+    MIDI.write (pev->data, pev->size);
+}
+
+void
+audio::sysexCallback (sysex_event *pev)
+// Called by the MIDIFile library when a system Exclusive (sysex) file event needs
+// to be processed through the midi communications interface. Most sysex events cannot
+// really be processed, so we just ignore it here.
+// This callback is set up in the setup() function.
+{
+  //DEBUG("\nS T", pev->track);
+  //DEBUGS(": Data");
+  //for (uint8_t i=0; i<pev->size; i++)
+  //  DEBUGX(" ", pev->data[i]);
+}
+
+void
+audio::midiSilence (void)
+// Turn everything off on every channel.
+// Some midi files are badly behaved and leave notes hanging, so between songs turn
+// off all the not#includees and sound
+{
+  midi_event ev;
+
+  // All sound off
+  // When All Sound Off is received all oscillators will turn off, and their volume
+  // envelopes are set to zero as soon as possible.
+  ev.size = 0;
+  ev.data[ev.size++] = 0xb0;
+  ev.data[ev.size++] = 120;
+  ev.data[ev.size++] = 0;
+
+  for (ev.channel = 0; ev.channel < 16; ev.channel++)
+    midiCallback (&ev);
+}
+
+void
+audio::midiNextEvent (void)
+{
+  if (isOn ())
+    {
+      if (!_SMF->isEOF ())
+	{
+	  _SMF->getNextEvent (); // Play MIDI data
+	}
+    }
+  if (_SMF->isEOF ())
+    {
+      _SMF->close ();
+      midiSilence ();
+    }
+
+}
+
+void
+audio::loadLoopMidi (const char *midiFile)
+{
+  _SMF->close ();
+  _SMF->load (midiFile);
+  _SMF->looping (true);
+  _SMF->pause (true);
+}
+
+void
+audio::loadSingleMidi (const char *midiFile)
+{
+  _SMF->close ();
+  _SMF->load (midiFile);
+  _SMF->looping (false);
+  _SMF->pause (true);
+}
+

@@ -132,8 +132,6 @@ long oldPosition = 0; //Fuer Drehgeber
 DateTime dateTime = DateTime (0, 1, 1, DateTime::SATURDAY, 0, 0, 0); //DCF RealTimeClock DateTime Objekt
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver (); // called this way, it uses the default address 0x40
-MD_MIDIFile SMF;  //standard midi file objekt
-MD_YX5300 mp3 (MP3Stream); // starte MP3 Stream
 tempsens temp;	//Temperatursensorik
 benutzer user;  //Benutzer
 audio sound; 	//Audioobjekt
@@ -212,27 +210,7 @@ setup (void)
   pinMode (WSpuls, INPUT); // WSpuls auf Input (Interrupt)
   pinMode (WSready, INPUT);  //Wählscheibe Puls
 
-  //MP3, Audio
-  ZD.println ("Starte ROLAND SCB-7 daughterboard");
-  pinMode (MIDI_RESET, OUTPUT);  //MIDI Reset needs to be ~1 sec!
-  digitalWrite (MIDI_RESET, HIGH);
-
-  ZD.println ("Starte Audio Amplificatrice");
-  pinMode (AUDIO_AMP, OUTPUT);
-  pinMode (AUDIO_BOARD, OUTPUT);
-
-  digitalWrite (AUDIO_BOARD, HIGH);
-
-  //MP3 Player
-  MP3Stream.begin (MD_YX5300::SERIAL_BPS);
-  mp3.begin ();
-  mp3.setSynchronous (true);
-  delay (500); //warten auf init
-  ZD.println ("MP3 Player ready...");
-
-  digitalWrite (MIDI_RESET, LOW); // MIDI Reset off
-  delay (600);
-  digitalWrite (AUDIO_AMP, HIGH);
+  sound.starte(&SD);
   ZD.println ("Harte Musik bereit");
 
   //Altdaten auslesen (SD karte) nach Stromweg oder so...
@@ -248,14 +226,6 @@ setup (void)
       pwm.setPWM (pwmnum, 0, 64); //alles leicht einschalten
     }
   ZD.println ("PWM Waehlscheibe ready...");
-
-  //MIDI
-  MIDI.begin (MIDI_SERIAL_RATE);
-  SMF.begin (&SD);
-  SMF.setMidiHandler (midiCallback);
-  SMF.setSysexHandler (sysexCallback);
-  SMF.setFileFolder ("/midi/");
-  SMF.looping (true);
 
   //Valve
   ventil.begin ();
@@ -278,10 +248,6 @@ setup (void)
   oldTime = millis ();
   nachSchauZeit = millis ();
 
-  SMF.load ("Ein-Prosit-1.mid");
-  SMF.looping (false);
-  DEBUGMSG("vor prosit")
-  sound.starte (&SMF, &mp3);
 
 }  //VOID SETUP
 
@@ -375,16 +341,10 @@ waehlscheibe ()
 	  switch (user.getGodMode ())
 	    {
 	    case 1:
-	      SMF.close ();
-	      SMF.load ("d_runni2.mid");
-	      SMF.looping (true);
-	      SMF.pause (true);
+	      sound.loadLoopMidi("d_runni2.mid");
 	      break;
 	    case 2:
-	      SMF.close ();
-	      SMF.load ("keen.mid");
-	      SMF.looping (true);
-	      SMF.pause (true);
+	      sound.loadLoopMidi("keen.mid");
 	      break;
 	    }
 
@@ -454,7 +414,7 @@ waehlFunktionen ()
       ZD.userShow (&user);
       break;
     case 1275: //Die Telefonnummer der Kienmühle
-      mp3.playSpecific (11, 1); //Magnum
+      sound.mp3Play (11, 1); //Magnum
       pwm.setPWM (0, 0, 2048);   //Grüne LED an
       for (uint8_t dw = 0; dw < 2; dw++)
 	{ //mega Lightshow!!
@@ -567,53 +527,6 @@ waehlFunktionen ()
 
 }
 
-void
-midiCallback (midi_event *pev)
-// Called by the MIDIFile library when a file event needs to be processed
-// thru the midi communications interface.
-// This callback is set up in the setup() function.
-{
-  if ((pev->data[0] >= 0x80) && (pev->data[0] <= 0xe0))
-    {
-      MIDI.write (pev->data[0] | pev->channel);
-      MIDI.write (&pev->data[1], pev->size - 1);
-    }
-  else
-    MIDI.write (pev->data, pev->size);
-}
-
-void
-sysexCallback (sysex_event *pev)
-// Called by the MIDIFile library when a system Exclusive (sysex) file event needs
-// to be processed through the midi communications interface. Most sysex events cannot
-// really be processed, so we just ignore it here.
-// This callback is set up in the setup() function.
-{
-  //DEBUG("\nS T", pev->track);
-  //DEBUGS(": Data");
-  //for (uint8_t i=0; i<pev->size; i++)
-  //  DEBUGX(" ", pev->data[i]);
-}
-
-void
-midiSilence (void)
-// Turn everything off on every channel.
-// Some midi files are badly behaved and leave notes hanging, so between songs turn
-// off all the not#includees and sound
-{
-  midi_event ev;
-
-  // All sound off
-  // When All Sound Off is received all oscillators will turn off, and their volume
-  // envelopes are set to zero as soon as possible.
-  ev.size = 0;
-  ev.data[ev.size++] = 0xb0;
-  ev.data[ev.size++] = 120;
-  ev.data[ev.size++] = 0;
-
-  for (ev.channel = 0; ev.channel < 16; ev.channel++)
-    midiCallback (&ev);
-}
 
 void
 anfang (void)
@@ -634,7 +547,7 @@ anfang (void)
   pwm.setPWM (11, 0, 16);  //helle LEDS abdunkeln weiß
   DEBUGMSG("vor Usershow");
   userShow ();
-  mp3.playTrack (1); //Bing!
+  sound.bing();
 
 }
 
@@ -659,7 +572,7 @@ tickMetronome (void)
   static uint8_t leuchtLampe = B00000001;
   uint16_t beatTime;
 
-  beatTime = 60000 / SMF.getTempo () / 4; // msec/beat = ((60sec/min)*(1000 ms/sec))/(beats/min)
+  beatTime = 60000 / sound._SMF->getTempo () / 4; // msec/beat = ((60sec/min)*(1000 ms/sec))/(beats/min)
   if (!inBeat)
     {
       if ((millis () - lastBeatTime) >= beatTime)
@@ -733,7 +646,7 @@ seltencheck (void)
       DEBUGMSG("Nachtprogramm")
       dunkelBool = true;
 
-      mp3.playSpecific (12, 1); //Gute NAcht Freunde
+      sound.mp3Play (12, 1); //Gute NAcht Freunde
 
       for (int x = 0; x < 256; x++)
 	{
@@ -774,7 +687,7 @@ seltencheck (void)
 	}
 
       delay (130000); //dann ist gute nach Freunde aus
-      mp3.playSpecific (12, aktuellerTag); //lied 2-7
+      sound.mp3Play (12, aktuellerTag); //lied 2-7
       delay (240000);
 
       digitalWrite (AUDIO_AMP, LOW);
@@ -830,22 +743,22 @@ belohnungsMusik ()
   if (user.tag () > 2000 && user.getMusik () == 0)
     {
       user.setMusik (1);
-      mp3.playSpecific (user.aktuell, 1);
+      sound.mp3Play (user.aktuell, 1);
     }
   if (user.tag () > 2500 && user.getMusik () == 1)
     {
       user.setMusik (2);
-      mp3.playSpecific (user.aktuell, 2);
+      sound.mp3Play (user.aktuell, 2);
     }
   if (user.tag () > 3000 && user.getMusik () == 2)
     {
       user.setMusik (3);
-      mp3.playSpecific (user.aktuell, 3);
+      sound.mp3Play (user.aktuell, 3);
     }
   if (user.tag () > 3500 && user.getMusik () == 3)
     {
       user.setMusik (0);
-      mp3.playSpecific (user.aktuell, 4);
+      sound.mp3Play (user.aktuell, 4);
       ZD.showBMP ("/bmp/back02.bmp", 0, 0);
       userShow ();
     }
@@ -857,7 +770,7 @@ void
 infoseite (void)
 {
   analogWrite (TASTE1_LED, 10);
-  SMF.load ("SKYFALL.MID");
+  sound.loadSingleMidi ("SKYFALL.MID");
   ZD.infoscreen (&temp, &user);
 
   //ZD.setFont(&FreeSans9pt7b);
@@ -905,18 +818,7 @@ loop ()
 {
   //DEBUGMSG("ich bin im loop");
   byte oldeinsteller = Einsteller;
-  if (sound.isOn ())
-    {
-      if (!SMF.isEOF ())
-	{
-	  SMF.getNextEvent (); // Play MIDI data
-	}
-    }
-  if (SMF.isEOF ())
-    {
-      SMF.close ();
-      midiSilence ();
-    }
+  sound.midiNextEvent();
 
   Drehgeber ();
 
@@ -948,7 +850,7 @@ loop ()
       waehlFunktionen ();
     }
 
-  if (user.getGodMode () == 0)  //SMF.isPaused () ||
+  if (user.getGodMode () == 0)  //sound._SMF.->isPaused () ||
     {
       if ((millis () - oldTime > 1000))
 	{
@@ -980,13 +882,13 @@ loop ()
 	  flowWindow = digitalRead (FLOW_WINDOW);
 	  if (oldFlowWindow == true && flowWindow == false)
 	    {
-	      SMF.pause (true);
+	      sound._SMF->pause (true);
 	    }
 	  if (oldFlowWindow == false && flowWindow == true)
 	    {
-	      SMF.pause (false);
+	      sound._SMF->pause (false);
 	    }
-	  if (!SMF.isPaused ())
+	  if (!sound._SMF->isPaused ())
 	    {
 	      tickMetronome ();
 	    }
@@ -1001,8 +903,8 @@ loop ()
 	    {
 	      ZD.showBMP ("/god/11.bmp", 300, 50);
 	    }
-	  SMF.close ();
-	  midiSilence ();
+	  sound._SMF->close ();
+	  sound.midiSilence ();
 	  ventil.check ();
 	  sound.bing ();
 

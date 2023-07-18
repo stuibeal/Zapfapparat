@@ -9,8 +9,8 @@
 
 zLog::zLog() {
 	DateTime dateTime = DateTime(0, 1, 1, DateTime::SATURDAY, 0, 0, 0);
-	_psd = nullptr;
-	_puser = nullptr;
+	_sd = nullptr;
+	_user = nullptr;
 }
 
 zLog::~zLog() {
@@ -18,7 +18,7 @@ zLog::~zLog() {
 }
 
 void zLog::begin(SdFat *psd, benutzer *puser) {
-	_psd = psd;  //Save pointer
-	_puser = puser;
+	_sd = psd;  //Save pointer
+	_user = puser;
 }
 

@@ -26,8 +26,6 @@
 #include "zDisplay.h"
 #include <SdFat.h>            // Use the SdFat library
 #include <Encoder.h>  //für Drehencoder
-#include <MD_YX5300.h>  // MP3-Player
-#include <MD_MIDIFile.h> // MIDI SMF Player
 #include <Adafruit_PWMServoDriver.h>   //PWM LED wählscheibe
 #include "./zLibraries/RTC_DCF/DateTime.h"   // ELV RTC mit DCF
 #include "./zLibraries/RTC_DCF/RealTimeClock_DCF.h"
@@ -43,11 +41,7 @@
 // Defines
 #define USE_SDFAT
 #define ENCODER_USE_INTERRUPTS  //damit die vom MEGA drin sind und er die als INT setzt
-#define MP3Stream Serial3  // Hängt am Serial Port 3 für MP3-Player
 //#include <MD_cmdProcessor.h>   //weiss nicht ob wir den brauchen
-#define USE_SOFTWARESERIAL 0   ///kein Softwareserial, native Port! - für MIDI
-#define MIDI Serial // MIDI hängt am Serial0
-#define MIDI_SERIAL_RATE 31250
 
 #define DEBUGTO 3  //0 Nothing, 1 Serial, 2 Printer, 3 Display, 4 SD File
 #if DEBUGTO == 3
@@ -64,9 +58,6 @@
 void setup(void) ;
 void waehlscheibe() ;
 void waehlFunktionen() ;
-void midiCallback(int *pev)    		;
-void sysexCallback(int *pev)     		;
-void midiSilence(void)    		;
 void anfang(void) ;
 void aufWachen(void) ;
 void einSchlafen(void) ;

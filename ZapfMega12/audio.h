@@ -18,7 +18,12 @@
 #endif
 //#define AUDIO_WARTEZEIT 1500
 
-class audio
+#define USE_SOFTWARESERIAL 0   ///kein Softwareserial, native Port! - für MIDI
+#define MP3Stream Serial3  // Hängt am Serial Port 3 für MP3-Player
+#define MIDI Serial // MIDI hängt am Serial0
+#define MIDI_SERIAL_RATE 31250
+
+class audio : public MD_YX5300, MD_MIDIFile
 {
 
 public:
@@ -40,7 +45,9 @@ public:
   virtual
   ~audio ();
   void
-  starte (MD_MIDIFile *pSMF, MD_YX5300 *pmp3);
+  starte (MD_MIDIFile *pSMF, MD_YX5300 *pmp3); //Mit Pointer starten (deprecated)
+  void
+  starte (SdFat *pSD); //nur SD Karte pointer
   void
   pruefe ();
   bool
@@ -61,8 +68,26 @@ public:
   {
     return (state == AUDIO_ON || state == AUDIO_STANDBY);
   }
+  static void
+  midiCallback (midi_event *pev);
+  static void
+  sysexCallback (sysex_event *pev);
+  void
+  midiSilence (void);
+  void
+  midiNextEvent (void);
+  void
+  loadLoopMidi (const char*);
+  void
+  loadSingleMidi (const char*);
+
+
+
   char debugmessage[80];
   int state;
+  MD_YX5300 *_mp3;  //pointer MP3
+  MD_MIDIFile *_SMF; // pointer SMF Player
+
 
 private:
   unsigned long audioMillis;
@@ -70,8 +95,7 @@ private:
   int statuscode;
 
 protected:
-  MD_YX5300 *_mp3;  //pointer MP3
-  MD_MIDIFile *_SMF; // pointer SMF Player
+  SdFat * _sd;
 
 };
 

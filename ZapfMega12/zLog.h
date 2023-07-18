@@ -38,7 +38,7 @@ public:
 
   DateTime dateTime;
 
-  enum
+  enum logstate
   {
     LOG = 0, DEBUG
   };
@@ -50,11 +50,11 @@ public:
 
 private:
   uint8_t logState;
-
+  char clockString[20];
 
 protected:
-  SdFat *_psd;
-  benutzer *_puser;
+  SdFat *_sd;
+  benutzer *_user;
 
 
 };
