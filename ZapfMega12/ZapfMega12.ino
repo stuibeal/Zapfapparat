@@ -53,8 +53,6 @@ bool dunkelBool = false;
 
 byte lichtan = LOW;
 
-char clockString[20];
-
 //Waehlscheibe
 uint8_t zahlemann;  //Per Wählscheibe ermittelte Zahl
 unsigned long kienmuehle;  //Sondereingabe bei drücken der Taste2
@@ -129,14 +127,13 @@ Encoder Dreher (rotaryDT, rotaryCLK); //PINS für Drehgeber
 volatile int DreherKnopfStatus = 0; //Da wird der Statatus vom Drehgeberknopf gelesen
 long oldPosition = 0; //Fuer Drehgeber
 
-DateTime dateTime = DateTime (0, 1, 1, DateTime::SATURDAY, 0, 0, 0); //DCF RealTimeClock DateTime Objekt
-
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver (); // called this way, it uses the default address 0x40
 tempsens temp;	//Temperatursensorik
 benutzer user;  //Benutzer
 audio sound; 	//Audioobjekt
 zValve ventil; // Ventilsteuerung, Druck, Reinigungspumpe
 zPrinter drucker;
+zLog logbuch;
 
 unsigned int tempAnzeigeZeit = millis (); //für zehnsekündige Temperaturanzeige
 
@@ -185,7 +182,11 @@ setup (void)
   ZD.showBMP ("/bmp/z-logo.bmp", 200, 0);
 
   //Printer
-  drucker.initialise(&Serial2, &user, &buf[0]);
+  drucker.initialise (&Serial2, &user, &buf[0]);
+
+  //I2C
+  Wire.begin (); // Master of the universe
+  Wire.setClock (400000); // I2C in FastMode 400kHz
 
   //Temperaturfuehler
   temp.begin ();
@@ -210,13 +211,12 @@ setup (void)
   pinMode (WSpuls, INPUT); // WSpuls auf Input (Interrupt)
   pinMode (WSready, INPUT);  //Wählscheibe Puls
 
-  sound.starte(&SD);
+  sound.starte (&SD);
   ZD.println ("Harte Musik bereit");
 
   //Altdaten auslesen (SD karte) nach Stromweg oder so...
 
   //PWM Treiber hochfahren
-  ZD.println ("start PWM waehler....");
   pwm.begin ();
   pwm.setPWMFreq (1000);  // Maximale Frequenz (1kHz) -> reicht für LED
   pwm.setPWM (0, 0, 16);   //helle LEDS abdunkeln grün
@@ -233,21 +233,13 @@ setup (void)
   ZD.println ("Ventilsteuerung aktiviert");
 
   //DCF RTC
-  RTC_DCF.begin ();
-  RTC_DCF.enableDCF77Reception ();
-  RTC_DCF.enableDCF77LED ();   //später ausschalten in der nacht!)
-  RTC_DCF.setDateTime (&dateTime); //Damit irgendwas drin is
+  logbuch.initialise (&SD, &user, &temp, &buf[0]);
   ZD.println ("RTC DCF77 aktiviert");
-
-  //I2C
-  Wire.begin (); // Master of the universe
-  Wire.setClock (400000); // I2C in FastMode 400kHz
 
   //Make Windows 95 great again
   anfang ();
   oldTime = millis ();
   nachSchauZeit = millis ();
-
 
 }  //VOID SETUP
 
@@ -341,10 +333,10 @@ waehlscheibe ()
 	  switch (user.getGodMode ())
 	    {
 	    case 1:
-	      sound.loadLoopMidi("d_runni2.mid");
+	      sound.loadLoopMidi ("d_runni2.mid");
 	      break;
 	    case 2:
-	      sound.loadLoopMidi("keen.mid");
+	      sound.loadLoopMidi ("keen.mid");
 	      break;
 	    }
 
@@ -393,11 +385,7 @@ waehlFunktionen ()
   switch (kienmuehle)
     {
     case 847: // UHRZEIT
-      RTC_DCF.getDateTime (&dateTime);
-      sprintf (buf, "Es is %02u:%02u:%02u am %02u.%02u.%02u",
-	       dateTime.getHour (), dateTime.getMinute (),
-	       dateTime.getSecond (), dateTime.getDay (), dateTime.getMonth (),
-	       dateTime.getYear ());
+      logbuch.getClockString ();
       ZD.printText ();
       ZD._tft.println (buf);
       break;
@@ -414,119 +402,22 @@ waehlFunktionen ()
       ZD.userShow (&user);
       break;
     case 1275: //Die Telefonnummer der Kienmühle
-      sound.mp3Play (11, 1); //Magnum
-      pwm.setPWM (0, 0, 2048);   //Grüne LED an
-      for (uint8_t dw = 0; dw < 2; dw++)
-	{ //mega Lightshow!!
-	  for (uint16_t i = 0; i < 11; i++)
-	    {
-	      delay (50);
-	      for (uint8_t x = 11; x > 0; x--)
-		{
-		  delay (30);
-		  pwm.setPWM (x + i, 4096, 0);
-		  pwm.setPWM (x + i + 1, 0, 4096);
-		}
-	    }
-
-	  for (uint16_t i = 11; i > 0; i--)
-	    {
-	      delay (100 % i);
-	      for (uint8_t x = 0; x < 11; x++)
-		{
-		  delay (50);
-		  pwm.setPWM (x + i - 1, 0, 4096);
-		  pwm.setPWM (x + i, 4096, 0);
-		}
-	    }
-	  delay (500);
-	}
-      pwm.setPWM (11, 0, 16);  //helle LEDS abdunkeln weiß
-      pwm.setPWM (0, 0, 16);   //helle LEDS abdunkeln grün
+      oldWaehlscheibeFun ();
       break;
     case 9413: //Telefonnummer
-	       //Start Reinigungsprogramm
-      { //hier braces damit die variablen allein hier sind
-	ZD.printText ();
-	ZD._tft.println ("        REINIGUNGSPROGRAMM");
-	iBefehl (tempi2c, zapfenStreich);
-	ventil.cleanPumpOn ();
-	delay(500); //zum taste loslassen!
-	unsigned long waitingTime = millis ();
-	int sekunden = 0;
-	while (!digitalRead (taste1))
-	  {
-	    if (millis()-waitingTime >= 1000)
-	      {
-		waitingTime = millis ();
-		sekunden++;
-		ZD.printText ();
-		ZD._tft.println (sekunden);
-	      }
-
-	  }
-	ventil.cleanPumpOff ();
-	ZD.printText ();
-	ZD._tft.println ("ENDE REINIGUNGSPROGRAMM      ");
-      }
+      reinigungsprogramm ();
+      break;
+    case 25326:
+      reinigungsprogramm ();
       break;
 
     default:
-      uint16_t varSet = kienmuehle / 1000; //ersten zwei zahlen
-      uint16_t varContent = kienmuehle % 1000; // letzten drei zahlen
-      switch (varSet)
-	{
-	case 9: //Mediaplayer
-
-	  break;
-	case 11:
-
-	  break;
-	}
-      if (kienmuehle > 10000)
-	{
-	  if (kienmuehle > 11000 && kienmuehle < 11999)
-	    {
-	      consKp = kienmuehle - 11000;
-	      iDataSend (tempi2c, setConsKp, consKp);
-	    }
-	  if (kienmuehle > 12000 && kienmuehle < 12999)
-	    {
-	      consKi = kienmuehle - 12000;
-	      iDataSend (tempi2c, setConsKi, consKi);
-	    }
-	  if (kienmuehle > 13000 && kienmuehle < 13999)
-	    {
-	      consKd = kienmuehle - 13000;
-	      iDataSend (tempi2c, setConsKd, consKd);
-	    }
-	  if (kienmuehle > 14000 && kienmuehle < 14999)
-	    {
-	      aggKp = kienmuehle - 14000;
-	      iDataSend (tempi2c, setAggKp, aggKp);
-	    }
-	  if (kienmuehle > 15000 && kienmuehle < 15999)
-	    {
-	      aggKi = kienmuehle - 15000;
-	      iDataSend (tempi2c, setAggKi, aggKi);
-	    }
-	  if (kienmuehle > 16000 && kienmuehle < 16999)
-	    {
-	      aggKd = kienmuehle - 16000;
-	      iDataSend (tempi2c, setAggKd, aggKd);
-	    }
-	}
-
-      if (kienmuehle > 9900)
-	{   //Plays songs from ordner 11
-	  sound.mp3Play (11, kienmuehle - 9900);
-	}
-
+      spezialprogramm (kienmuehle);
+      break;
     }
   kienmuehle = 0;
 
 }
-
 
 void
 anfang (void)
@@ -547,7 +438,7 @@ anfang (void)
   pwm.setPWM (11, 0, 16);  //helle LEDS abdunkeln weiß
   DEBUGMSG("vor Usershow");
   userShow ();
-  sound.bing();
+  sound.bing ();
 
 }
 
@@ -818,7 +709,7 @@ loop ()
 {
   //DEBUGMSG("ich bin im loop");
   byte oldeinsteller = Einsteller;
-  sound.midiNextEvent();
+  sound.midiNextEvent ();
 
   Drehgeber ();
 
@@ -1024,7 +915,8 @@ anzeigeAmHauptScreen (void)
 {
   //DEBUGMSG("vor transmitBlocktemp");
   //ZD.print_val2 (temp.getBlock1Temp (), 20, 100, 3, 1);
-  ZD.printVal (temp.getBlock1Temp (), 25, 100, WHITE, ZDUNKELGRUEN, &FETT, KOMMA);
+  ZD.printVal (temp.getBlock1Temp (), 25, 100, WHITE, ZDUNKELGRUEN, &FETT,
+  KOMMA);
   //DEBUGMSG("vor transmitauslauf");
   //DEBUGMSG("vor transmitauslauf");
   ZD.print_val2 (temp.getBlock2Temp (), 20, 125, 1, 1);
@@ -1044,75 +936,75 @@ dataLogger (void)
   // TBD: other files müssen alle zu sein
   // jeden Tag ein File, ein gesamtfile
 
-  //Zeit einlesen
-  RTC_DCF.getDateTime (&dateTime);
+  /*
+   //Zeit einlesen
+   RTC_DCF.getDateTime (&dateTime);
 
-  char fileBuf[20] = "";
-  String dataString = "";
-  sprintf (fileBuf, "LOG_%02u%02u%2u.csv", dateTime.getDay (),
-	   dateTime.getMonth (), dateTime.getYear ());
+   char fileBuf[20] = "";
+   String dataString = "";
+   sprintf (fileBuf, "LOG_%02u%02u%2u.csv", dateTime.getDay (),
+   dateTime.getMonth (), dateTime.getYear ());
 
-  if (!SD.exists (fileBuf))
-    {
-      //Wenn Datei noch nicht vorhanden, Kopfzeile schreiben!
-      dataString = "Datum Zeit, ";
-      for (uint8_t x = 0; x < 10; x++)
-	{
-	  dataString += user.username[x];
-	  dataString += ", ";
-	}
-      dataString += "Gesamtmenge, ";
-      dataString += "Batterie-Volt, ";
-      dataString += "Helligkeit";
+   if (!SD.exists (fileBuf))
+   {
+   //Wenn Datei noch nicht vorhanden, Kopfzeile schreiben!
+   dataString = "Datum Zeit, ";
+   for (uint8_t x = 0; x < 10; x++)
+   {
+   dataString += user.username[x];
+   dataString += ", ";
+   }
+   dataString += "Gesamtmenge, ";
+   dataString += "Batterie-Volt, ";
+   dataString += "Helligkeit";
 
-      File dataFile = SD.open (fileBuf, FILE_WRITE);
-      // if the file is available, write to it:
-      if (dataFile)
-	{
-	  dataFile.println (dataString);
-	  dataFile.close ();
-	}
-      // if the file isn't open, pop up an error:
-      else
-	{
-	  //Serial.println("konnte z-log.csv nicht öffnen");
-	}
-    }
+   File dataFile = SD.open (fileBuf, FILE_WRITE);
+   // if the file is available, write to it:
+   if (dataFile)
+   {
+   dataFile.println (dataString);
+   dataFile.close ();
+   }
+   // if the file isn't open, pop up an error:
+   else
+   {
+   //Serial.println("konnte z-log.csv nicht öffnen");
+   }
+   }
 
-  // Daten schreiben
-  char timeBuf[20] = "00.00.00 00:00:00, ";
-  sprintf (timeBuf, "%02u.%02u.%02u %02u:%02u:%02u, ", dateTime.getDay (),
-	   dateTime.getMonth (), dateTime.getYear (), dateTime.getHour (),
-	   dateTime.getMinute (), dateTime.getSecond ());
-  File dataFile = SD.open (fileBuf, FILE_WRITE);
+   // Daten schreiben
+   char timeBuf[20] = "00.00.00 00:00:00, ";
+   sprintf (timeBuf, "%02u.%02u.%02u %02u:%02u:%02u, ", dateTime.getDay (),
+   dateTime.getMonth (), dateTime.getYear (), dateTime.getHour (),
+   dateTime.getMinute (), dateTime.getSecond ());
+   File dataFile = SD.open (fileBuf, FILE_WRITE);
 
-  dataString = timeBuf;
+   dataString = timeBuf;
 
-  for (uint8_t x = 0; x < 11; x++)
-    {
-      dataString += String (user.tag ());
-      dataString += ",";
-    }
-  dataString += String (user.gesamtMengeTag);
-  dataString += ",";
-  dataString += String (inVoltage);
-  dataString += ",";
-  dataString += String (hell);
+   for (uint8_t x = 0; x < 11; x++)
+   {
+   dataString += String (user.tag ());
+   dataString += ",";
+   }
+   dataString += String (user.gesamtMengeTag);
+   dataString += ",";
+   dataString += String (inVoltage);
+   dataString += ",";
+   dataString += String (hell);
 
-  // if the file is available, write to it:
-  if (dataFile)
-    {
-      dataFile.println (dataString);
-      dataFile.close ();
-    }
-  // if the file isn't open, pop up an error:
-  else
-    {
-      //Serial.println("konnte z-log.csv nicht öffnen");
-    }
-
+   // if the file is available, write to it:
+   if (dataFile)
+   {
+   dataFile.println (dataString);
+   dataFile.close ();
+   }
+   // if the file isn't open, pop up an error:
+   else
+   {
+   //Serial.println("konnte z-log.csv nicht öffnen");
+   }
+   */
 }
-
 
 void
 UserDataShow ()
@@ -1190,4 +1082,138 @@ Einstellerumsteller_ISR ()
       Einsteller = 1;
     }
   UserDataShow ();
+}
+
+void
+oldWaehlscheibeFun (void)
+{
+  sound.mp3Play (11, 1); //Magnum
+  pwm.setPWM (0, 0, 2048);   //Grüne LED an
+  for (uint8_t dw = 0; dw < 2; dw++)
+    { //mega Lightshow!!
+      for (uint16_t i = 0; i < 11; i++)
+	{
+	  delay (50);
+	  for (uint8_t x = 11; x > 0; x--)
+	    {
+	      delay (30);
+	      pwm.setPWM (x + i, 4096, 0);
+	      pwm.setPWM (x + i + 1, 0, 4096);
+	    }
+	}
+
+      for (uint16_t i = 11; i > 0; i--)
+	{
+	  delay (100 % i);
+	  for (uint8_t x = 0; x < 11; x++)
+	    {
+	      delay (50);
+	      pwm.setPWM (x + i - 1, 0, 4096);
+	      pwm.setPWM (x + i, 4096, 0);
+	    }
+	}
+      delay (500);
+    }
+  pwm.setPWM (11, 0, 16);  //helle LEDS abdunkeln weiß
+  pwm.setPWM (0, 0, 16);   //helle LEDS abdunkeln grün
+
+}
+
+void
+reinigungsprogramm (void)
+{
+  //hier braces damit die variablen allein hier sind
+  ZD.printText ();
+  ZD._tft.println ("        REINIGUNGSPROGRAMM");
+  iBefehl (tempi2c, zapfenStreich);
+  ventil.cleanPumpOn ();
+  delay (500); //zum taste loslassen!
+  unsigned long waitingTime = millis ();
+  int sekunden = 0;
+  while (!digitalRead (taste1))
+    {
+      if (millis () - waitingTime >= 1000)
+	{
+	  waitingTime = millis ();
+	  sekunden++;
+	  ZD.printText ();
+	  ZD._tft.println (sekunden);
+	}
+
+    }
+  ventil.cleanPumpOff ();
+  ZD.printText ();
+  ZD._tft.println ("ENDE REINIGUNGSPROGRAMM      ");
+
+}
+
+void
+spezialprogramm (uint16_t input)
+{
+  uint16_t varSet = 0;
+  uint16_t varContent = 0;
+  if (input > 999999 && input < 10000000)
+    {
+      varSet = input / 100000; //2 x Zahl VarSet
+      varContent = input % 100000;  //5x varContent
+    }
+  else if (input > 99999 && input < 1000000)
+    {
+      varSet = input / 10000; //zwei Zahl Varset
+      varContent = input % 10000;  //4x Content (00-9999)
+    }
+  else if (input > 9999 && input < 100000)
+    {
+      varSet = input / 1000;  //2x zahl Varset
+      varContent = input % 1000;  //drei Zahlen Content
+    }
+  else if (input > 999 && input < 10000)
+    {
+      varSet = input / 100;  //2x zahl Varset
+      varContent = input % 100;  //zwei  Zahlen Content
+    }
+  else if (input > 99 && input < 1000)
+    {
+      varSet = input / 100;  //1x zahl Varset
+      varContent = input % 100;  //zwei  Zahlen Content
+    }
+  switch (varSet)
+    {
+    case 0:
+      //play dööh dööh dööh
+      break;
+    case 9: //Mediaplayer
+      sound.mp3Play (11, varContent);
+      break;
+    case 11:
+      consKp = varContent;
+      iDataSend (tempi2c, setConsKp, consKp);
+      break;
+    case 12:
+      consKi = varContent;
+      iDataSend (tempi2c, setConsKi, consKi);
+      break;
+    case 13:
+      consKd = varContent;
+      iDataSend (tempi2c, setConsKi, consKd);
+      break;
+    case 14:
+      aggKp = varContent;
+      iDataSend (tempi2c, setAggKp, aggKp);
+      break;
+    case 15:
+      aggKi = varContent;
+      iDataSend (tempi2c, setAggKi, aggKi);
+      break;
+    case 16:
+      aggKd = varContent;
+      iDataSend (tempi2c, setAggKd, aggKd);
+      break;
+    case 17:
+      break;
+
+    case 99: // auch Mediaplayer
+      sound.mp3Play (11, varContent);
+      break;
+    }
 }

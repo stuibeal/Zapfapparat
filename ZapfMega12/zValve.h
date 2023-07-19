@@ -13,6 +13,7 @@
 #include "gemein.h"
 
 #define VALVE_TEILER 91
+#define PRESSURE_ZERO 115
 
 class zValve
 {

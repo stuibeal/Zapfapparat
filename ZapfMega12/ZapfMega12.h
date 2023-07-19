@@ -34,6 +34,7 @@
 #include "tempsens.h"
 #include "audio.h"
 #include "zValve.h"
+#include "zLog.h"
 
 
 // Includes aus
@@ -70,13 +71,16 @@ void userShow(void) ;
 void iBefehl(uint8_t empfaenger, uint8_t befehl) ;
 void iDataSend(byte empfaenger, byte befehl, unsigned int sendedaten) ;
 void i2cIntDataSend(byte empfaenger, byte befehl, unsigned int sendedaten) ;
-void flowDataSend(uint8_t befehl, uint8_t option1, uint8_t option2, 		uint16_t wert) ;
+void flowDataSend(uint8_t befehl, uint8_t option1, uint8_t option2, uint16_t wert) ;
 void anzeigeAmHauptScreen(void) ;
 void dataLogger(void) ;
 void UserDataShow() ;
 void Drehgeber() ;
 void Einstellerumsteller_ISR() ;
 void flowDataSend(uint8_t empfaenger, uint8_t option1, uint8_t option2, uint16_t wert);
+void oldWaehlscheibeFun(void);
+void reinigungsprogramm(void);
+void spezialprogramm(uint16_t input);
 
 // Variablen
 char buf[80];

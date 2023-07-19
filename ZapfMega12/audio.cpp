@@ -229,7 +229,7 @@ void
 audio::bing ()
 {
   on ();
-  _mp3->playTrack (1); //BING!
+  _mp3->playTrack (DING); //BING!
 }
 
 void

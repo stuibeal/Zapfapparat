@@ -16,24 +16,27 @@
 #define ZLOG_H_
 
 #include "SdFat.h"
-#include "benutzer.h"
-#include "gemein.h"
+#include "./common/benutzer.h"
+#include "./common/gemein.h"
 #include "./zLibraries/RTC_DCF/DateTime.h"
 #include "./zLibraries/RTC_DCF/RealTimeClock_DCF.h"
 #include "tempsens.h"
+#include "string.h"
 
-class zLog
+class zLog : public RealTimeClock_DCF, DateTime
 {
 public:
   zLog ();
   virtual
   ~zLog ();
   void
-  begin (SdFat *psd, benutzer *puser);
+  initialise (SdFat *psd, benutzer *puser, tempsens *ptemp, char *buf);
   inline void
   setLogState(uint8_t state) {logState = state;}
   inline uint8_t
   getlogState() {return logState;}
+  void
+  getClockString(void);
 
 
   DateTime dateTime;
@@ -50,11 +53,13 @@ public:
 
 private:
   uint8_t logState;
-  char clockString[20];
+  char * _buf;
+
 
 protected:
   SdFat *_sd;
   benutzer *_user;
+  tempsens *_temp;
 
 
 };

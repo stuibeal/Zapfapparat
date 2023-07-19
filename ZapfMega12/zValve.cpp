@@ -51,10 +51,15 @@ zValve::begin ()
  * 2,5	480
  * 3	552
  */
+/**
+ * Liest den Drucksensor aus und gibt das Ergebnis zurück
+ * @return Druck in ATÜ * 100
+ */
 int
 zValve::getPressure ()
 {
-  druck = analogRead (PRESSURE_SENS_PIN);
+  druck = analogRead (PRESSURE_SENS_PIN) - PRESSURE_ZERO;
+  druck = druck / 1.46; //dann hat man das ergebnis in atü * 100
   return druck;
 }
 
