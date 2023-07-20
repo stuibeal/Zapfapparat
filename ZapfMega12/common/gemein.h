@@ -22,17 +22,8 @@
 //SD Karte
 #define SD_CS     53 //CS Pin am MEGA für SPI
 
-//Thermodrucker
-#define PRINTER_ON_PIN    38 // Schaltet Printer ein, Printer ist an Serial2 (RX17, TX16)
-#define printerBaudRate   9600
-#define PRINTER_DTR 	  A10
-
-//Old Things, good Things. Brauch ma nimmer.
-#define oldValve          49  //Outputpin Magnetventil
-
 //Input Pins
 #define helligkeitSensor  A6
-#define PRESSURE_SENS_PIN    A7
 
 // Taster etc
 #define taste1            37  //Taster unterm Drehencoder (hardwareentprellt)
@@ -45,9 +36,6 @@
 
 //Output Pins
 #define otherMcOn         A5  //schaltet die anderen Microcontroller mit P-Mosfet ein
-#define VALVE_AUF_PIN          42  //mach auf den Hahn, geht hardwaremäßig nur wenn valveZu aus
-#define VALVE_ZU_PIN           44  //mach zu den Hahn, geht hardwaremäßig nur wenn valveAuf aus
-#define CLEAN_PUMP_PIN           5   // PWM outputpin Pumpe -> Reinigung!
 #define taste1Pwm         6   //Tastenbeleuchtung via Optokoppler (12VLed eingebaut)
 #define taste2Pwm         8   //Tastenbeleuchtung via Optokoppler (12VLed eingebaut)
 #define lcdBacklightPwm   4   //Hintergrundbeleuchtung Display
@@ -55,16 +43,6 @@
 #define FLOW_WINDOW		  A8
 const uint8_t TASTE1_LED = 6;
 const uint8_t TASTE2_LED = 8;
-
-
-// Audio
-#define AUDIO_BOARD      41  //Audioboard mit Roland SCB-7 einschalten (DC Wandler wird geschaltet)
-#define AUDIO_AMP        40  //wenn LOW sind die ClassD Verstärker gemutet
-#define mp3RX             15  // Serial3: RX15 TX14: MP3 Player YX5300
-#define mp3TX             14
-#define MIDI_TX           1  // Serial: Midi Out
-#define BEEP_OUT          11  // beeper out -> not really used?
-#define MIDI_RESET        A14 // Reset Knopf vom SCB-7 (high: reset)
 
 // Darstellung
 #define BLACK   0x0000
@@ -230,7 +208,9 @@ const uint8_t GET_IN_VOLTAGE = 0x42;
 #define setUnterschiedAggPid    0x75  // mal zehn grad nehmen ab wann der aggressiv regelt
 #define setSteuerZeit           0x76  // alle sekunde mal nachjustieren
 
-
+//God MODES
+#define IDDQD 1
+#define KEEN 2
 
 
 

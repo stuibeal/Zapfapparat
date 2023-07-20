@@ -393,12 +393,12 @@ waehlFunktionen ()
       user.setGodMode (0);
       ZD.userShow (&user);
       break;
-    case 43373: //IDDQD
-      user.setGodMode (1);
+    case 43373:
+      user.setGodMode (IDDQD);
       ZD.userShow (&user);
       break;
-    case 5336: // KEEN
-      user.setGodMode (2);
+    case 5336:
+      user.setGodMode (KEEN);
       ZD.userShow (&user);
       break;
     case 1275: //Die Telefonnummer der Kienmühle
@@ -407,16 +407,17 @@ waehlFunktionen ()
     case 9413: //Telefonnummer
       reinigungsprogramm ();
       break;
-    case 25326:
+    case 25326: //clean
       reinigungsprogramm ();
       break;
-
+    case 75337: //sleep
+      // do power.goSleep();
+      break;
     default:
       spezialprogramm (kienmuehle);
       break;
     }
   kienmuehle = 0;
-
 }
 
 void

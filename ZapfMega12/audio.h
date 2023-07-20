@@ -23,6 +23,16 @@
 #define MIDI Serial // MIDI hängt am Serial0
 #define MIDI_SERIAL_RATE 31250
 
+// Audio
+#define AUDIO_BOARD      41  //Audioboard mit Roland SCB-7 einschalten (DC Wandler wird geschaltet)
+#define AUDIO_AMP        40  //wenn LOW sind die ClassD Verstärker gemutet
+#define mp3RX             15  // Serial3: RX15 TX14: MP3 Player YX5300
+#define mp3TX             14
+#define MIDI_TX           1  // Serial: Midi Out
+#define BEEP_OUT          11  // beeper out -> not really used?
+#define MIDI_RESET        A14 // Reset Knopf vom SCB-7 (high: reset)
+
+
 class audio : public MD_YX5300, MD_MIDIFile
 {
 

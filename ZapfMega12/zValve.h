@@ -14,6 +14,15 @@
 
 #define VALVE_TEILER 91
 #define PRESSURE_ZERO 115
+#define PRESSURE_SENS_PIN    A7
+
+#define VALVE_AUF_PIN          42  //mach auf den Hahn, geht hardwaremäßig nur wenn valveZu aus
+#define VALVE_ZU_PIN           44  //mach zu den Hahn, geht hardwaremäßig nur wenn valveAuf aus
+#define CLEAN_PUMP_PIN           5   // PWM outputpin Pumpe -> Reinigung!
+
+//Old Things, good Things. Brauch ma nimmer.
+#define oldValve          49  //Outputpin Magnetventil
+
 
 class zValve
 {

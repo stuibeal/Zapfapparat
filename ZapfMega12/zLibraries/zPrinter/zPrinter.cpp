@@ -31,7 +31,7 @@ zPrinter::initialise (HardwareSerial *S, benutzer *_puser, char *pbuf) {
   pinMode (PRINTER_ON_PIN, OUTPUT);
   //pinMode (PRINTER_DTR, INPUT);
   digitalWrite (PRINTER_ON_PIN, HIGH);
-  S->begin (9600);
+  S->begin (printerBaudRate);
   delay (1000);
   _printer->begin ();
   delay (1000);

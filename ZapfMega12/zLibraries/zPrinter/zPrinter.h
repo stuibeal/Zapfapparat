@@ -13,6 +13,10 @@
 #include <Adafruit_Thermal.h> //Thermal Printer
 #include "benutzer.h"
 
+#define PRINTER_ON_PIN    38 // Schaltet Printer ein, Printer ist an Serial2 (RX17, TX16)
+#define printerBaudRate   9600
+#define PRINTER_DTR 	  A10
+
 
 class zPrinter
 {
