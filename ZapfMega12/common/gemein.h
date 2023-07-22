@@ -28,9 +28,9 @@
 #define taste2            39  //Taster unterm Drehencoder (hardwareentprellt)
 #define WSready           19  //Wählscheibe Ready Interrupt
 #define WSpuls            33  //Wählscheibe puls
-#define rotaryKnob        18  //Knopf vom Rotary Encoder (hardwareentprellt)
-#define rotaryDT          3
-#define rotaryCLK         2  //RotaryEnc DT(INT)  D3  D2  RotaryEnc CLK (INT)
+#define ROTARY_SW_PIN	  18  //Knopf vom Rotary Encoder (hardwareentprellt)
+#define ROTARY_DT_PIN	  3   //RotaryEnc DT(INT)  D3  D2  RotaryEnc CLK (INT)
+#define ROTARY_CLK_PIN	  2
 
 //Output Pins
 #define otherMcOn         A5  //schaltet die anderen Microcontroller mit P-Mosfet ein

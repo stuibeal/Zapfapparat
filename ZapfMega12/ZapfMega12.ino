@@ -94,8 +94,8 @@ setup (void)
   ZD.println ("Flowmeter ifm SM6020 ein");
 
   //Rotary Encoder
-  pinMode (rotaryKnob, INPUT); // Drehgeberknopf auf Input
-  attachInterrupt (5, Einstellerumsteller_ISR, FALLING); //ISR= interrupt service routine; alternativ: (digitalPinToInterrupt(pin), ISR, mode)
+  pinMode (ROTARY_SW_PIN, INPUT); // Drehgeberknopf auf Input
+  attachInterrupt (digitalPinToInterrupt(ROTARY_SW_PIN), Einstellerumsteller_ISR, FALLING); //ISR= interrupt service routine; alternativ: (digitalPinToInterrupt(pin), ISR, mode)
   /*External Interrupts: 2 (interrupt 0), 3 (interrupt 1), 18 (interrupt 5), 19 (interrupt 4), 20 (interrupt 3), and 21 (interrupt 2).
    These pins can be configured to trigger an interrupt on a low value, a rising or falling edge, or a change in value. See the attachInterrupt() function for details.
    Den Schalter hardwaremäßig entprellt: 320k pullup, 10k pulldown und signal-kondensator-ground -> kondensator lädt und entprellt.
@@ -913,7 +913,7 @@ Drehgeber ()
 void
 Einstellerumsteller_ISR ()
 { //Interruptroutine, hier den Drehgeberknopf abfragen
-  DreherKnopfStatus = digitalRead (rotaryKnob);
+  DreherKnopfStatus = digitalRead (ROTARY_SW_PIN);
   Einsteller++;
   if (Einsteller > 2)
     {

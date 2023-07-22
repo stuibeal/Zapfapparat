@@ -163,14 +163,8 @@ bool veryLowPower = false;
 bool debugMode = false;
 
 // DREHENCODER
-// encoder lib: http://www.pjrc.com/teensy/td_libs_Encoder.html
-//#define ENCODER_OPTIMIZE_INTERRUPTS
-Encoder Dreher (rotaryDT, rotaryCLK); //PINS für Drehgeber
-//   Change these two numbers to the pins connected to your encoder.
-//   Best Performance: both pins have interrupt capability
-//   Good Performance: only the first pin has interrupt capability
-//   Low Performance:  neither pin has interrupt capability
-//   avoid using pins with LEDs attached
+#define ENCODER_OPTIMIZE_INTERRUPTS
+Encoder Dreher (ROTARY_DT_PIN, ROTARY_CLK_PIN); //PINS für Drehgeber
 
 volatile int DreherKnopfStatus = 0; //Da wird der Statatus vom Drehgeberknopf gelesen
 long oldPosition = 0; //Fuer Drehgeber
