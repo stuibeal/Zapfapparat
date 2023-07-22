@@ -24,30 +24,45 @@ public:
   virtual
   ~zPower ();
   inline uint8_t
-  getState ()
+  getPowerState ()
   {
     return powerState;
+  }
+  inline uint8_t
+  getMachineState ()
+  {
+    return machineState;
   }
   inline void
   setState (uint8_t state)
   {
     powerState = state;
   }
-  enum states
-  {
-    NORMAL, LOW_POWER, GEH_SCHLAFEN, SCHLAEFT, WACH_AUF
-  };
+
   void check();
   void setLed(uint8_t offon);
 
 
 
+
 private:
+  enum powerState
+    {
+      TOO_LOW_POWER, LOW_POWER, MID_POWER, HIGH_POWER, TOO_HIGH_POWER
+    };
+    enum machineState
+    {
+      SLEEP, WAKE_UP, WORK, STANDBY, GO_SLEEP
+    };
+
   int lastVoltage;
   int helligkeit;
   uint8_t powerState;
+  uint8_t machineState;
   static unsigned long millisSeitZapfEnde;
   static unsigned long millisSeitLetztemCheck;
+
+
 
 };
 

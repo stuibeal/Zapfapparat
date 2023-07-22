@@ -31,111 +31,6 @@
 
 #include "ZapfMega12.h"
 
-SdFat SD;  // SD-KARTE
-zDisplay ZD;   // neues zDisplay Objekt
-
-//Hier Variablen definieren
-byte aktuellerTag = 1;  //dann gehts mit der Musik aus
-unsigned int minTemp = 200;
-unsigned int zielTemp = 200;
-unsigned int totalMilliLitres = 0;
-volatile byte WSpulseCount = 0;
-unsigned long auswahlZeit;
-int aktuellerModus = 0;
-unsigned int hell;
-
-unsigned long oldTime = millis ();
-unsigned long nachSchauZeit = 0;
-unsigned long hellZeit;
-unsigned int hellCount = 0;
-unsigned int dunkelCount = 0;
-bool dunkelBool = false;
-
-byte lichtan = LOW;
-
-//Waehlscheibe
-uint8_t zahlemann;  //Per Wählscheibe ermittelte Zahl
-unsigned long kienmuehle;  //Sondereingabe bei drücken der Taste2
-byte Einsteller = 1; //Globale Variable für ISR, Start bei 1
-
-// aus Communication.h
-
-unsigned int blockTemp; // #define transmitBlockTemp       0x40  // Data send:   blockTemp in °C*10
-unsigned int auslaufTemp; // #define transmitAuslaufTemp     0x41  // Data send:   hahnTemp in °C*10
-unsigned int power = 0; // #define transmitPower           0x42  // Data send:   Leistung in W (power1+power2)
-unsigned int inVoltage = 0; // #define transmitInVoltage       0x43  // Data send:   inVoltage in V*100
-unsigned int kuehlFlow = 0; // #define transmitKuehlFlow       0x44  // Data send:   Durchfluss Kühlwasser (extern) pro 10000ms
-
-unsigned int highTemperatur = 200; // #define setHighTemperatur       0x60  // Data get: Zieltemperatur Block * 100 (2°C)
-unsigned int midTemperatur = 600; // #define setMidTemperatur        0x61  // Data get: Normale Temperatur in °C * 100 (6°C)
-unsigned int lowTemperatur = 900; // #define setLowTemperatur        0x62  // Data get: Energiespar Temperatur * 100 (9°C)
-unsigned int minCurrent = 10; // #define setMinCurrent           0x63  // Data get: Current in mA / 10 (11 = 0,11 A), Untere Regelgrenze
-unsigned int lowCurrent = 50; // #define setLowCurrent           0x64  // Data get: current in mA / 10, Obere Regelgrenze bei wenig Strom
-unsigned int midCurrent = 600; // #define setMidCurrent           0x65  // Data get: Current in mA / 10, Obere Regelgrenze bei normalem Strom
-unsigned int highCurrent = 900; // #define setHighCurrent          0x66  // Data get: Current in mA / 10, Obere Regelgrenze bei gutem Strom
-
-unsigned int normVoltage = 500; //#define setNormVoltage          0x68  // Data get: norm Voltage * 100, passt normal, mehr als 9V macht wenig Sinn bei den Peltierelementen
-unsigned int maxVoltage = 1000; //#define setMaxVoltage           0x69  // Data get: max Voltage * 100, das wäre dann eigentlich die Batteriespannung
-unsigned int lowBatteryVoltage = 1140; //#define setLowBatteryVoltage    0x6A  // 11V Eingangsspannung
-unsigned int midBatteryVoltage = 1200; //#define setMidBatteryVoltage    0x6B  // 12V Eingangsspannung
-unsigned int highBatteryVoltage = 1300; //#define setHighBatteryVoltage   0x6C  // 13V Eingangsspannung
-
-unsigned int wasserTemp; //#define setWasserTemp           0x6D  // Data get: kühlwasserTemp in °C*100 vom DS18B20 Sensor vom Master: Fühler neben Peltier
-unsigned int einlaufTemp; //#define setEinlaufTemp          0x6E  // Data get: Biertemperatur in °C*100 vom DS18B20 Sensor vom Master: Bierzulauf
-
-unsigned int consKp = 80; //#define setConsKp               0x70  // Data get: konservativer Kp (ist alles mal 100)
-unsigned int consKi = 5; //#define setConsKi               0x71  // Data get: konservativer Ki
-unsigned int consKd = 5; //#define setConsKd               0x72  // Data get: konservativer Kd
-unsigned int aggKp = 150; //#define setAggKp                0x73  // Data get: aggressiver Kp
-unsigned int aggKi = 20; //#define setAggKi                0x74  // Data get: aggressiver Ki
-unsigned int aggKd = 50; //#define setAggKd                0x75  // Data get: aggressiver Kd
-unsigned int unterschiedAggPid = 10; //#define setUnterschiedAggPid    0x75  // mal zehn grad nehmen ab wann der aggressiv regelt
-unsigned int steuerZeit = 200; //#define setSteuerZeit           0x76  // alle sekunde mal nachjustieren
-
-bool ebiModeBool = false; //#define ebiMode               0xF9      //    1 an, 0 aus       Temperatur auf 2°C, Hahn auf, Zapfmusik
-bool beginZapfBool = false; // #define beginZapf             0xFA      //    Beginn das Zapfprogramm -> PID auf aggressiv
-bool endZapfBool = false; //#define endZapf               0xFB      //    Data send : milliliter
-bool kurzBevorZapfEndeBool = false; //#define kurzBevorZapfEnde     0xFC      //    sagt das wir kurz vor Ende sind → Valve schließen -> PID auf konservativ
-
-String dataOnSd = "";
-
-// I2C Kommunikation
-uint8_t recieveByte[3]; // Das will der Master von uns
-uint8_t sendeByte[2]; //Bytearray zum senden über I2C
-uint8_t aRxBuffer[3];
-uint8_t aTxBuffer[3];
-
-// Steuerungskram
-unsigned int zielTemperatur = highTemperatur;
-unsigned int setVoltage = normVoltage; //mal gaaanz klein beginnen
-unsigned int setCurrent = minCurrent;
-unsigned int maxCurrent = midCurrent; //Obere Regelgrenze auf mittlere stellen
-bool lowPower = false;
-bool veryLowPower = false;
-bool debugMode = false;
-
-// DREHENCODER
-// encoder lib: http://www.pjrc.com/teensy/td_libs_Encoder.html
-//#define ENCODER_OPTIMIZE_INTERRUPTS
-Encoder Dreher (rotaryDT, rotaryCLK); //PINS für Drehgeber
-//   Change these two numbers to the pins connected to your encoder.
-//   Best Performance: both pins have interrupt capability
-//   Good Performance: only the first pin has interrupt capability
-//   Low Performance:  neither pin has interrupt capability
-//   avoid using pins with LEDs attached
-
-volatile int DreherKnopfStatus = 0; //Da wird der Statatus vom Drehgeberknopf gelesen
-long oldPosition = 0; //Fuer Drehgeber
-
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver (); // called this way, it uses the default address 0x40
-tempsens temp;	//Temperatursensorik
-benutzer user;  //Benutzer
-audio sound; 	//Audioobjekt
-zValve ventil; // Ventilsteuerung, Druck, Reinigungspumpe
-zPrinter drucker;
-zLog logbuch;
-
-unsigned int tempAnzeigeZeit = millis (); //für zehnsekündige Temperaturanzeige
 
 void
 setup (void)
@@ -157,9 +52,11 @@ setup (void)
   analogWrite (taste1Pwm, 10);
   analogWrite (taste2Pwm, 10);
 
+  // i2c etc
+  drahthilfe.initialise();
+
   //Serial.begin(115200); //kein Serial!!! MIDI!!!!!!!!!
 
-  //DCF 77 Empfänger an STM uC
 
   //TFT
   ZD.beginn (&SD);  //mit Pointer zur SD starten
@@ -184,9 +81,7 @@ setup (void)
   //Printer
   drucker.initialise (&Serial2, &user, &buf[0]);
 
-  //I2C
-  Wire.begin (); // Master of the universe
-  Wire.setClock (400000); // I2C in FastMode 400kHz
+
 
   //Temperaturfuehler
   temp.begin ();
@@ -251,7 +146,7 @@ waehlscheibe ()
   DEBUGMSG(sound.debugmessage);
   auswahlZeit = millis ();
 
-  flowDataSend (LED_FUN_1, 10, 200, 0);
+  drahthilfe.flowDataSend(LED_FUN_1, 10, 200);
 
   if (!digitalRead (taste2))
     {
@@ -261,7 +156,7 @@ waehlscheibe ()
       ventil.openValve ();
       analogWrite (taste2Pwm, 10);
       //geh mal Zapfen
-      iBefehl (tempi2c, beginZapf);
+      drahthilfe.iBefehl (tempi2c, beginZapf);
       //flowDataSend(LED_FUN_2, 1000,1000);
 
     }
@@ -306,7 +201,8 @@ waehlscheibe ()
 	}
     }
 
-  flowDataSend (GET_ML, 0, 0, 0);  //LEDFun ausschalten
+  drahthilfe.flowDataSend (GET_ML, 0, 0);  //LEDFun ausschalten
+
   sound.pruefe ();
   DEBUGMSG(sound.debugmessage);
 
@@ -326,9 +222,9 @@ waehlscheibe ()
 	      zahlemann = 0; // user beim "nuller"
 	    }
 	  user.aktuell = zahlemann;
-	  flowDataSend (SET_USER_ML, 0, 0, user.menge ());
+	  drahthilfe.flowDataSend (SET_USER_ML, user.menge ());
 	  delay (500); //damit der Zeit hat
-	  flowDataSend (BEGIN_ZAPF, 0, 0, 0);
+	  drahthilfe.flowDataSend (BEGIN_ZAPF, 0, 0);
 
 	  switch (user.getGodMode ())
 	    {
@@ -484,7 +380,7 @@ tickMetronome (void)
 	  //ZD.setCursor(5, 30);
 	  //sprintf(buf, "leuchtLampe: %02x ", leuchtLampe);
 	  //ZD.printInt(totalMilliLitres);
-	  flowDataSend (LED_FUN_4, leuchtLampe, 0xFF, 0);
+	  drahthilfe.flowDataSend (LED_FUN_4, leuchtLampe, 0xFF);
 	  //flowDataSend(LED_FUN_1, 1, 70);
 	  //leuchtLampe << 1;
 	  leuchtLampe++;
@@ -566,9 +462,9 @@ seltencheck (void)
 	    }
 	  delay (10);
 	}
-      flowDataSend (endZapf, 0, 0, 0);
-      flowDataSend (zapfenStreich, 0, 0, 0);
-      iBefehl (tempi2c, zapfenStreich);
+      drahthilfe.flowDataSend (endZapf, 0,0);
+      drahthilfe.flowDataSend (zapfenStreich, 0,0);
+      drahthilfe.iBefehl (tempi2c, zapfenStreich);
       user.gesamtMengeTag = 0;
       aktuellerTag++;
       ventil.closeValve ();
@@ -786,7 +682,7 @@ loop ()
 	    }
 	}
 
-      flowDataSend (GET_ML, 0, 0, 0); // aktuelle ml vom Flow uC abfragen
+      drahthilfe.flowDataSend (GET_ML, 0, 0); // aktuelle ml vom Flow uC abfragen
 
       // Nachschaun ob er fertig ist und dann bingen und zamschreim
       if (totalMilliLitres >= user.menge () || digitalRead (taste2))
@@ -822,7 +718,7 @@ loop ()
 	{
 	  beginZapfBool = false;
 	  sound.setStandby (beginZapfBool);
-	  iBefehl (tempi2c, endZapf);
+	  drahthilfe.iBefehl (tempi2c, endZapf);
 	  ventil.check ();
 	  for (uint8_t pwmnum = 1; pwmnum < 11; pwmnum++)
 	    {
@@ -832,7 +728,7 @@ loop ()
 
       if ((user.menge () - totalMilliLitres) < 30)
 	{
-	  iBefehl (tempi2c, kurzBevorZapfEnde);
+	  drahthilfe.iBefehl (tempi2c, kurzBevorZapfEnde);
 	  ventil.check ();
 	}
     }
@@ -850,65 +746,6 @@ userShow (void)
   //strcpy(userName, BenutzerName[zahlemann].c_str());
   ZD.userShow (&user);
   UserDataShow ();
-}
-
-void
-iBefehl (uint8_t empfaenger, uint8_t befehl)
-{
-
-  Wire.beginTransmission (empfaenger); // transmit to device
-  Wire.write (befehl);        // mach Das du stück
-  Wire.endTransmission ();    // stop transmitting
-
-}
-
-void
-iDataSend (byte empfaenger, byte befehl, unsigned int sendedaten)
-{
-
-  Wire.beginTransmission (empfaenger); // transmit to device
-  sendeByte[0] = highByte(sendedaten);
-  sendeByte[1] = lowByte(sendedaten);
-  Wire.write (befehl);        // mach Das du stück
-  Wire.write (sendeByte[0]); // Schick dem Master die Daten, Du Lappen
-  Wire.write (sendeByte[1]); // Schick dem Master die anderen Daten
-  Wire.endTransmission ();    // stop transmitting
-
-}
-
-void
-i2cIntDataSend (byte empfaenger, byte befehl, unsigned int sendedaten)
-{
-  Wire.beginTransmission (empfaenger); // transmit to device
-  sendeByte[0] = highByte(sendedaten);
-  sendeByte[1] = lowByte(sendedaten);
-  Wire.write (befehl);        // mach Das du stück
-  Wire.write (sendeByte[0]); // Schick dem Master die Daten, Du Lappen
-  Wire.write (sendeByte[1]); // Schick dem Master die anderen Daten
-  Wire.endTransmission ();    // stop transmitting
-}
-
-void
-flowDataSend (uint8_t befehl, uint8_t option1, uint8_t option2, uint16_t wert)
-{
-  if (wert != 0)
-    {
-      option1 = highByte(wert);
-      option2 = lowByte(wert);
-    }
-  Wire.beginTransmission (FLOW_I2C_ADDR); // schicke Daten an den Flow
-  Wire.write (befehl);        // mach Das du stück
-  Wire.write (option1); // optionen siehe communication.h
-  Wire.write (option2); //
-  Wire.endTransmission ();    // stop transmitting
-
-  Wire.requestFrom (FLOW_I2C_ADDR, FLOW_I2C_ANTWORTBYTES); // Daten vom Flow müssen immer geholt werden
-  while (Wire.available ())
-    { // wenn Daten vorhanden, hol die Dinger
-      aRxBuffer[0] = Wire.read (); // ein Byte als char holen
-      aRxBuffer[1] = Wire.read (); // zweites Byte als char holen
-    }
-  totalMilliLitres = (aRxBuffer[0] << 8) + aRxBuffer[1]; // da der Flow immer die aktuellen ml ausgibt kann man die gleich in die Variable schreiben
 }
 
 void
@@ -1126,7 +963,7 @@ reinigungsprogramm (void)
   //hier braces damit die variablen allein hier sind
   ZD.printText ();
   ZD._tft.println ("        REINIGUNGSPROGRAMM");
-  iBefehl (tempi2c, zapfenStreich);
+  drahthilfe.iBefehl (tempi2c, zapfenStreich);
   ventil.cleanPumpOn ();
   delay (500); //zum taste loslassen!
   unsigned long waitingTime = millis ();
@@ -1188,27 +1025,27 @@ spezialprogramm (uint16_t input)
       break;
     case 11:
       consKp = varContent;
-      iDataSend (tempi2c, setConsKp, consKp);
+      drahthilfe.iDataSend (tempi2c, setConsKp, consKp);
       break;
     case 12:
       consKi = varContent;
-      iDataSend (tempi2c, setConsKi, consKi);
+      drahthilfe.iDataSend (tempi2c, setConsKi, consKi);
       break;
     case 13:
       consKd = varContent;
-      iDataSend (tempi2c, setConsKi, consKd);
+      drahthilfe.iDataSend (tempi2c, setConsKi, consKd);
       break;
     case 14:
       aggKp = varContent;
-      iDataSend (tempi2c, setAggKp, aggKp);
+      drahthilfe.iDataSend (tempi2c, setAggKp, aggKp);
       break;
     case 15:
       aggKi = varContent;
-      iDataSend (tempi2c, setAggKi, aggKi);
+      drahthilfe.iDataSend (tempi2c, setAggKi, aggKi);
       break;
     case 16:
       aggKd = varContent;
-      iDataSend (tempi2c, setAggKd, aggKd);
+      drahthilfe.iDataSend (tempi2c, setAggKd, aggKd);
       break;
     case 17:
       break;

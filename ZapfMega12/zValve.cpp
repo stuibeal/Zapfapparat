@@ -52,7 +52,7 @@ zValve::begin ()
  * 3	552
  */
 /**
- * Liest den Drucksensor aus und gibt das Ergebnis zurück
+ * @brief  Liest den Drucksensor aus und gibt das Ergebnis zurück
  * @return Druck in ATÜ * 100
  */
 int
@@ -63,6 +63,9 @@ zValve::getPressure ()
   return druck;
 }
 
+/* @brief  Hinterer Ausgang wird mit 12V versorgt für Reinigungspumpe
+ * 	   Klinkenanschluss 6.3mm
+ */
 void
 zValve::cleanPumpOn ()
 {
@@ -75,6 +78,10 @@ zValve::cleanPumpOn ()
   digitalWrite (CLEAN_PUMP_PIN, cleanPumpState);
 }
 
+/** @brief  Hinterer Ausgang wird abgeschaltet
+ * 	    Das Ventil soll(!) offen bleiben, damit das ganze dann
+ * 	    evtl mit CO2 durchgeblasen werden kann.
+ */
 void
 zValve::cleanPumpOff ()
 {
