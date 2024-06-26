@@ -28,7 +28,7 @@
 #include <string.h>
 #include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
 //#include "Adafruit_GFX.h" // Hardware-specific library
-#include "tempsens.h"
+#include "tempControl.h"
 #include "./common/benutzer.h"
 
 //Fonts
@@ -139,7 +139,7 @@ class zDisplay : public MCUFRIEND_kbv, GFXcanvas1
   void
   setTextSize (uint8_t s);
   void
-  infoscreen (tempsens *temp, benutzer *user);
+  infoscreen (tempControl *temp, benutzer *user);
   MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
 
 private:

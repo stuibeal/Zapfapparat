@@ -20,7 +20,7 @@
 #include "./common/gemein.h"
 #include "./zLibraries/RTC_DCF/DateTime.h"
 #include "./zLibraries/RTC_DCF/RealTimeClock_DCF.h"
-#include "tempsens.h"
+#include "./common/tempControl.h"
 #include "string.h"
 
 class zLog : public RealTimeClock_DCF, DateTime
@@ -30,7 +30,7 @@ public:
   virtual
   ~zLog ();
   void
-  initialise (SdFat *psd, benutzer *puser, tempsens *ptemp, char *buf);
+  initialise (SdFat *psd, benutzer *puser, tempControl *ptemp, char *buf);
   inline void
   setLogState(uint8_t state) {logState = state;}
   inline uint8_t
@@ -59,7 +59,7 @@ private:
 protected:
   SdFat *_sd;
   benutzer *_user;
-  tempsens *_temp;
+  tempControl *_temp;
 
 
 };

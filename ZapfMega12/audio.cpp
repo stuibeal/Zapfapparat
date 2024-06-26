@@ -25,6 +25,9 @@ audio::~audio ()
   //  Auto-generated destructor stub
 }
 
+/*
+ * deprecated
+
 void
 audio::starte (MD_MIDIFile *pSMF, MD_YX5300 *pmp3)
 {
@@ -34,6 +37,8 @@ audio::starte (MD_MIDIFile *pSMF, MD_YX5300 *pmp3)
   _mp3 = pmp3;
   _SMF = pSMF;
 }
+*/
+
 void
 audio::starte (SdFat *pSD)
 {

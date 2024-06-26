@@ -26,10 +26,21 @@
  - WS PULS von 33 auf 19!!!! weil Interrupt
 
 
-
  */
 
 #include "ZapfMega12.h"
+
+SdFat SD;  // SD-KARTE
+zDisplay ZD;   // neues zDisplay Objekt
+zWireHelper drahthilfe;
+
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(); // called this way, it uses the default address 0x40
+tempControl temp;	//Temperatursensorik
+benutzer user;  //Benutzer
+audio sound; 	//Audioobjekt
+zValve ventil; // Ventilsteuerung, Druck, Reinigungspumpe
+zPrinter drucker;
+zLog logbuch;
 
 
 void
@@ -84,7 +95,7 @@ setup (void)
 
 
   //Temperaturfuehler
-  temp.begin ();
+  temp.begin (); //Wire sollte konfiguriert sein!
   ZD.println ("Temperaturfuehler hochgefahren...");
 
   //FLOWMETER
@@ -112,6 +123,7 @@ setup (void)
   //Altdaten auslesen (SD karte) nach Stromweg oder so...
 
   //PWM Treiber hochfahren
+
   pwm.begin ();
   pwm.setPWMFreq (1000);  // Maximale Frequenz (1kHz) -> reicht für LED
   pwm.setPWM (0, 0, 16);   //helle LEDS abdunkeln grün
@@ -156,7 +168,7 @@ waehlscheibe ()
       ventil.openValve ();
       analogWrite (taste2Pwm, 10);
       //geh mal Zapfen
-      drahthilfe.iBefehl (tempi2c, beginZapf);
+      temp.sendeBefehl(beginZapf, 0x0);
       //flowDataSend(LED_FUN_2, 1000,1000);
 
     }
@@ -414,7 +426,6 @@ seltencheck (void)
   //DEBUGMSG(buf);
 
   hell = analogRead (helligkeitSensor);
-  inVoltage = temp.getInVoltage ();
 
   //Hier checken ob was gespielt wird, ansonsten audio aus
   //audio.check();
@@ -464,7 +475,7 @@ seltencheck (void)
 	}
       drahthilfe.flowDataSend (endZapf, 0,0);
       drahthilfe.flowDataSend (zapfenStreich, 0,0);
-      drahthilfe.iBefehl (tempi2c, zapfenStreich);
+      temp.sendeBefehl(zapfenStreich, 0x0);
       user.gesamtMengeTag = 0;
       aktuellerTag++;
       ventil.closeValve ();
@@ -520,7 +531,8 @@ seltencheck (void)
       Serial.println ("NAchtprogramm so verlassen");
     }
 
-  temp.request ();
+  temp.requestSensors ();
+  temp.holeDaten();
 
 }
 //ZD.print_val(zulauf.getTempC() * 100, 200, 170, 1, 1);
@@ -718,7 +730,7 @@ loop ()
 	{
 	  beginZapfBool = false;
 	  sound.setStandby (beginZapfBool);
-	  drahthilfe.iBefehl (tempi2c, endZapf);
+	  temp.sendeBefehl(endZapf, 0x0);
 	  ventil.check ();
 	  for (uint8_t pwmnum = 1; pwmnum < 11; pwmnum++)
 	    {
@@ -728,7 +740,7 @@ loop ()
 
       if ((user.menge () - totalMilliLitres) < 30)
 	{
-	  drahthilfe.iBefehl (tempi2c, kurzBevorZapfEnde);
+	  temp.sendeBefehl(kurzBevorZapfEnde, 0x0);
 	  ventil.check ();
 	}
     }
@@ -753,11 +765,12 @@ anzeigeAmHauptScreen (void)
 {
   //DEBUGMSG("vor transmitBlocktemp");
   //ZD.print_val2 (temp.getBlock1Temp (), 20, 100, 3, 1);
-  ZD.printVal (temp.getBlock1Temp (), 25, 100, WHITE, ZDUNKELGRUEN, &FETT,
+  temp.holeDaten();
+  ZD.printVal (temp.getBlockAussenTemp (), 25, 100, WHITE, ZDUNKELGRUEN, &FETT,
   KOMMA);
   //DEBUGMSG("vor transmitauslauf");
   //DEBUGMSG("vor transmitauslauf");
-  ZD.print_val2 (temp.getBlock2Temp (), 20, 125, 1, 1);
+  ZD.print_val2 (temp.getBlockInnenTemp (), 20, 125, 1, 1);
   ZD.print_val2 (totalMilliLitres, 20, 150, 1, 0);
   ZD.printText ();
   ZD._tft.println (ventil.getPressure ());
@@ -963,7 +976,7 @@ reinigungsprogramm (void)
   //hier braces damit die variablen allein hier sind
   ZD.printText ();
   ZD._tft.println ("        REINIGUNGSPROGRAMM");
-  drahthilfe.iBefehl (tempi2c, zapfenStreich);
+  temp.sendeBefehl(ZAPFEN_STREICH, 0x0);
   ventil.cleanPumpOn ();
   delay (500); //zum taste loslassen!
   unsigned long waitingTime = millis ();
@@ -1023,33 +1036,6 @@ spezialprogramm (uint16_t input)
     case 9: //Mediaplayer
       sound.mp3Play (11, varContent);
       break;
-    case 11:
-      consKp = varContent;
-      drahthilfe.iDataSend (tempi2c, setConsKp, consKp);
-      break;
-    case 12:
-      consKi = varContent;
-      drahthilfe.iDataSend (tempi2c, setConsKi, consKi);
-      break;
-    case 13:
-      consKd = varContent;
-      drahthilfe.iDataSend (tempi2c, setConsKi, consKd);
-      break;
-    case 14:
-      aggKp = varContent;
-      drahthilfe.iDataSend (tempi2c, setAggKp, aggKp);
-      break;
-    case 15:
-      aggKi = varContent;
-      drahthilfe.iDataSend (tempi2c, setAggKi, aggKi);
-      break;
-    case 16:
-      aggKd = varContent;
-      drahthilfe.iDataSend (tempi2c, setAggKd, aggKd);
-      break;
-    case 17:
-      break;
-
     case 99: // auch Mediaplayer
       sound.mp3Play (11, varContent);
       break;

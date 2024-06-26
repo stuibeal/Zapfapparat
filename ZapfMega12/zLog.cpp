@@ -31,7 +31,7 @@ zLog::~zLog ()
  * @param ptemp Pointer zu den Temperaturdaten
  */
 void
-zLog::initialise (SdFat *psd, benutzer *puser, tempsens *ptemp, char *buf)
+zLog::initialise (SdFat *psd, benutzer *puser, tempControl *ptemp, char *buf)
 {
   _sd = psd;  //Save pointer
   _user = puser;

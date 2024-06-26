@@ -29,44 +29,6 @@ zWireHelper::initialise()
     Wire.setClock (400000); // I2C in FastMode 400kHz
 }
 
-
-void
-zWireHelper::iBefehl (uint8_t empfaenger, uint8_t befehl)
-{
-
-  Wire.beginTransmission (empfaenger); // transmit to device
-  Wire.write (befehl);        // mach Das du stück
-  Wire.endTransmission ();    // stop transmitting
-
-}
-
-void
-zWireHelper::iDataSend (byte empfaenger, byte befehl, unsigned int sendedaten)
-{
-
-  Wire.beginTransmission (empfaenger); // transmit to device
-  aTxBuffer[0] = highByte(sendedaten);
-  aTxBuffer[1] = lowByte(sendedaten);
-  Wire.write (befehl);        // mach Das du stück
-  Wire.write (aTxBuffer[0]); // Schick dem Master die Daten, Du Lappen
-  Wire.write (aTxBuffer[1]); // Schick dem Master die anderen Daten
-  Wire.endTransmission ();    // stop transmitting
-
-}
-
-void
-zWireHelper::i2cIntDataSend (byte empfaenger, byte befehl, unsigned int sendedaten)
-{
-  Wire.beginTransmission (empfaenger); // transmit to device
-  aTxBuffer[0] = highByte(sendedaten);
-  aTxBuffer[1] = lowByte(sendedaten);
-  Wire.write (befehl);        // mach Das du stück
-  Wire.write (aTxBuffer[0]); // Schick dem Master die Daten, Du Lappen
-  Wire.write (aTxBuffer[1]); // Schick dem Master die anderen Daten
-  Wire.endTransmission ();    // stop transmitting
-}
-
-
 /**
  * @brief Methode um einen Befehl und einen integer an den Flowmeter zu schicken
  * 	  der Flowmeter uC gibt immer die aktuellen Milliliter zurück
@@ -119,3 +81,4 @@ void zWireHelper::flowDataSend (uint8_t befehl, uint8_t option1, uint8_t option2
     }
   zapfMillis = (aRxBuffer[0] << 8) + aRxBuffer[1]; // da der Flow immer die aktuellen ml ausgibt kann man die gleich in die Variable schreiben
 }
+

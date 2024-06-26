@@ -44,17 +44,17 @@
 		<link>
 			<name>libraries/Adafruit_BusIO</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Adafruit_BusIO/1.14.1</locationURI>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Adafruit_BusIO/1.16.1</locationURI>
 		</link>
 		<link>
 			<name>libraries/Adafruit_GFX_Library</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Adafruit_GFX_Library/1.11.5</locationURI>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Adafruit_GFX_Library/1.11.9</locationURI>
 		</link>
 		<link>
 			<name>libraries/Adafruit_PWM_Servo_Driver_Library</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Adafruit_PWM_Servo_Driver_Library/2.4.1</locationURI>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Adafruit_PWM_Servo_Driver_Library/3.0.2</locationURI>
 		</link>
 		<link>
 			<name>libraries/Adafruit_Thermal_Printer_Library</name>
@@ -64,12 +64,12 @@
 		<link>
 			<name>libraries/DS18B20_RT</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/DS18B20_RT/0.2.0</locationURI>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/DS18B20_RT/0.2.2</locationURI>
 		</link>
 		<link>
 			<name>libraries/Encoder</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Encoder/1.4.2</locationURI>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Encoder/1.4.4</locationURI>
 		</link>
 		<link>
 			<name>libraries/MD_MIDIFile</name>
@@ -84,7 +84,7 @@
 		<link>
 			<name>libraries/OneWire</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/OneWire/2.3.7</locationURI>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/OneWire/2.3.8</locationURI>
 		</link>
 		<link>
 			<name>libraries/SD</name>
@@ -99,12 +99,7 @@
 		<link>
 			<name>libraries/SdFat</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/SdFat/2.2.2</locationURI>
-		</link>
-		<link>
-			<name>libraries/SoftwareSerial</name>
-			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.8.6/libraries/SoftwareSerial</locationURI>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/SdFat/2.2.3</locationURI>
 		</link>
 		<link>
 			<name>libraries/Wire</name>

@@ -11,35 +11,27 @@
 #include <Wire.h>
 #include "gemein.h"
 #include "stdint.h"
+#include "string.h"
 
-class zWireHelper
-{
+class zWireHelper {
 public:
-  zWireHelper ();
-  virtual
-  ~zWireHelper ();
-  void
-  initialise ();
-  void
-  iBefehl (uint8_t empfaenger, uint8_t befehl);
-  void
-  iDataSend (byte empfaenger, byte befehl, unsigned int sendedaten);
-  void
-  i2cIntDataSend (byte empfaenger, byte befehl, unsigned int sendedaten);
-  void
-  flowDataSend (uint8_t befehl, uint16_t wert);
-  void
-  flowDataSend (uint8_t befehl, uint8_t option1, uint8_t option2);
-  inline uint16_t
-  getMilliliter ()
-  {
-    return zapfMillis;
-  }
+	zWireHelper();
+	virtual
+	~zWireHelper();
+	void
+	initialise();
+	void
+	flowDataSend(uint8_t befehl, uint16_t wert);
+	void
+	flowDataSend(uint8_t befehl, uint8_t option1, uint8_t option2);
+	inline uint16_t getMilliliter() {
+		return zapfMillis;
+	}
 
 private:
-  uint8_t aRxBuffer[3];
-  uint8_t aTxBuffer[3];
-  uint16_t zapfMillis;
+	uint8_t aRxBuffer[14];
+	uint8_t aTxBuffer[14];
+	uint16_t zapfMillis;
 };
 
 #endif /* COMMON_ZWIREHELPER_H_ */

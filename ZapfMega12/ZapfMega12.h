@@ -8,7 +8,7 @@
  *      TODO: Debug/logging class (tbd) on of call 33284 for DEBUG
  *      TODO: audio!
  *      TODO: logging before MIDI AUDIO! (sd!!!)
- *
+ * lll
  *
  */
 
@@ -31,11 +31,11 @@
 #include "./zLibraries/RTC_DCF/RealTimeClock_DCF.h"
 #include "./zLibraries/zPrinter/zPrinter.h"
 #include "benutzer.h"
-#include "tempsens.h"
 #include "audio.h"
 #include "zValve.h"
 #include "zLog.h"
 #include "zWireHelper.h"
+#include "tempControl.h"
 
 
 // Includes aus
@@ -83,9 +83,6 @@ char buf[80];
 bool oldFlowWindow;
 bool flowWindow;
 
-SdFat SD;  // SD-KARTE
-zDisplay ZD;   // neues zDisplay Objekt
-zWireHelper drahthilfe;
 
 
 //Hier Variablen definieren
@@ -168,14 +165,6 @@ Encoder Dreher (ROTARY_DT_PIN, ROTARY_CLK_PIN); //PINS für Drehgeber
 
 volatile int DreherKnopfStatus = 0; //Da wird der Statatus vom Drehgeberknopf gelesen
 long oldPosition = 0; //Fuer Drehgeber
-
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver (); // called this way, it uses the default address 0x40
-tempsens temp;	//Temperatursensorik
-benutzer user;  //Benutzer
-audio sound; 	//Audioobjekt
-zValve ventil; // Ventilsteuerung, Druck, Reinigungspumpe
-zPrinter drucker;
-zLog logbuch;
 
 unsigned int tempAnzeigeZeit = millis (); //für zehnsekündige Temperaturanzeige
 

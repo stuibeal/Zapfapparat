@@ -465,9 +465,10 @@ zDisplay::setTextSize (uint8_t s)
 }
 
 void
-zDisplay::infoscreen (tempsens *temp, benutzer *user)
+zDisplay::infoscreen (tempControl *temp, benutzer *user)
 {
-  temp->request ();
+  temp->requestSensors ();
+  temp->holeDaten();
   _tft.setFont (&NORMAL);
   _tft.fillScreen (BLACK);
   _tft.setTextColor (WHITE);
@@ -490,16 +491,20 @@ zDisplay::infoscreen (tempsens *temp, benutzer *user)
   _tft.setCursor (0, 60);
   _tft.setFont (0);
   _tft.setTextSize (2);
-  _tft.print ("block: ");
-  _tft.println (temp->blockTemp);
+  _tft.print ("blockD:");
+  _tft.println (temp->getDSblockTemp());
+  _tft.print ("blockA:");
+  _tft.println (temp->getBlockAussenTemp());
+  _tft.print ("blockI:");
+  _tft.println (temp->getBlockInnenTemp());
   _tft.print ("hahn:  ");
-  _tft.println (temp->hahnTemp);
+  _tft.println (temp->getHahnTemp());
   _tft.print ("haus:  ");
-  _tft.println (temp->hausTemp);
+  _tft.println (temp->getHausTemp());
   _tft.print ("kuehlw:");
-  _tft.println (temp->kuehlwasserTemp);
+  _tft.println (temp->getKuehlWasserTemp());
   _tft.print ("zulauf:");
-  _tft.println (temp->zulaufTemp);
-  temp->request ();
+  _tft.println (temp->getZulaufTemp());
+  temp->requestSensors ();
 
 }

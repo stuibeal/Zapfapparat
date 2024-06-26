@@ -8,8 +8,8 @@
 #ifndef AUDIO_H_
 #define AUDIO_H_
 #include "Arduino.h"
-#include "gemein.h"
 #include "MD_MIDIFile.h"
+#include "gemein.h"
 #include "MD_YX5300.h"
 #include "string.h"
 
@@ -54,8 +54,8 @@ public:
   audio ();
   virtual
   ~audio ();
-  void
-  starte (MD_MIDIFile *pSMF, MD_YX5300 *pmp3); //Mit Pointer starten (deprecated)
+  //void
+  //starte (MD_MIDIFile *pSMF, MD_YX5300 *pmp3); //Mit Pointer starten (deprecated)
   void
   starte (SdFat *pSD); //nur SD Karte pointer
   void
