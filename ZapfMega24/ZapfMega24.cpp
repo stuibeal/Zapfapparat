@@ -225,12 +225,13 @@ void waehlscheibe() {
 	}
 	bool old_waehler2 = 1;
 	bool waehler2 = digitalRead(WSpuls);
+	unsigned long temptime = 0;
+
 	while (digitalRead(WSready) == 1) {
 
 		old_waehler2 = waehler2;
 		waehler2 = digitalRead(WSpuls);
 
-		unsigned long temptime = 0;
 
 		if (waehler2 < old_waehler2) {
 			temptime = millis();  //hier die Wählscheibe auslesen
