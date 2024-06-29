@@ -8,8 +8,9 @@
 #include <string.h>
 #include <Wire.h>
 #include "Adafruit_Thermal.h"
-#include "Adafruit_GFX.h"
 #include <Adafruit_PWMServoDriver.h>   //PWM LED wählscheibe, VOR DEM DISPLAY includen!!!!!!!!!!!
+#include "Adafruit_GFX.h"
+#include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
 #include "zDisplay.h"
 #include <SdFat.h>            // Use the SdFat library
 #include "Encoder.h"  //für Drehencoder
@@ -48,7 +49,6 @@ bool flowWindow;
 byte aktuellerTag = 1;  //dann gehts mit der Musik aus
 unsigned int minTemp = 200;
 unsigned int zielTemp = 200;
-volatile byte WSpulseCount = 0;
 unsigned long auswahlZeit = 0;
 int aktuellerModus = 0;
 unsigned int hell;
@@ -298,9 +298,8 @@ void waehlscheibe() {
 			if (zahlemann < 10) {
 				kienmuehle += zahlemann;
 			}
-			ZD.printText();
 			sprintf(buf, "Nr: %9lu", kienmuehle);
-			ZD._tft.println(buf);
+			ZD.infoText(buf);
 		}
 
 	}
@@ -542,6 +541,7 @@ void belohnungsMusik() {
 void infoseite(void) {
 	analogWrite(TASTE1_LED, 10);
 	sound.loadSingleMidi("SKYFALL.MID");
+	sound._SMF->pause(false);
 	ZD.infoscreen(&temp, &user);
 
 	//ZD.setFont(&FreeSans9pt7b);

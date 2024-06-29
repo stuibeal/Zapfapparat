@@ -113,6 +113,7 @@ public:
 	virtual ~zDisplay(); //Destructor
 	void beginn(SdFat *psd);
 	void printText(void);  //Zeigt Text an
+	void infoText(const char* text);
 	uint8_t showBMP(char const *nm, int16_t x, int16_t y);
 	void print_val(int val, int16_t x, int16_t y, int c, bool komma);
 	//void fillScreen(unsigned short int color);

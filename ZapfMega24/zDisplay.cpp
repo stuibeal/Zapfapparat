@@ -58,8 +58,13 @@ void zDisplay::printText(void) {
 	_tft.setTextSize(2);
 	_tft.setCursor(10, 305);
 	_tft.setTextColor(TFT_BLACK, TFT_WHITE);
-	_tft.println("                         ");
+	_tft.println("                                ");
 	_tft.setCursor(10, 305);
+}
+
+void zDisplay::infoText(const char *text) {
+	printText();
+	_tft.println(text);
 
 }
 
