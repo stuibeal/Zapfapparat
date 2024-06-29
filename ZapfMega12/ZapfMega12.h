@@ -96,7 +96,7 @@ int aktuellerModus = 0;
 unsigned int hell;
 
 unsigned long oldTime = millis ();
-unsigned long nachSchauZeit = 0;
+unsigned loMID_POWERng nachSchauZeit = 0;
 unsigned long hellZeit;
 unsigned int hellCount = 0;
 unsigned int dunkelCount = 0;

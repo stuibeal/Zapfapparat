@@ -8,6 +8,9 @@
 #include "zPower.h"
 #include "gemein.h"
 #include "tempControl.h"
+#include "Adafruit_PWMServoDriver.h"
+
+
 
 zPower::zPower ()
 {

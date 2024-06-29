@@ -27,6 +27,8 @@
 #include "stdio.h"
 #include <string.h>
 #include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
+#include "Adafruit_GFX.h"
+
 //#include "Adafruit_GFX.h" // Hardware-specific library
 #include "tempControl.h"
 #include "./common/benutzer.h"
@@ -74,20 +76,19 @@
 /*
  *
 
-#define BLACK   0x0000
-#define RED     0xF800
-#define GREEN   0x07E0
-#define WHITE   0xFFFF
-#define WGRUEN  0x05AA
-#define ZGRUEN  0x06AB
-#define ZBRAUN  0xE6DA //dunkelbraun
-#define ZHELLBRAUN 0xEF3B //hell
-#define ZHELLGRUEN 	0x0428  //Zapf hell
-#define ZDUNKELGRUEN 	0x0326  //Zapf dunkel
-#define GREY    0x8410
-*
-*/
-
+ #define BLACK   0x0000
+ #define RED     0xF800
+ #define GREEN   0x07E0
+ #define WHITE   0xFFFF
+ #define WGRUEN  0x05AA
+ #define ZGRUEN  0x06AB
+ #define ZBRAUN  0xE6DA //dunkelbraun
+ #define ZHELLBRAUN 0xEF3B //hell
+ #define ZHELLGRUEN 	0x0428  //Zapf hell
+ #define ZDUNKELGRUEN 	0x0326  //Zapf dunkel
+ #define GREY    0x8410
+ *
+ */
 
 #ifndef min
   #define min(a, b) (((a) < (b)) ? (a) : (b))
@@ -100,69 +101,50 @@
 //#define KOMMA 1
 //#define GANZZAHL 0
 
-
 // SHOW BMP
 #define NAMEMATCH ""         // "" matches any name
 #define PALETTEDEPTH   8     // support 256-colour Palette
 #define BMPIMAGEOFFSET 54
 #define BUFFPIXEL      20
 
-class zDisplay : public MCUFRIEND_kbv, GFXcanvas1
-{
-  public:
-  zDisplay (); //Constructor
-  virtual
-  ~zDisplay (); //Destructor
-  void
-  beginn (SdFat *psd);
-  void
-  printText (void);  //Zeigt Text an
-  uint8_t
-  showBMP (char const *nm, int16_t x, int16_t y);
-  void
-  print_val (int val, int16_t x, int16_t y, int c, bool komma);
-  //void fillScreen(unsigned short int color);
-  void
-  print_val2 (int val, int16_t x, int16_t y, int c, bool komma);
-  void
-  printVal (int val, int16_t x, int16_t y, uint16_t textColor, uint16_t backColor, const GFXfont *_pfont, bool komma);
-  void
-  setCursor (int16_t x, int16_t y);
-  void
-  printInt (uint16_t zahl);
-  void
-  userShow (benutzer *user);
-  void
-  println (const char *text);
-  void
-  setTextColor (uint16_t c);
-  void
-  setTextSize (uint8_t s);
-  void
-  infoscreen (tempControl *temp, benutzer *user);
-  MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
+class zDisplay: public MCUFRIEND_kbv, GFXcanvas1 {
+public:
+	zDisplay(); //Constructor
+	virtual ~zDisplay(); //Destructor
+	void beginn(SdFat *psd);
+	void printText(void);  //Zeigt Text an
+	uint8_t showBMP(char const *nm, int16_t x, int16_t y);
+	void print_val(int val, int16_t x, int16_t y, int c, bool komma);
+	//void fillScreen(unsigned short int color);
+	void print_val2(int val, int16_t x, int16_t y, int c, bool komma);
+	void printVal(int val, int16_t x, int16_t y, uint16_t textColor,
+			uint16_t backColor, const GFXfont *_pfont, bool komma);
+	void setCursor(int16_t x, int16_t y);
+	void printInt(uint16_t zahl);
+	void userShow(benutzer *user);
+	void println(const char *text);
+	void setTextColor(uint16_t c);
+	void setTextSize(uint8_t s);
+	void infoscreen(tempControl *temp, benutzer *user);
+	MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
 
 private:
-  //friend class GFXcanvas1;
-  uint16_t
-  read16 (File &f);
-  uint32_t
-  read32 (File &f);
-  char namebuf[32];   //BMP files in PIC Verzeichnis
-  File root;
-  int pathlen = 0;
-  //File bmpfile;
-  uint8_t r;
-  uint8_t g;
-  uint8_t b;
-  GFXcanvas1 *_canvas;
-  //GFXcanvas1 myCanvas;
-  //GFXcanvas1 myCanvas2;
-
+	//friend class GFXcanvas1;
+	uint16_t read16(File &f);
+	uint32_t read32(File &f);
+	char namebuf[32];   //BMP files in PIC Verzeichnis
+	File root;
+	int pathlen = 0;
+	//File bmpfile;
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
+	GFXcanvas1 *_canvas;
+	//GFXcanvas1 myCanvas;
+	//GFXcanvas1 myCanvas2;
 
 protected:
-  SdFat *_sd; 		// Pointer zum SD-Objekt vom Hauptprogramm
-
+	SdFat *_sd; 		// Pointer zum SD-Objekt vom Hauptprogramm
 
 //	File    _fd;      //SDFat file descriptor
 

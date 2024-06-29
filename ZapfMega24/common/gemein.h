@@ -59,8 +59,6 @@
 #define KOMMA 1
 #define GANZZAHL 0
 
-void setHardwareConstants(void);
-void setBenutzerDaten(void);
 
 // COMMUNICATION
 

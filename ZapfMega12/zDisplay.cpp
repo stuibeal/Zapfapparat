@@ -96,7 +96,7 @@ zDisplay::read32 (File &f)
  * @return
  */
 uint8_t
-zDisplay::showBMP (char const *nm, int x, int y)
+zDisplay::showBMP (char const *nm, int16_t x, int16_t y)
 {
   File bmpFile;
   int bmpWidth, bmpHeight;    // W+H in pixels
@@ -107,7 +107,7 @@ zDisplay::showBMP (char const *nm, int x, int y)
   uint16_t lcdbuffer[(1 << PALETTEDEPTH) + BUFFPIXEL], *palette = NULL;
   uint8_t bitmask, bitshift;
   boolean flip = true;        // BMP is stored bottom-to-top
-  int w, h, row, col, lcdbufsiz = (1 << PALETTEDEPTH) + BUFFPIXEL, buffidx;
+  int16_t w, h, row, col, lcdbufsiz = (1 << PALETTEDEPTH) + BUFFPIXEL, buffidx; //war int
   uint32_t pos;               // seek position
   boolean is565 = false;      //
 
