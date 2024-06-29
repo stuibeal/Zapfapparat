@@ -42,8 +42,8 @@
 
 // Variablen
 char buf[80];
-bool oldFlowWindow;
-bool flowWindow;
+uint8_t flowWindow = 0;
+uint8_t oldFlowWindow = 0;
 
 //Hier Variablen definieren
 byte aktuellerTag = 1;  //dann gehts mit der Musik aus
@@ -231,7 +231,6 @@ void waehlscheibe() {
 
 		old_waehler2 = waehler2;
 		waehler2 = digitalRead(WSpuls);
-
 
 		if (waehler2 < old_waehler2) {
 			temptime = millis();  //hier die Wählscheibe auslesen
@@ -631,7 +630,8 @@ void loop() {
 		flowmeter.flowDataSend(GET_ML, 0, 0); // aktuelle ml vom Flow uC abfragen
 
 		// Nachschaun ob er fertig ist und dann bingen und zamschreim
-		if (flowmeter.getMilliliter() >= user.menge() || digitalRead(TASTE2_PIN)) {
+		if (flowmeter.getMilliliter() >= user.menge()
+				|| digitalRead(TASTE2_PIN)) {
 			if (user.getGodMode() == 1) {
 				ZD.showBMP("/god/11.bmp", 300, 50);
 			}
@@ -657,7 +657,8 @@ void loop() {
 		}
 
 		// Nachschaun ob er eventuell zu lang braucht und nix zapft
-		if (((millis() - auswahlZeit) > 10000) && (flowmeter.getMilliliter() < 5)) {
+		if (((millis() - auswahlZeit) > 10000)
+				&& (flowmeter.getMilliliter() < 5)) {
 			beginZapfBool = false;
 			sound.setStandby(beginZapfBool);
 			temp.sendeBefehl(END_ZAPF, 0x0);
@@ -692,9 +693,9 @@ void anzeigeAmHauptScreen(void) {
 	//DEBUGMSG("vor transmitauslauf");
 	//DEBUGMSG("vor transmitauslauf");
 	ZD.print_val2(temp.getBlockAussenTemp(), 20, 125, 1, 1);
-	ZD.print_val2((int)flowmeter.getFreshZapfMillis(), 20, 150, 1, 0);
+	ZD.print_val2((int) flowmeter.getFreshZapfMillis(), 20, 150, 1, 0);
 	//ZD.printText();
-	ZD.print_val2((int)ventil.getPressure(), 20, 175,1,0);
+	ZD.print_val2((int) ventil.getPressure(), 20, 175, 1, 1);
 
 }
 

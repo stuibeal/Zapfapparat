@@ -14,7 +14,7 @@
 #include "gemein.h"
 
 #ifndef DEBUG_A
-#define DEBUG_A 0
+#define DEBUG_A 1
 #endif
 //#define AUDIO_WARTEZEIT 1500
 
