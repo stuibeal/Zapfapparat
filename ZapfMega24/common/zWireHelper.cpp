@@ -82,3 +82,9 @@ void zWireHelper::flowDataSend (uint8_t befehl, uint8_t option1, uint8_t option2
   zapfMillis = (aRxBuffer[0] << 8) + aRxBuffer[1]; // da der Flow immer die aktuellen ml ausgibt kann man die gleich in die Variable schreiben
 }
 
+uint16_t zWireHelper::getFreshZapfMillis() {
+	flowDataSend(GET_ML, 0);
+	return zapfMillis;
+}
+
+

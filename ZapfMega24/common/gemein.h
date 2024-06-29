@@ -24,8 +24,8 @@
 #define helligkeitSensor  A6
 
 // Taster etc
-#define taste1            37  //Taster unterm Drehencoder (hardwareentprellt)
-#define taste2            39  //Taster unterm Drehencoder (hardwareentprellt)
+#define TASTE1_PIN		  37//Taster unterm Drehencoder (hardwareentprellt)
+#define TASTE2_PIN		  39
 #define WSready           19  //Wählscheibe Ready Interrupt
 #define WSpuls            33  //Wählscheibe puls
 #define ROTARY_SW_PIN	  18  //Knopf vom Rotary Encoder (hardwareentprellt)
@@ -34,11 +34,9 @@
 
 //Output Pins
 #define otherMcOn         A5  //schaltet die anderen Microcontroller mit P-Mosfet ein
-#define taste1Pwm         6   //Tastenbeleuchtung via Optokoppler (12VLed eingebaut)
-#define taste2Pwm         8   //Tastenbeleuchtung via Optokoppler (12VLed eingebaut)
 #define lcdBacklightPwm   4   //Hintergrundbeleuchtung Display
-#define FLOW_SM6020       A9
-#define FLOW_WINDOW		  A8
+#define FLOW_SM6020       A9  // ein aus
+#define FLOW_WINDOW		  A8   //hier schickt der flowmeter ein signal wenns flowt
 #define TASTE1_LED 6
 #define TASTE2_LED 8
 
@@ -86,16 +84,6 @@
 /* USER CODE END Header */
 
 //#include "Arduino.h"
-
-/**
- * Grundlegend I2C Adressen
- */
-#define flowi2c                 0x12   // Adresse vom Flow (in Cube linksshiften 1 Bit!)
-#define tempi2c                 0x13   // Adresse vom Temp
-
-#define FLOW_I2C_ADDR  0x12  // Flowzähl uC (in Cube 1 bit linksshiften!)
-#define FLOW_I2C_ANTWORTBYTES  2 // die menge an Antwortbytes
-#define TEMP_I2C_ADDR  0x13    // Temperaturregel uC
 /*
  *  Definitionen für Bytes
  *  FLOWMETER+TEMPERATUR
@@ -103,15 +91,6 @@
  *  							MASTER		SLAVE			MASTER
  *								SEND		RETURN			SEND
  *******************************************************************************/
-
-#define ebiMode               	0xF9      //1 an, 0 aus, Temperatur auf 2°C, Hahn auf, Zapfmusik
-#define beginZapf             	0xFA      //Beginn das Zapfprogramm -> PID auf aggressiv
-#define endZapf              	0xFB      //zapfMillis
-#define kurzBevorZapfEnde     	0xFC      //sagt das wir kurz vor Ende sind → Valve schließen -> PID auf konservativ
-#define lowEnergy             	0xFD      //LEDS nicht benutzen  byte3: 0: vollgas   1: sparen
-#define wachAuf               	0xFE      //mach was
-#define zapfenStreich         	0xFF      //Valve Schließen, LEDs aus
-
 #define EBI_MODE  0xF9    // don't know really know
 #define BEGIN_ZAPF  0xFA  // Zapfprogramm beginnen
 #define END_ZAPF  0xFB // Zapfprogramm beenden, gezapfte Milliliter übertragen
@@ -132,12 +111,11 @@
  *  							MASTER		SLAVE			MASTER
  *								SEND		RETURN			SEND
  *******************************************************************************/
-#define sendMilliLitres       	0x01      //zapfMillis		2 Bytes egal was
-#define setUserMilliLitres    	0x21      //				userMilliLiter
-#define makeFunWithLeds1      	0x22      //zapfMillis		Laufzeit (0-FF), Delay (0-FF)
-#define makeFunWithLeds2      	0x23      //zapfMillis
-#define makeFunWithLeds3      	0x24      //zapfMillis
-#define makeFunWithLeds4      	0x25      //Gauselmann Mode.
+
+/**
+ * Grundlegend I2C Adressen
+ */
+
 /*** GAUSELMANN HOW TO:
  *  Befehl: 25 (hex!)
  *  Byte 1: Was für LED:

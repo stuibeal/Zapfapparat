@@ -8,6 +8,7 @@
 #include <string.h>
 #include <Wire.h>
 #include "Adafruit_Thermal.h"
+#include "Adafruit_GFX.h"
 #include <Adafruit_PWMServoDriver.h>   //PWM LED wählscheibe, VOR DEM DISPLAY includen!!!!!!!!!!!
 #include "zDisplay.h"
 #include <SdFat.h>            // Use the SdFat library
@@ -24,11 +25,6 @@
 #include "zWireHelper.h"
 #include "tempControl.h"
 
-
-
-
-
-
 // Defines
 #define USE_SDFAT
 #define ENCODER_USE_INTERRUPTS  //damit die vom MEGA drin sind und er die als INT setzt
@@ -43,13 +39,6 @@
 #endif
 // Defines aus
 
-
-
-
-
-
-
-
 // Variablen
 char buf[80];
 bool oldFlowWindow;
@@ -59,15 +48,14 @@ bool flowWindow;
 byte aktuellerTag = 1;  //dann gehts mit der Musik aus
 unsigned int minTemp = 200;
 unsigned int zielTemp = 200;
-unsigned int totalMilliLitres = 0;
 volatile byte WSpulseCount = 0;
-unsigned long auswahlZeit;
+unsigned long auswahlZeit = 0;
 int aktuellerModus = 0;
 unsigned int hell;
 
-unsigned long oldTime = millis ();
+unsigned long oldTime = millis();
 unsigned long nachSchauZeit = 0;
-unsigned long hellZeit;
+unsigned long hellZeit = 0;
 unsigned int hellCount = 0;
 unsigned int dunkelCount = 0;
 bool dunkelBool = false;
@@ -75,43 +63,8 @@ bool dunkelBool = false;
 byte lichtan = LOW;
 
 //Waehlscheibe
-uint8_t zahlemann;  //Per Wählscheibe ermittelte Zahl
-unsigned long kienmuehle;  //Sondereingabe bei drücken der Taste2
+unsigned long kienmuehle = 0;  //Sondereingabe bei drücken der Taste2
 byte Einsteller = 1; //Globale Variable für ISR, Start bei 1
-
-// aus Communication.h
-
-unsigned int blockTemp; // #define transmitBlockTemp       0x40  // Data send:   blockTemp in °C*10
-unsigned int auslaufTemp; // #define transmitAuslaufTemp     0x41  // Data send:   hahnTemp in °C*10
-unsigned int power = 0; // #define transmitPower           0x42  // Data send:   Leistung in W (power1+power2)
-unsigned int inVoltage = 0; // #define transmitInVoltage       0x43  // Data send:   inVoltage in V*100
-unsigned int kuehlFlow = 0; // #define transmitKuehlFlow       0x44  // Data send:   Durchfluss Kühlwasser (extern) pro 10000ms
-
-unsigned int highTemperatur = 200; // #define setHighTemperatur       0x60  // Data get: Zieltemperatur Block * 100 (2°C)
-unsigned int midTemperatur = 600; // #define setMidTemperatur        0x61  // Data get: Normale Temperatur in °C * 100 (6°C)
-unsigned int lowTemperatur = 900; // #define setLowTemperatur        0x62  // Data get: Energiespar Temperatur * 100 (9°C)
-unsigned int minCurrent = 10; // #define setMinCurrent           0x63  // Data get: Current in mA / 10 (11 = 0,11 A), Untere Regelgrenze
-unsigned int lowCurrent = 50; // #define setLowCurrent           0x64  // Data get: current in mA / 10, Obere Regelgrenze bei wenig Strom
-unsigned int midCurrent = 600; // #define setMidCurrent           0x65  // Data get: Current in mA / 10, Obere Regelgrenze bei normalem Strom
-unsigned int highCurrent = 900; // #define setHighCurrent          0x66  // Data get: Current in mA / 10, Obere Regelgrenze bei gutem Strom
-
-unsigned int normVoltage = 500; //#define setNormVoltage          0x68  // Data get: norm Voltage * 100, passt normal, mehr als 9V macht wenig Sinn bei den Peltierelementen
-unsigned int maxVoltage = 1000; //#define setMaxVoltage           0x69  // Data get: max Voltage * 100, das wäre dann eigentlich die Batteriespannung
-unsigned int lowBatteryVoltage = 1140; //#define setLowBatteryVoltage    0x6A  // 11V Eingangsspannung
-unsigned int midBatteryVoltage = 1200; //#define setMidBatteryVoltage    0x6B  // 12V Eingangsspannung
-unsigned int highBatteryVoltage = 1300; //#define setHighBatteryVoltage   0x6C  // 13V Eingangsspannung
-
-unsigned int wasserTemp; //#define setWasserTemp           0x6D  // Data get: kühlwasserTemp in °C*100 vom DS18B20 Sensor vom Master: Fühler neben Peltier
-unsigned int einlaufTemp; //#define setEinlaufTemp          0x6E  // Data get: Biertemperatur in °C*100 vom DS18B20 Sensor vom Master: Bierzulauf
-
-unsigned int consKp = 80; //#define setConsKp               0x70  // Data get: konservativer Kp (ist alles mal 100)
-unsigned int consKi = 5; //#define setConsKi               0x71  // Data get: konservativer Ki
-unsigned int consKd = 5; //#define setConsKd               0x72  // Data get: konservativer Kd
-unsigned int aggKp = 150; //#define setAggKp                0x73  // Data get: aggressiver Kp
-unsigned int aggKi = 20; //#define setAggKi                0x74  // Data get: aggressiver Ki
-unsigned int aggKd = 50; //#define setAggKd                0x75  // Data get: aggressiver Kd
-unsigned int unterschiedAggPid = 10; //#define setUnterschiedAggPid    0x75  // mal zehn grad nehmen ab wann der aggressiv regelt
-unsigned int steuerZeit = 200; //#define setSteuerZeit           0x76  // alle sekunde mal nachjustieren
 
 bool ebiModeBool = false; //#define ebiMode               0xF9      //    1 an, 0 aus       Temperatur auf 2°C, Hahn auf, Zapfmusik
 bool beginZapfBool = false; // #define beginZapf             0xFA      //    Beginn das Zapfprogramm -> PID auf aggressiv
@@ -120,29 +73,21 @@ bool kurzBevorZapfEndeBool = false; //#define kurzBevorZapfEnde     0xFC      //
 
 String dataOnSd = "";
 
-// Steuerungskram
-unsigned int zielTemperatur = highTemperatur;
-unsigned int setVoltage = normVoltage; //mal gaaanz klein beginnen
-unsigned int setCurrent = minCurrent;
-unsigned int maxCurrent = midCurrent; //Obere Regelgrenze auf mittlere stellen
-bool lowPower = false;
-bool veryLowPower = false;
 bool debugMode = false;
 
 // DREHENCODER
 #define ENCODER_OPTIMIZE_INTERRUPTS
-Encoder Dreher (ROTARY_DT_PIN, ROTARY_CLK_PIN); //PINS für Drehgeber
+Encoder Dreher(ROTARY_DT_PIN, ROTARY_CLK_PIN); //PINS für Drehgeber
 
 volatile int DreherKnopfStatus = 0; //Da wird der Statatus vom Drehgeberknopf gelesen
 long oldPosition = 0; //Fuer Drehgeber
 
-unsigned int tempAnzeigeZeit = millis (); //für zehnsekündige Temperaturanzeige
-
+unsigned int tempAnzeigeZeit = millis(); //für zehnsekündige Temperaturanzeige
 
 // Variablen aus
 SdFat SD;  // SD-KARTE
 zDisplay ZD;   // neues zDisplay Objekt
-zWireHelper drahthilfe;
+zWireHelper flowmeter;
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 tempControl temp;	//Temperatursensorik
 benutzer user;  //Benutzer
@@ -164,17 +109,15 @@ void setup(void) {
 	analogWrite(lcdBacklightPwm, 128);
 
 	// Tasten in der Front
-	pinMode(taste1, INPUT);
-	pinMode(taste2, INPUT);
-	pinMode(taste1Pwm, OUTPUT);
-	pinMode(taste2Pwm, OUTPUT);
-	analogWrite(taste1Pwm, 10);
-	analogWrite(taste2Pwm, 10);
+	pinMode(TASTE1_PIN, INPUT);
+	pinMode(TASTE2_PIN, INPUT);
+	pinMode(TASTE1_LED, OUTPUT);
+	pinMode(TASTE2_LED, OUTPUT);
+	analogWrite(TASTE1_LED, 10);
+	analogWrite(TASTE2_LED, 10);
 
 	// i2c etc
-	drahthilfe.initialise();
-
-	//Serial.begin(115200); //kein Serial!!! MIDI!!!!!!!!!
+	flowmeter.initialise();
 
 	//TFT
 	ZD.beginn(&SD);  //mit Pointer zur SD starten
@@ -188,7 +131,6 @@ void setup(void) {
 		return;   // don't do anything more if not
 	} else {
 		ZD.println("SD Karte bassd - OPTIMAL!");
-
 	}
 
 	ZD.showBMP("/bmp/z-logo.bmp", 200, 0);
@@ -226,7 +168,6 @@ void setup(void) {
 	//Altdaten auslesen (SD karte) nach Stromweg oder so...
 
 	//PWM Treiber hochfahren
-
 	pwm.begin();
 	pwm.setPWMFreq(1000);  // Maximale Frequenz (1kHz) -> reicht für LED
 	pwm.setPWM(0, 0, 16);   //helle LEDS abdunkeln grün
@@ -247,28 +188,28 @@ void setup(void) {
 
 	//Make Windows 95 great again
 	anfang();
-	DEBUGMSG("Nach Anfang")
 	oldTime = millis();
 	nachSchauZeit = millis();
 
 }  //VOID SETUP
 
 void waehlscheibe() {
+	uint8_t zahlemann = 0;  //Per Wählscheibe ermittelte Zahl
 	sound.setStandby(true); //dann checkt er nicht ob er ausschalten soll
 	sound.on();
 	DEBUGMSG(sound.debugmessage);
 	auswahlZeit = millis();
 
-	drahthilfe.flowDataSend(LED_FUN_1, 10, 200);
+	flowmeter.flowDataSend(LED_FUN_1, 10, 200);
 
-	if (!digitalRead(taste2)) {
+	if (!digitalRead(TASTE2_PIN)) {
 		//wenn man sich verwählt hat bei der Nummerneingabe wirds gelöscht
 		kienmuehle = 0;
 
 		ventil.openValve();
-		analogWrite(taste2Pwm, 10);
+		analogWrite(TASTE2_LED, 10);
 		//geh mal Zapfen
-		temp.sendeBefehl(beginZapf, 0x0);
+		temp.sendeBefehl(BEGIN_ZAPF, 0x0);
 		//flowDataSend(LED_FUN_2, 1000,1000);
 
 	} else {
@@ -279,7 +220,6 @@ void waehlscheibe() {
 	sound.pruefe();
 	DEBUGMSG(sound.debugmessage);
 
-	zahlemann = 0;
 	for (uint8_t pwmnum = 1; pwmnum < 11; pwmnum++) {
 		pwm.setPWM(pwmnum, 0, 256); //Licht AN
 	}
@@ -290,7 +230,7 @@ void waehlscheibe() {
 		old_waehler2 = waehler2;
 		waehler2 = digitalRead(WSpuls);
 
-		unsigned long temptime;
+		unsigned long temptime = 0;
 
 		if (waehler2 < old_waehler2) {
 			temptime = millis();  //hier die Wählscheibe auslesen
@@ -306,7 +246,7 @@ void waehlscheibe() {
 		}
 	}
 
-	drahthilfe.flowDataSend(GET_ML, 0, 0);  //LEDFun ausschalten
+	flowmeter.flowDataSend(GET_ML, 0, 0);  //LEDFun ausschalten
 
 	sound.pruefe();
 	DEBUGMSG(sound.debugmessage);
@@ -318,14 +258,14 @@ void waehlscheibe() {
 		pwm.setPWM(zahlemann, 4096, 0);
 
 		//Ab hier werden die Userdaten angezeigt.
-		if ((zahlemann < 11) && !digitalRead(taste2)) {
+		if ((zahlemann < 11) && !digitalRead(TASTE2_PIN)) {
 			if (zahlemann == 10) {
 				zahlemann = 0; // user beim "nuller"
 			}
 			user.aktuell = zahlemann;
-			drahthilfe.flowDataSend(SET_USER_ML, user.menge());
+			flowmeter.flowDataSend(SET_USER_ML, user.menge());
 			delay(500); //damit der Zeit hat
-			drahthilfe.flowDataSend(BEGIN_ZAPF, 0, 0);
+			flowmeter.flowDataSend(BEGIN_ZAPF, 0, 0);
 
 			switch (user.getGodMode()) {
 			case 1:
@@ -352,7 +292,7 @@ void waehlscheibe() {
 		/*!
 		 * Addiert die gewählten Zahlen zu kienmuehle dazu
 		 */
-		if ((digitalRead(taste2)) > 0 && zahlemann > 0) {
+		if ((digitalRead(TASTE2_PIN)) > 0 && zahlemann > 0) {
 			kienmuehle = kienmuehle * 10;  //das passt so, Alfred!
 			if (zahlemann < 10) {
 				kienmuehle += zahlemann;
@@ -422,11 +362,8 @@ void anfang(void) {
 	}
 	pwm.setPWM(0, 0, 16);   //helle LEDS abdunkeln grün
 	pwm.setPWM(11, 0, 16);  //helle LEDS abdunkeln weiß
-	DEBUGMSG("vor USERSHOW anfang")
 	userShow();
-DEBUGMSG("nach USERSHOW, vor bing")
-	//sound.bing();
-	DEBUGMSG("nach bing");
+	sound.bing();
 
 }
 
@@ -460,8 +397,7 @@ void tickMetronome(void)
 
 			//ZD.setCursor(5, 30);
 			//sprintf(buf, "leuchtLampe: %02x ", leuchtLampe);
-			//ZD.printInt(totalMilliLitres);
-			drahthilfe.flowDataSend(LED_FUN_4, leuchtLampe, 0xFF);
+			flowmeter.flowDataSend(LED_FUN_4, leuchtLampe, 0xFF);
 			//flowDataSend(LED_FUN_1, 1, 70);
 			//leuchtLampe << 1;
 			leuchtLampe++;
@@ -516,7 +452,7 @@ void seltencheck(void) {
 		}
 
 		for (int x = 255; x >= 0; x--) {
-			analogWrite(taste2Pwm, x);
+			analogWrite(TASTE2_LED, x);
 			delay(50);
 		}
 
@@ -526,9 +462,9 @@ void seltencheck(void) {
 			}
 			delay(10);
 		}
-		drahthilfe.flowDataSend(endZapf, 0, 0);
-		drahthilfe.flowDataSend(zapfenStreich, 0, 0);
-		temp.sendeBefehl(zapfenStreich, 0x0);
+		flowmeter.flowDataSend(END_ZAPF, 0, 0);
+		flowmeter.flowDataSend(ZAPFEN_STREICH, 0, 0);
+		temp.sendeBefehl(ZAPFEN_STREICH, 0x0);
 		user.gesamtMengeTag = 0;
 		aktuellerTag++;
 		ventil.closeValve();
@@ -558,14 +494,12 @@ void seltencheck(void) {
 			} else {
 				hellCount = 0;
 			}
-			if (digitalRead(taste1) == HIGH) {
-				Serial.println("Taste gedrückt");
+			if (digitalRead(TASTE1_PIN) == HIGH) {
 				dunkelBool = false;
 				delay(100);
 				anfang();
 			}
 			if (hellCount > 9) {
-				Serial.println("Hellcount über 1");
 				dunkelBool = false;
 				digitalWrite(AUDIO_AMP, HIGH);
 				digitalWrite(otherMcOn, HIGH);
@@ -573,7 +507,6 @@ void seltencheck(void) {
 				anfang();
 			}
 		}
-		Serial.println("NAchtprogramm so verlassen");
 	}
 
 	temp.requestSensors();
@@ -611,32 +544,12 @@ void infoseite(void) {
 	ZD.infoscreen(&temp, &user);
 
 	//ZD.setFont(&FreeSans9pt7b);
-	/*
-	 ZD.print("DS18 Block: "); ZD.printInt(temp.block1Temp);
-	 ZD.print("DS18 Auslauf: "); ZD.printInt(temp.hahnTemp);
-	 ZD.print("DS18 Zulauf: "); ZD.printInt(temp.zulaufTemp);
-	 ZD.print("DS18 Gehäuse: "); ZD.printInt(temp.hausTemp);
-	 ZD.print("DS18 Kühlwa.: "); ZD.printInt(temp.kuehlwasserTemp);
-	 ZD.print("cons. kP: "); ZD.printInt(consKp);
-	 ZD.print("cons. kI: "); ZD.printInt(consKi);
-	 ZD.print("cons. kD: "); ZD.printInt(consKd);
-	 ZD.print("aggr. kP: "); ZD.printInt(aggKp);
-	 ZD.print("aggr. kI: "); ZD.printInt(aggKi);
-	 ZD.print("aggr. kD: "); ZD.printInt(aggKd);
-	 */
-
-	/*
-	 ZD.setCursor(10,295);
-	 ZD.println("");
-	 ZD.print("Gesamtbier Tag: "); ZD.print(BierMengeTag);ZD.print("      ");
-	 ZD.print("Gesamtbier: "); ZD.println(BierMengeTotal);
-	 */
 
 	for (int x = 10; x < 256; x++) {
 		analogWrite(TASTE1_LED, x);
 		delay(10);
 	}
-	while (digitalRead(taste1)) {
+	while (digitalRead(TASTE1_PIN)) {
 	}
 	for (int x = 255; x > 11; x--) {
 		analogWrite(TASTE1_LED, x);
@@ -648,7 +561,6 @@ void infoseite(void) {
 }
 
 void loop() {
-	DEBUGMSG("ich bin im loop");
 	byte oldeinsteller = Einsteller;
 	sound.midiNextEvent();
 
@@ -656,7 +568,6 @@ void loop() {
 
 	//Valve Control
 	ventil.check();
-	DEBUGMSG("nach Ventilcheck");
 
 	//Wenn die Wählscheibe betätigt wird
 	if (digitalRead(WSready)) {
@@ -669,12 +580,12 @@ void loop() {
 	}
 
 	//Wenn jemand an den Tasten rumspielt
-	if (digitalRead(taste1)) {
+	if (digitalRead(TASTE1_PIN)) {
 		infoseite();
 	}
 
 	// Wenn Nummer Fertig und Taste losgelassen
-	if (!digitalRead(taste2) && kienmuehle > 0) {
+	if (!digitalRead(TASTE2_PIN) && kienmuehle > 0) {
 		analogWrite(TASTE2_LED, 20);
 		waehlFunktionen();
 	}
@@ -683,13 +594,8 @@ void loop() {
 			{
 
 		if ((millis() - oldTime) > 1000) {
-			DEBUGMSG("vor godmodecheck");
-
 			oldTime = millis();
-
 			anzeigeAmHauptScreen();
-			DEBUGMSG("nach anzeigehauptscreen");
-
 			sound.pruefe();
 			if (DEBUG_A) {
 				DEBUGMSG(sound.debugmessage);
@@ -700,11 +606,7 @@ void loop() {
 		}
 
 		if ((millis() - nachSchauZeit) > 10000 && !beginZapfBool) {
-			DEBUGMSG("vor seltencheck");
-
 			seltencheck();
-			DEBUGMSG("nach seltencheck");
-
 			nachSchauZeit = millis();
 
 		}
@@ -725,10 +627,10 @@ void loop() {
 			}
 		}
 
-		drahthilfe.flowDataSend(GET_ML, 0, 0); // aktuelle ml vom Flow uC abfragen
+		flowmeter.flowDataSend(GET_ML, 0, 0); // aktuelle ml vom Flow uC abfragen
 
 		// Nachschaun ob er fertig ist und dann bingen und zamschreim
-		if (totalMilliLitres >= user.menge() || digitalRead(taste2)) {
+		if (flowmeter.getMilliliter() >= user.menge() || digitalRead(TASTE2_PIN)) {
 			if (user.getGodMode() == 1) {
 				ZD.showBMP("/god/11.bmp", 300, 50);
 			}
@@ -738,13 +640,13 @@ void loop() {
 			sound.bing();
 
 			//Sollte er abgebrochen haben:
-			if (totalMilliLitres < user.menge()) {
-				drucker.printerErrorZapfEnde(totalMilliLitres);
+			if (flowmeter.getMilliliter() < user.menge()) {
+				drucker.printerErrorZapfEnde(flowmeter.getMilliliter());
 			}
 
-			user.addBier(totalMilliLitres);
+			user.addBier(flowmeter.getFreshZapfMillis());
 
-			drucker.printerZapfEnde(totalMilliLitres);
+			drucker.printerZapfEnde(flowmeter.getMilliliter());
 			UserDataShow();
 			beginZapfBool = false;
 			sound.setStandby(beginZapfBool);
@@ -754,22 +656,21 @@ void loop() {
 		}
 
 		// Nachschaun ob er eventuell zu lang braucht und nix zapft
-		if (((millis() - auswahlZeit) > 10000) && (totalMilliLitres < 5)) {
+		if (((millis() - auswahlZeit) > 10000) && (flowmeter.getMilliliter() < 5)) {
 			beginZapfBool = false;
 			sound.setStandby(beginZapfBool);
-			temp.sendeBefehl(endZapf, 0x0);
+			temp.sendeBefehl(END_ZAPF, 0x0);
 			ventil.check();
 			for (uint8_t pwmnum = 1; pwmnum < 11; pwmnum++) {
 				pwm.setPWM(pwmnum, 0, 64); //alles leicht einschalten
 			}
 		}
 
-		if ((user.menge() - totalMilliLitres) < 30) {
-			temp.sendeBefehl(kurzBevorZapfEnde, 0x0);
+		if ((user.menge() - flowmeter.getMilliliter()) < 30) {
+			temp.sendeBefehl(KURZ_VOR_ZAPFENDE, 0x0);
 			ventil.check();
 		}
 	}
-	DEBUGMSG("loop ende");
 
 	//Check Knöpfe (Benutzer) -> Display up -> Zapfprogramm
 
@@ -777,12 +678,8 @@ void loop() {
 }
 
 void userShow(void) {
-	Einsteller = 2; //Wieder bei Temperatur beginnen beim Drehknebel
-	//char userName[BenutzerName[zahlemann].length() + 1];
-	//strcpy(userName, BenutzerName[zahlemann].c_str());
+	Einsteller = 2; //Wieder bei mL beginnen beim Drehknebel
 	ZD.userShow(&user);
-
-	DEBUGMSG("vor usershow/userdatashow")
 	UserDataShow();
 }
 
@@ -793,10 +690,10 @@ void anzeigeAmHauptScreen(void) {
 	//ZD.printVal(temp.getBlockAussenTemp(), 25, 100, WHITE, ZDUNKELGRUEN, &FETT,	KOMMA);
 	//DEBUGMSG("vor transmitauslauf");
 	//DEBUGMSG("vor transmitauslauf");
-	//ZD.print_val2(temp.getBlockInnenTemp(), 20, 125, 1, 1);
-	ZD.print_val2(totalMilliLitres, 20, 150, 1, 0);
-	ZD.printText();
-	ZD._tft.println(ventil.getPressure());
+	ZD.print_val2(temp.getBlockAussenTemp(), 20, 125, 1, 1);
+	ZD.print_val2((int)flowmeter.getFreshZapfMillis(), 20, 150, 1, 0);
+	//ZD.printText();
+	ZD.print_val2((int)ventil.getPressure(), 20, 175,1,0);
 
 }
 
@@ -895,7 +792,6 @@ void UserDataShow() {
 		ZD.print_val(user.gesamtMengeTag / 10, x, y + 90, 0, 1);
 		break;
 	}
-    DEBUGMSG("nachUSERDATASHOW");
 }
 
 void Drehgeber() {
@@ -978,7 +874,7 @@ void reinigungsprogramm(void) {
 	delay(500); //zum taste loslassen!
 	unsigned long waitingTime = millis();
 	int sekunden = 0;
-	while (!digitalRead(taste1)) {
+	while (!digitalRead(TASTE1_PIN)) {
 		if (millis() - waitingTime >= 1000) {
 			waitingTime = millis();
 			sekunden++;

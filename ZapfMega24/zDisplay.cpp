@@ -43,7 +43,7 @@ void zDisplay::beginn(SdFat *psd) {
 	_tft.setCursor(10, 10); //Cursor setzen
 
 	_tft.println("Z-Apfapparat");
-	_tft.println("Version 0.5 BETA 2022/2023"); //Bootausgabe
+	_tft.println("Version 0.6 BETA 2024"); //Bootausgabe
 
 	_canvas->setTextWrap(false);
 
@@ -431,7 +431,6 @@ void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 		_tft.print(user->bierTag[x]);
 		_tft.println(" ml");
 	}
-	delay(2000);
 	_tft.setCursor(0, 60);
 	_tft.setFont(0);
 	_tft.setTextSize(2);
