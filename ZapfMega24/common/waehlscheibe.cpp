@@ -35,7 +35,7 @@ void wsLedGrundbeleuchtung() {
 
 uint8_t readWaehlscheibe(void) {
 	for (uint8_t channel = 0; channel < 12; channel++) {
-		wsLed.setPWM(channel, 40);
+		wsLed.setPWM(channel, 0xFFF);
 	}
 
 
@@ -59,7 +59,7 @@ uint8_t readWaehlscheibe(void) {
 			temptime = millis();
 			wsLed.setPWM(waehlZahl, 0xFFF);
 			if (waehlZahl > 1) {
-				wsLed.setPWM(waehlZahl - 1, GRUEN_LED_ABGEDUNKELT + 200);
+				wsLed.setPWM(waehlZahl - 1, GRUEN_LED_ABGEDUNKELT + 2000);
 			}
 			if (waehlZahl > 2) {
 				wsLed.setPWM(waehlZahl - 2, GRUEN_LED_ABGEDUNKELT);
@@ -71,7 +71,6 @@ uint8_t readWaehlscheibe(void) {
 	}
 	wsLedGrundbeleuchtung();
 	wsLed.setPWM(waehlZahl, 0xFFF);
-	wsLed.update();
 
 	return waehlZahl;
 }
@@ -79,18 +78,16 @@ uint8_t readWaehlscheibe(void) {
 void oldWaehlscheibeFun(void) {
 	sound.mp3Play(11, 1);
 	for (uint8_t channel = 0; channel < 12; channel++) {
-		WSpwmVal[channel] = 2047;
+		wsLed.setPWM(channel, 2047);
 	}
-	wsLed.update();
 
 	for (uint8_t dw = 0; dw < 2; dw++) { //mega Lightshow!!
 		for (uint16_t i = 0; i < 11; i++) {
 			delay(50);
 			for (uint8_t x = 11; x > 0; x--) {
 				delay(30);
-				WSpwmVal[x + i] = 0xFFF; //pwm.setPWM(x + i, 4096, 0);
-				WSpwmVal[x + i + 1] = 0x00; //pwm.setPWM(x + i + 1, 0, 4096);
-				wsLed.update();
+				wsLed.setPWM(x+i, 0xFFF); //pwm.setPWM(x + i, 4096, 0);
+				wsLed.setPWM(x + i + 1, 0x00); //pwm.setPWM(x + i + 1, 0, 4096);
 			}
 		}
 
@@ -98,9 +95,8 @@ void oldWaehlscheibeFun(void) {
 			delay(100 % i);
 			for (uint8_t x = 0; x < 11; x++) {
 				delay(50);
-				WSpwmVal[x + i - 1] = 0x00; //pwm.setPWM(x + i - 1, 0, 4096);
-				WSpwmVal[x + i] = 0xFFF; //pwm.setPWM(x + i, 4096, 0);
-				wsLed.update();
+				wsLed.setPWM(x + i - 1,  0x00); //pwm.setPWM(x + i - 1, 0, 4096);
+				wsLed.setPWM(x + i,  0xFFF); //pwm.setPWM(x + i, 4096, 0);
 			}
 		}
 		delay(500);
