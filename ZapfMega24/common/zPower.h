@@ -19,6 +19,8 @@
 #include "stdint.h"
 #include "tempControl.h"
 
+#define Z_SCH_LAMPE_PIN 5  // output for the Lampe
+
 class zPower {
 public:
 	enum powerState {
@@ -45,10 +47,12 @@ inline void setState(zPower::powerState state) {
 void begin(tempControl *pTemp);
 void check();
 void setLed(uint8_t offon);
+void schLampeControl(uint8_t offon, uint16_t dimspeed);
 
 private:
 uint8_t inVoltage;
 int helligkeit;
+uint8_t lampenoutput;
 powerState bkPowerState;
 machineState bkMachineState;
 static unsigned long millisSeitZapfEnde;

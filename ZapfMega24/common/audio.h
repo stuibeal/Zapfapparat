@@ -7,11 +7,10 @@
 
 #ifndef AUDIO_H_
 #define AUDIO_H_
-#include "Arduino.h"
+#include  <Arduino.h>
 #include "MD_MIDIFile.h"
 #include "MD_YX5300.h"
 #include "string.h"
-#include "gemein.h"
 
 #ifndef DEBUG_A
 #define DEBUG_A 1

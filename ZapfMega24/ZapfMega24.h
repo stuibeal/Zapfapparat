@@ -8,7 +8,8 @@
 #define _ZapfMega24_H_
 #include "Arduino.h"
 //add your includes for the project ZapfMega24 here
-#include "stdint.h"
+
+
 //end of add your includes here
 
 

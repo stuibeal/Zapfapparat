@@ -10,6 +10,8 @@
 
 #include "zDisplay.h"
 
+
+
 zDisplay::zDisplay() :
 		MCUFRIEND_kbv(0, 0, 0, 0, 0), GFXcanvas1(65, 22) {
 	_sd = nullptr;
@@ -40,10 +42,10 @@ void zDisplay::beginn(SdFat *psd) {
 	_tft.fillScreen(TFT_WHITE);
 	_tft.setTextColor(ZGRUEN, WHITE);
 
-	_tft.setCursor(10, 10); //Cursor setzen
+	_tft.setCursor(0, 10); //Cursor setzen
 
-	_tft.println("Z-Apfapparat");
-	_tft.println("Version 0.6 BETA 2024"); //Bootausgabe
+	_tft.println(" Zapfapparat");
+	_tft.println(" Version 0.6 BETA 2024"); //Bootausgabe
 
 	_canvas->setTextWrap(false);
 

@@ -55,3 +55,7 @@ void zPower::check() {
 void zPower::setLed(uint8_t offon) {
 
 }
+
+void schLampeControl(uint8_t offon, uint16_t dimspeed){
+
+}

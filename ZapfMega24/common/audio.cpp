@@ -239,7 +239,7 @@ void audio::midiSilence(void)
 
 void audio::midiNextEvent(void) {
 	if (isOn()) {
-		if (_SMF->isEOF()) {
+		if (!_SMF->isEOF()) {
 			_SMF->getNextEvent(); // Play MIDI data
 		}
 	}

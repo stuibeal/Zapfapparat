@@ -11,6 +11,7 @@
 #ifndef ZVALVE_H_
 #define ZVALVE_H_
 #include "gemein.h"
+#include <Arduino.h>
 
 #define VALVE_TEILER 91
 #define PRESSURE_ZERO 115

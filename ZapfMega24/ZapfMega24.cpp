@@ -3,16 +3,17 @@
 
 #include "Arduino.h"
 #include "gemein.h"
+#include "globalVariables.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <Wire.h>
-#include "Adafruit_Thermal.h"
-#include <Adafruit_PWMServoDriver.h>   //PWM LED wählscheibe, VOR DEM DISPLAY includen!!!!!!!!!!!
-#include "Adafruit_GFX.h"
-#include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
-#include "zDisplay.h"
 #include <SdFat.h>            // Use the SdFat library
+#include "waehlscheibe.h"
+#include "Adafruit_Thermal.h"
+#include "Adafruit_GFX.h"
+//#include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
+#include "zDisplay.h"
 #include "Encoder.h"  //für Drehencoder
 #include "./zLibraries/RTC_DCF/DateTime.h"   // ELV RTC mit DCF
 #include "./zLibraries/RTC_DCF/RealTimeClock_DCF.h"
@@ -25,6 +26,7 @@
 #include "zLog.h"
 #include "zWireHelper.h"
 #include "tempControl.h"
+
 
 // Defines
 #define USE_SDFAT
@@ -50,7 +52,6 @@ byte aktuellerTag = 1;  //dann gehts mit der Musik aus
 unsigned int minTemp = 200;
 unsigned int zielTemp = 200;
 unsigned long auswahlZeit = 0;
-int aktuellerModus = 0;
 unsigned int hell;
 
 unsigned long oldTime = millis();
@@ -88,7 +89,6 @@ unsigned int tempAnzeigeZeit = millis(); //für zehnsekündige Temperaturanzeige
 SdFat SD;  // SD-KARTE
 zDisplay ZD;   // neues zDisplay Objekt
 zWireHelper flowmeter;
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 tempControl temp;	//Temperatursensorik
 benutzer user;  //Benutzer
 audio sound; 	//Audioobjekt
@@ -124,15 +124,14 @@ void setup(void) {
 
 	//SD
 	if (!SD.begin(SD_CS)) {  // nachschauen ob die SD-Karte drin und gut ist
-		ZD.println("SD Karte nicht vorhanden! Bitte richten!");
+		ZD._tft.println(" SD Karte nicht vorhanden! Bitte richten!");
 		/***Hier funktion programmieren:
 		 ZD.println("Ohne SD Karte fortfahren: Z-Knopf drücken!");
 		 ***/
 		return;   // don't do anything more if not
 	} else {
-		ZD.println("SD Karte bassd - OPTIMAL!");
+		ZD._tft.println(" SD Karte bassd - OPTIMAL!");
 	}
-
 	ZD.showBMP("/bmp/z-logo.bmp", 200, 0);
 
 	//Printer
@@ -140,13 +139,13 @@ void setup(void) {
 
 	//Temperaturfuehler
 	temp.begin(); //Wire sollte konfiguriert sein!
-	ZD.println("Temperaturfuehler hochgefahren...");
+	ZD._tft.println(" Temperaturfuehler hochgefahren...");
 
 	//FLOWMETER
 	pinMode(FLOW_SM6020, OUTPUT);
 	digitalWrite(FLOW_SM6020, HIGH);
 	pinMode(FLOW_WINDOW, INPUT);    //Wenn durchfluss, dann true
-	ZD.println("Flowmeter ifm SM6020 ein");
+	ZD._tft.println(" Flowmeter ifm SM6020 ein");
 
 	//Rotary Encoder
 	pinMode(ROTARY_SW_PIN, INPUT); // Drehgeberknopf auf Input
@@ -168,13 +167,7 @@ void setup(void) {
 	//Altdaten auslesen (SD karte) nach Stromweg oder so...
 
 	//PWM Treiber hochfahren
-	pwm.begin();
-	pwm.setPWMFreq(1000);  // Maximale Frequenz (1kHz) -> reicht für LED
-	pwm.setPWM(0, 0, 16);   //helle LEDS abdunkeln grün
-	pwm.setPWM(11, 0, 16);  //helle LEDS abdunkeln weiß
-	for (uint8_t pwmnum = 1; pwmnum < 11; pwmnum++) {
-		pwm.setPWM(pwmnum, 0, 64); //alles leicht einschalten
-	}
+	beginWaehlscheibeLed();
 	ZD.println("PWM Waehlscheibe ready...");
 
 	//Valve
@@ -194,7 +187,6 @@ void setup(void) {
 }  //VOID SETUP
 
 void waehlscheibe() {
-	uint8_t zahlemann = 0;  //Per Wählscheibe ermittelte Zahl
 	sound.setStandby(true); //dann checkt er nicht ob er ausschalten soll
 	sound.on();
 	DEBUGMSG(sound.debugmessage);
@@ -220,31 +212,7 @@ void waehlscheibe() {
 	sound.pruefe();
 	DEBUGMSG(sound.debugmessage);
 
-	for (uint8_t pwmnum = 1; pwmnum < 11; pwmnum++) {
-		pwm.setPWM(pwmnum, 0, 256); //Licht AN
-	}
-	bool old_waehler2 = 1;
-	bool waehler2 = digitalRead(WSpuls);
-	unsigned long temptime = 0;
-
-	while (digitalRead(WSready) == 1) {
-
-		old_waehler2 = waehler2;
-		waehler2 = digitalRead(WSpuls);
-
-		if (waehler2 < old_waehler2) {
-			temptime = millis();  //hier die Wählscheibe auslesen
-		}
-
-		if ((waehler2 > old_waehler2) && (millis() - temptime > 50)) { //wenn Signal wieder von 0V auf 5V geht und mehr als 50ms vergangen sind, eins hochzählen
-			zahlemann++; //Wählscheibe (US): 60ms PULS 0V, 40ms Pause (5V), ánsonsten immer 5V
-			temptime = millis();
-			pwm.setPWM(zahlemann, 4096, 0);
-			if (zahlemann > 1) {
-				pwm.setPWM(zahlemann - 1, 0, 512);
-			}
-		}
-	}
+	uint8_t zahlemann = readWaehlscheibe();
 
 	flowmeter.flowDataSend(GET_ML, 0, 0);  //LEDFun ausschalten
 
@@ -252,10 +220,6 @@ void waehlscheibe() {
 	DEBUGMSG(sound.debugmessage);
 
 	if (zahlemann > 0) {
-		for (uint8_t pwmnum = 1; pwmnum < 11; pwmnum++) {
-			pwm.setPWM(pwmnum, 0, 64); //Licht aus
-		}
-		pwm.setPWM(zahlemann, 4096, 0);
 
 		//Ab hier werden die Userdaten angezeigt.
 		if ((zahlemann < 11) && !digitalRead(TASTE2_PIN)) {
@@ -356,14 +320,9 @@ void anfang(void) {
 	analogWrite(TASTE2_LED, 10);
 	analogWrite(TASTE1_LED, 10);
 	analogWrite(lcdBacklightPwm, 20);
-	for (uint8_t pwmnum = 1; pwmnum < 11; pwmnum++) {
-		pwm.setPWM(pwmnum, 0, 64); //alles leicht einschalten
-	}
-	pwm.setPWM(0, 0, 16);   //helle LEDS abdunkeln grün
-	pwm.setPWM(11, 0, 16);  //helle LEDS abdunkeln weiß
+	wsLedGrundbeleuchtung();
 	userShow();
 	sound.bing();
-
 }
 
 void aufWachen(void) {
@@ -455,12 +414,13 @@ void seltencheck(void) {
 			delay(50);
 		}
 
-		for (int x = 255; x >= 0; x--) {
-			for (uint8_t pwmnum = 0; pwmnum < 13; pwmnum++) {
-				pwm.setPWM(pwmnum, 0, x); //Wählscheibe runterdimmen
-			}
-			delay(10);
-		}
+//		for (int x = 255; x >= 0; x--) {
+//			for (uint8_t pwmnum = 0; pwmnum < 13; pwmnum++) {
+//				pwm.setPWM(pwmnum, 0, x); //Wählscheibe runterdimmen
+//			}
+//			delay(10);
+//		}
+
 		flowmeter.flowDataSend(END_ZAPF, 0, 0);
 		flowmeter.flowDataSend(ZAPFEN_STREICH, 0, 0);
 		temp.sendeBefehl(ZAPFEN_STREICH, 0x0);
@@ -663,9 +623,7 @@ void loop() {
 			sound.setStandby(beginZapfBool);
 			temp.sendeBefehl(END_ZAPF, 0x0);
 			ventil.check();
-			for (uint8_t pwmnum = 1; pwmnum < 11; pwmnum++) {
-				pwm.setPWM(pwmnum, 0, 64); //alles leicht einschalten
-			}
+			wsLedGrundbeleuchtung();
 		}
 
 		if ((user.menge() - flowmeter.getMilliliter()) < 30) {
@@ -837,34 +795,6 @@ void Einstellerumsteller_ISR() { //Interruptroutine, hier den Drehgeberknopf abf
 		Einsteller = 1;
 	}
 	UserDataShow();
-}
-
-void oldWaehlscheibeFun(void) {
-	sound.mp3Play(11, 1); //Magnum
-	pwm.setPWM(0, 0, 2048);   //Grüne LED an
-	for (uint8_t dw = 0; dw < 2; dw++) { //mega Lightshow!!
-		for (uint16_t i = 0; i < 11; i++) {
-			delay(50);
-			for (uint8_t x = 11; x > 0; x--) {
-				delay(30);
-				pwm.setPWM(x + i, 4096, 0);
-				pwm.setPWM(x + i + 1, 0, 4096);
-			}
-		}
-
-		for (uint16_t i = 11; i > 0; i--) {
-			delay(100 % i);
-			for (uint8_t x = 0; x < 11; x++) {
-				delay(50);
-				pwm.setPWM(x + i - 1, 0, 4096);
-				pwm.setPWM(x + i, 4096, 0);
-			}
-		}
-		delay(500);
-	}
-	pwm.setPWM(11, 0, 16);  //helle LEDS abdunkeln weiß
-	pwm.setPWM(0, 0, 16);   //helle LEDS abdunkeln grün
-
 }
 
 void reinigungsprogramm(void) {

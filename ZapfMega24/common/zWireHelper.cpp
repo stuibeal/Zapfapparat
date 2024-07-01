@@ -6,6 +6,9 @@
  */
 
 #include "zWireHelper.h"
+#include <Wire.h>
+#include "gemein.h"
+#include <Arduino.h>
 
 zWireHelper::zWireHelper ()
 {

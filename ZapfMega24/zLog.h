@@ -15,12 +15,13 @@
 #ifndef ZLOG_H_
 #define ZLOG_H_
 
+#include <Arduino.h>
 #include "SdFat.h"
-#include "./common/benutzer.h"
-#include "./common/gemein.h"
+#include "benutzer.h"
+#include "gemein.h"
 #include "./zLibraries/RTC_DCF/DateTime.h"
 #include "./zLibraries/RTC_DCF/RealTimeClock_DCF.h"
-#include "./common/tempControl.h"
+#include "tempControl.h"
 #include "string.h"
 
 

@@ -11,9 +11,6 @@
 #define FLOW_I2C_ADDR  0x12  // Flowzähl uC (in Cube 1 bit linksshiften!)
 #define FLOW_I2C_ANTWORTBYTES  2 // die menge an Antwortbytes
 
-
-#include <Wire.h>
-#include "gemein.h"
 #include "stdint.h"
 #include "string.h"
 

@@ -21,23 +21,23 @@
  in mcufriend_special.h: #define USE_MEGA_8BIT_PROTOSHIELD
  */
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include "SdFat.h"
-#include "./common/gemein.h"
+#include "gemein.h"
 #include "stdio.h"
 #include <string.h>
 #include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
 #include "Adafruit_GFX.h"
-
-//#include "Adafruit_GFX.h" // Hardware-specific library
 #include "tempControl.h"
-#include "./common/benutzer.h"
-
+#include "benutzer.h"
 //Fonts
 #include <Fonts/FreeSans9pt7b.h>
 #include <Fonts/FreeSans12pt7b.h>
 #include <Fonts/FreeSansBold12pt7b.h>
 #include "./zLibraries/MCUFRIEND_kbv/FreeDefaultFonts.h"
+
+//#include "Adafruit_GFX.h" // Hardware-specific library
+
 
 // TFT-DISPLAY
 /*

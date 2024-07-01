@@ -9,7 +9,6 @@
 
 zValve::zValve ()
 {
-  // TODO Auto-generated constructor stub
   valveMillis = 0;
   oldState = ZU;
   state = MACH_AUF;
@@ -22,7 +21,7 @@ zValve::zValve ()
 
 zValve::~zValve ()
 {
-  // TODO Auto-generated destructor stub
+  // Auto-generated destructor stub
 }
 void
 zValve::begin ()

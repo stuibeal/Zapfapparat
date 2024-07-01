@@ -7,12 +7,6 @@
 
 #ifndef GEMEIN_H_
 #define GEMEIN_H_
-
-#include "Arduino.h"
-#include "stdint.h"
-#include <stdio.h>
-#include <string.h>
-
 /*
  * HARDWARE
  */
@@ -26,8 +20,6 @@
 // Taster etc
 #define TASTE1_PIN		  37//Taster unterm Drehencoder (hardwareentprellt)
 #define TASTE2_PIN		  39
-#define WSready           19  //Wählscheibe Ready Interrupt
-#define WSpuls            33  //Wählscheibe puls
 #define ROTARY_SW_PIN	  18  //Knopf vom Rotary Encoder (hardwareentprellt)
 #define ROTARY_DT_PIN	  3   //RotaryEnc DT(INT)  D3  D2  RotaryEnc CLK (INT)
 #define ROTARY_CLK_PIN	  2
@@ -50,7 +42,7 @@
 #define ZBRAUN  0xE6DA //dunkelbraun
 #define ZHELLBRAUN 0xEF3B //hell
 #define ZHELLGRUEN 	0x0428  //Zapf hell
-#define ZDUNKELGRUEN 	0x0326  //Zapf dunkel
+#define ZDUNKELGRUEN 0x0326  //Zapf dunkel
 #define GREY    0x8410
 #define NORMAL FreeSans12pt7b
 #define FETT FreeSansBold12pt7b
@@ -97,7 +89,8 @@
 #define KURZ_VOR_ZAPFENDE  0xFC // sagt das wir kurz vor Ende sind → Valve schließen -> PID auf konservativ
 #define LOW_ENERGY  0xFD // //LEDS nicht benutzen  byte3: 0: vollgas   1: sparen
 #define WACH_AUF  0xFE // alles wieder hochfahren und für den neuen Tag bereiten
-#define ZAPFEN_STREICH  0xFF // alles runterfahren, licht aus, ton aus. Halt die Klappe, ich hab Feierabend.
+#define ZAPFEN_STREICH  0xFF
+ // alles runterfahren, licht aus, ton aus. Halt die Klappe, ich hab Feierabend.
 
 /*
  *  Definitionen für Bytes
