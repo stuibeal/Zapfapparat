@@ -7,36 +7,37 @@
 #include "Arduino.h"
 #include "waehlscheibe.h"
 #include "gemein.h"
-#include <PCA9685_LED_DRIVER.h>
+#include "PCA9685.h"
 #include "stdint.h"
 #include "globalVariables.h"
 
-
 /* Class Constructor */
-PCA9685 wsLed = (WS_LED_ADDRESS);
+PCA9685 wsLed(WS_LED_ADDRESS);
 
 /* Variables */
-uint16_t WSpwmVal[12];
 
 void beginWaehlscheibeLed(void) {
-	wsLed.begin(WS_LED_FREQUENCY);
+	wsLed.begin();
+	wsLed.setFrequency(200, 0);
 	wsLedGrundbeleuchtung();
 }
 
 void wsLedGrundbeleuchtung() {
-	wsLed.setPWM(WSpwmVal, sizeof(WSpwmVal));
-	for (uint8_t channel = 0; channel < 12; channel++) {
-		WSpwmVal[channel] = 20;
+	//grün
+	for (uint8_t channel = 1; channel < 11; channel++) {
+		wsLed.setPWM(channel, GRUEN_LED_ABGEDUNKELT);
 	}
-	wsLed.update();
+	//weiß
+	wsLed.setPWM(0, WEISS_LED_ABGEDUNKELT);
+	wsLed.setPWM(11, WEISS_LED_ABGEDUNKELT);
 
 }
 
 uint8_t readWaehlscheibe(void) {
 	for (uint8_t channel = 0; channel < 12; channel++) {
-		WSpwmVal[channel] = 0xFFF;
+		wsLed.setPWM(channel, 40);
 	}
-	wsLed.update();
+
 
 	bool old_waehler2 = 1;
 	bool waehler2 = digitalRead(WSpuls);
@@ -58,9 +59,14 @@ uint8_t readWaehlscheibe(void) {
 			temptime = millis();
 			wsLed.setPWM(waehlZahl, 0xFFF);
 			if (waehlZahl > 1) {
-				wsLed.setPWM(waehlZahl - 1, 1000);
+				wsLed.setPWM(waehlZahl - 1, GRUEN_LED_ABGEDUNKELT + 200);
 			}
-			wsLed.update();
+			if (waehlZahl > 2) {
+				wsLed.setPWM(waehlZahl - 2, GRUEN_LED_ABGEDUNKELT);
+
+			}
+
+
 		}
 	}
 	wsLedGrundbeleuchtung();

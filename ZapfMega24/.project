@@ -72,11 +72,6 @@
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Encoder/1.4.4</locationURI>
 		</link>
 		<link>
-			<name>libraries/MCUFRIEND_kbv</name>
-			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/MCUFRIEND_kbv/3.0.0-Release</locationURI>
-		</link>
-		<link>
 			<name>libraries/MD_MIDIFile</name>
 			<type>2</type>
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/MD_MIDIFile/2.6.0</locationURI>
@@ -92,9 +87,9 @@
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/OneWire/2.3.8</locationURI>
 		</link>
 		<link>
-			<name>libraries/PCA9685_LED_DRIVER</name>
+			<name>libraries/PCA9685_RT</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/PCA9685_LED_DRIVER/1.0.4</locationURI>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/PCA9685_RT/0.7.1</locationURI>
 		</link>
 		<link>
 			<name>libraries/SD</name>
