@@ -379,7 +379,9 @@ void seltencheck(void) {
 	//sprintf(buf, "hell: %d dunkelcount %d", hell, dunkelCount);
 	//DEBUGMSG(buf);
 
-	hell = analogRead(helligkeitSensor);
+	//hell = analogRead(helligkeitSensor);
+    //for DEBUG reasons!!!!
+	hell = 200;
 
 	//Hier checken ob was gespielt wird, ansonsten audio aus
 	//audio.check();
