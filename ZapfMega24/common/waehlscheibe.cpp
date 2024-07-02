@@ -10,6 +10,7 @@
 #include "PCA9685.h"
 #include "stdint.h"
 #include "globalVariables.h"
+#include "audio.h"
 
 /* Class Constructor */
 PCA9685 wsLed(WS_LED_ADDRESS);
@@ -76,6 +77,7 @@ uint8_t readWaehlscheibe(void) {
 }
 
 void oldWaehlscheibeFun(void) {
+	sound.on();
 	sound.mp3Play(11, 1);
 	for (uint8_t channel = 0; channel < 12; channel++) {
 		wsLed.setPWM(channel, 2047);

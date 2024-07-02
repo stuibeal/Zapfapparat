@@ -20,6 +20,7 @@
 #include "tempControl.h"
 
 #define Z_SCH_LAMPE_PIN 5  // output for the Lampe
+#define LICHT_SENSOR  A6
 
 class zPower {
 public:
@@ -52,7 +53,7 @@ void schLampeControl(uint8_t offon, uint16_t dimspeed);
 private:
 uint8_t inVoltage;
 int helligkeit;
-uint8_t lampenoutput;
+uint8_t lampenOutput;
 powerState bkPowerState;
 machineState bkMachineState;
 static unsigned long millisSeitZapfEnde;

@@ -23,6 +23,7 @@ zDisplay::zDisplay() :
 	MCUFRIEND_kbv _tft;  //tft objekt
 	//myCanvas = new
 	_canvas = new GFXcanvas1(65, 22);
+	_infoCanvas = new GFXcanvas1(200, 160);
 
 }
 
@@ -48,6 +49,14 @@ void zDisplay::beginn(SdFat *psd) {
 	_tft.println(" Version 0.6 BETA 2024"); //Bootausgabe
 
 	_canvas->setTextWrap(false);
+	_infoCanvas->setTextWrap(true);
+    _infoCanvas->setFont(0);
+    _infoCanvas->setTextSize(2);
+    _infoCanvas->setCursor(0,0);
+    _infoCanvas->println("Zapfapparat");
+    _infoCanvas->println(_VERSION_);
+    _tft.drawBitmap(280, 190, _infoCanvas->getBuffer(), _infoCanvas->width(),
+    				_infoCanvas->height(), ZGRUEN, WHITE);
 
 	//BMP SHOW
 	root = _sd->open(namebuf);
@@ -371,7 +380,6 @@ void zDisplay::userShow(benutzer *user) {
 		strcpy(namebuf, "/god/20.bmp");
 		break;
 	case 0:  //keinGODMode
-
 		namebuf[5] = user->aktuell + 48; //ASCII Wert für Zahlemann in Char schreiben (Zahl 5 = Ascii 5 wenn man 48 dazu tut
 		break;
 	}

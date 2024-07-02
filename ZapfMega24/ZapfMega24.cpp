@@ -12,7 +12,7 @@
 #include "waehlscheibe.h"
 #include "Adafruit_Thermal.h"
 #include "Adafruit_GFX.h"
-//#include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
+#include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
 #include "zDisplay.h"
 #include "Encoder.h"  //für Drehencoder
 #include "./zLibraries/RTC_DCF/DateTime.h"   // ELV RTC mit DCF
@@ -26,7 +26,6 @@
 #include "zLog.h"
 #include "zWireHelper.h"
 #include "tempControl.h"
-
 
 // Defines
 #define USE_SDFAT
@@ -44,8 +43,6 @@
 
 // Variablen
 char buf[80];
-uint8_t flowWindow = 0;
-uint8_t oldFlowWindow = 0;
 
 //Hier Variablen definieren
 byte aktuellerTag = 1;  //dann gehts mit der Musik aus
@@ -132,7 +129,7 @@ void setup(void) {
 	} else {
 		ZD._tft.println(" SD Karte bassd - OPTIMAL!");
 	}
-	ZD.showBMP("/bmp/z-logo.bmp", 200, 0);
+	ZD.showBMP("/bmp/z-logo.bmp", 20, 20);
 
 	//Printer
 	drucker.initialise(&Serial2, &user, &buf[0]);
@@ -520,6 +517,63 @@ void infoseite(void) {
 
 }
 
+
+void godModeZapfMidi() {
+	if (user.getGodMode() > 0) {
+		static uint8_t oldFlowWindow;
+		static uint8_t flowWindow;
+		oldFlowWindow = flowWindow;
+		flowWindow = digitalRead(FLOW_WINDOW);
+		if (oldFlowWindow == true && flowWindow == false) {
+			sound._SMF->pause(true);
+		}
+		if (oldFlowWindow == false && flowWindow == true) {
+			sound._SMF->pause(false);
+		}
+		if (!sound._SMF->isPaused()) {
+			tickMetronome();
+		}
+	}
+}
+
+void beginnZapfProgramm() {
+	godModeZapfMidi();
+	flowmeter.flowDataSend(GET_ML, 0, 0);
+	// Nachschaun ob er fertig ist und dann bingen und zamschreim
+	if (flowmeter.getMilliliter() >= user.menge() || digitalRead(TASTE2_PIN)) {
+		if (user.getGodMode() == 1) {
+			ZD.showBMP("/god/11.bmp", 300, 50);
+		}
+		sound._SMF->close();
+		sound.midiSilence();
+		ventil.check();
+		sound.bing();
+		//Sollte er abgebrochen haben:
+		if (flowmeter.getMilliliter() < user.menge()) {
+			drucker.printerErrorZapfEnde(flowmeter.getMilliliter());
+		}
+		user.addBier(flowmeter.getFreshZapfMillis());
+		drucker.printerZapfEnde(flowmeter.getMilliliter());
+		UserDataShow();
+		beginZapfBool = false;
+		sound.setStandby(beginZapfBool);
+		logbuch.logAfterZapf();
+		belohnungsMusik();
+	}
+	// Nachschaun ob er eventuell zu lang braucht und nix zapft
+	if (((millis() - auswahlZeit) > 10000) && (flowmeter.getMilliliter() < 5)) {
+		beginZapfBool = false;
+		sound.setStandby(beginZapfBool);
+		temp.sendeBefehl(END_ZAPF, 0x0);
+		ventil.check();
+		wsLedGrundbeleuchtung();
+	}
+	if ((user.menge() - flowmeter.getMilliliter()) < 30) {
+		temp.sendeBefehl(KURZ_VOR_ZAPFENDE, 0x0);
+		ventil.check();
+	}
+}
+
 void loop() {
 	byte oldeinsteller = Einsteller;
 	sound.midiNextEvent();
@@ -550,86 +604,26 @@ void loop() {
 		waehlFunktionen();
 	}
 
-	if (user.getGodMode() == 0)  //sound._SMF.->isPaused () ||
-			{
-
-		if ((millis() - oldTime) > 1000) {
-			oldTime = millis();
-			anzeigeAmHauptScreen();
-			sound.pruefe();
-			if (DEBUG_A) {
-				DEBUGMSG(sound.debugmessage);
-			}
-
-			//RTC_DCF.getDateTime(&dateTime);
-			//printClock();
-		}
-
-		if ((millis() - nachSchauZeit) > 10000 && !beginZapfBool) {
-			seltencheck();
-			nachSchauZeit = millis();
-
+	/*
+	 * Hier nur checken wenn kein Godmode weil sonst Midi zu langsam spielt
+	 * ansonsten jede Sekunde mal Daten aktualisieren
+	 */
+	if ( ((millis() - oldTime) > 1000) && user.getGodMode()>0)  {
+		oldTime = millis();
+		anzeigeAmHauptScreen();
+		sound.pruefe();
+		if (DEBUG_A) {
+			DEBUGMSG(sound.debugmessage);
 		}
 	}
 
+	if ((millis() - nachSchauZeit) > 10000 && !beginZapfBool) {
+		seltencheck();
+		nachSchauZeit = millis();
+	}
+
 	if (beginZapfBool) {
-		if (user.getGodMode() > 0) {
-			oldFlowWindow = flowWindow;
-			flowWindow = digitalRead(FLOW_WINDOW);
-			if (oldFlowWindow == true && flowWindow == false) {
-				sound._SMF->pause(true);
-			}
-			if (oldFlowWindow == false && flowWindow == true) {
-				sound._SMF->pause(false);
-			}
-			if (!sound._SMF->isPaused()) {
-				tickMetronome();
-			}
-		}
-
-		flowmeter.flowDataSend(GET_ML, 0, 0); // aktuelle ml vom Flow uC abfragen
-
-		// Nachschaun ob er fertig ist und dann bingen und zamschreim
-		if (flowmeter.getMilliliter() >= user.menge()
-				|| digitalRead(TASTE2_PIN)) {
-			if (user.getGodMode() == 1) {
-				ZD.showBMP("/god/11.bmp", 300, 50);
-			}
-			sound._SMF->close();
-			sound.midiSilence();
-			ventil.check();
-			sound.bing();
-
-			//Sollte er abgebrochen haben:
-			if (flowmeter.getMilliliter() < user.menge()) {
-				drucker.printerErrorZapfEnde(flowmeter.getMilliliter());
-			}
-
-			user.addBier(flowmeter.getFreshZapfMillis());
-
-			drucker.printerZapfEnde(flowmeter.getMilliliter());
-			UserDataShow();
-			beginZapfBool = false;
-			sound.setStandby(beginZapfBool);
-			dataLogger();
-			belohnungsMusik();
-
-		}
-
-		// Nachschaun ob er eventuell zu lang braucht und nix zapft
-		if (((millis() - auswahlZeit) > 10000)
-				&& (flowmeter.getMilliliter() < 5)) {
-			beginZapfBool = false;
-			sound.setStandby(beginZapfBool);
-			temp.sendeBefehl(END_ZAPF, 0x0);
-			ventil.check();
-			wsLedGrundbeleuchtung();
-		}
-
-		if ((user.menge() - flowmeter.getMilliliter()) < 30) {
-			temp.sendeBefehl(KURZ_VOR_ZAPFENDE, 0x0);
-			ventil.check();
-		}
+		beginnZapfProgramm();
 	}
 
 	//Check Knöpfe (Benutzer) -> Display up -> Zapfprogramm
@@ -657,83 +651,6 @@ void anzeigeAmHauptScreen(void) {
 
 }
 
-/* Name:			dataLogger
- * Beschreibung:	Diese Funktion schreibt die aktuellen Daten auf die SD Karte
- *
- */
-void dataLogger(void) {
-	// TBD: other files müssen alle zu sein
-	// jeden Tag ein File, ein gesamtfile
-
-	/*
-	 //Zeit einlesen
-	 RTC_DCF.getDateTime (&dateTime);
-
-	 char fileBuf[20] = "";
-	 String dataString = "";
-	 sprintf (fileBuf, "LOG_%02u%02u%2u.csv", dateTime.getDay (),
-	 dateTime.getMonth (), dateTime.getYear ());
-
-	 if (!SD.exists (fileBuf))
-	 {
-	 //Wenn Datei noch nicht vorhanden, Kopfzeile schreiben!
-	 dataString = "Datum Zeit, ";
-	 for (uint8_t x = 0; x < 10; x++)
-	 {
-	 dataString += user.username[x];
-	 dataString += ", ";
-	 }
-	 dataString += "Gesamtmenge, ";
-	 dataString += "Batterie-Volt, ";
-	 dataString += "Helligkeit";
-
-	 File dataFile = SD.open (fileBuf, FILE_WRITE);
-	 // if the file is available, write to it:
-	 if (dataFile)
-	 {
-	 dataFile.println (dataString);
-	 dataFile.close ();
-	 }
-	 // if the file isn't open, pop up an error:
-	 else
-	 {
-	 //Serial.println("konnte z-log.csv nicht öffnen");
-	 }
-	 }
-
-	 // Daten schreiben
-	 char timeBuf[20] = "00.00.00 00:00:00, ";
-	 sprintf (timeBuf, "%02u.%02u.%02u %02u:%02u:%02u, ", dateTime.getDay (),
-	 dateTime.getMonth (), dateTime.getYear (), dateTime.getHour (),
-	 dateTime.getMinute (), dateTime.getSecond ());
-	 File dataFile = SD.open (fileBuf, FILE_WRITE);
-
-	 dataString = timeBuf;
-
-	 for (uint8_t x = 0; x < 11; x++)
-	 {
-	 dataString += String (user.tag ());
-	 dataString += ",";
-	 }
-	 dataString += String (user.gesamtMengeTag);
-	 dataString += ",";
-	 dataString += String (inVoltage);
-	 dataString += ",";
-	 dataString += String (hell);
-
-	 // if the file is available, write to it:
-	 if (dataFile)
-	 {
-	 dataFile.println (dataString);
-	 dataFile.close ();
-	 }
-	 // if the file isn't open, pop up an error:
-	 else
-	 {
-	 //Serial.println("konnte z-log.csv nicht öffnen");
-	 }
-	 */
-}
 
 void UserDataShow() {
 	int x = 400;

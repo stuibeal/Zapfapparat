@@ -10,10 +10,8 @@
 #include "audio.h"
 
 //globale Variablen
-		extern zWireHelper flowmeter;
-		extern audio sound;
-		extern uint8_t honk;
-
+extern zWireHelper flowmeter;
+extern audio sound;
 
 #endif /* GLOBALVARIABLES_H_ */
 

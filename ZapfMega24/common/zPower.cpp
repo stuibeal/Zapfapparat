@@ -21,15 +21,17 @@ zPower::zPower ()
 	millisSeitZapfEnde = 0;
 	millisSeitLetztemCheck = 0;
 	_pTemp = nullptr;
+	lampenOutput = 0;
 }
 
 zPower::~zPower ()
 {
-  // TODO Auto-generated destructor stub
+  /* Auto-generated destructor stub */
 }
 
 void zPower::begin(tempControl *pTemp) {
 	_pTemp = pTemp;
+	pinMode(Z_SCH_LAMPE_PIN, OUTPUT);
 }
 
 void zPower::check() {
@@ -50,8 +52,9 @@ void zPower::check() {
    	   bkPowerState = BATT_ULTRALOW;
    	   break;
    }
-
+   helligkeit = digitalRead(LICHT_SENSOR);
 }
+
 void zPower::setLed(uint8_t offon) {
 
 }

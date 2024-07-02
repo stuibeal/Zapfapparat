@@ -25,6 +25,8 @@ void tickMetronome(void)  		;
 void seltencheck(void) ;
 void belohnungsMusik() ;
 void infoseite(void) ;
+void beginZapfProgramm(void);
+void godModeZapfMidi(void);
 void loop() ;
 void userShow(void) ;
 void anzeigeAmHauptScreen(void) ;

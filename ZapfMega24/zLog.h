@@ -39,6 +39,8 @@ public:
   getlogState() {return logState;}
   void
   getClockString(void);
+  void
+  logAfterZapf(void);
 
 
   DateTime dateTime;

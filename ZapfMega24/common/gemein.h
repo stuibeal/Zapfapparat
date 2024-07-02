@@ -10,6 +10,8 @@
 /*
  * HARDWARE
  */
+#define _VERSION_ "V 0.6 Beta 2024"
+
 
 //SD Karte
 #define SD_CS     53 //CS Pin am MEGA für SPI
