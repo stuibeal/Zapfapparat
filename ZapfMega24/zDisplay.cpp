@@ -11,9 +11,8 @@
 #include "zDisplay.h"
 
 
-
 zDisplay::zDisplay() :
-		MCUFRIEND_kbv(0, 0, 0, 0, 0), GFXcanvas1(65,22), GFXcanvas1(200,160){
+		MCUFRIEND_kbv(0, 0, 0, 0, 0), GFXcanvas1(0,0){
 	_sd = nullptr;
 	_canvas = nullptr;
 	_infoCanvas = nullptr;
@@ -22,8 +21,6 @@ zDisplay::zDisplay() :
 	b = 0;
 	strcpy(namebuf, "/");
 	MCUFRIEND_kbv _tft;  //tft objekt
-	canvas = GFXcanvas1(65,22);
-	infoCanvas = GFXcanvas1( 200, 160);
 	//myCanvas = new
 	//_infoCanvas = new GFXcanvas1(200, 160);
 
@@ -36,10 +33,10 @@ zDisplay::~zDisplay() {
 /*
  * Hauptprogramm übergibt Pointer zum SD Objekt
  */
-void zDisplay::beginn(SdFat *psd) {
+void zDisplay::beginn(SdFat *psd, GFXcanvas1 *pcanvas, GFXcanvas1 *pinfoCanvas) {
 	_sd = psd; //speichert den Pointer
-    _canvas = &canvas;
-    _infoCanvas = &infoCanvas;
+    _canvas = pcanvas;
+    _infoCanvas = pinfoCanvas;
 	_tft.begin(0x9486); //ID für ILI9486 Chipsatz
 	_tft.setRotation(1);
 	_tft.setTextSize(2);

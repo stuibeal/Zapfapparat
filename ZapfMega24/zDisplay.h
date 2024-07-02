@@ -87,7 +87,7 @@ class zDisplay: public MCUFRIEND_kbv, GFXcanvas1 {
 public:
 	zDisplay(); //Constructor
 	virtual ~zDisplay(); //Destructor
-	void beginn(SdFat *psd);
+	void beginn(SdFat *psd, GFXcanvas1 *pcanvas, GFXcanvas1 *pinfoCanvas);
 	void printText(void);  //Zeigt Text an
 	void infoText(const char* text);
 	uint8_t showBMP(char const *nm, int16_t x, int16_t y);
@@ -105,6 +105,7 @@ public:
 	void infoscreen(tempControl *temp, benutzer *user);
 	MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
 
+
 private:
 	//friend class GFXcanvas1;
 	uint16_t read16(File &f);
@@ -116,8 +117,6 @@ private:
 	uint8_t r;
 	uint8_t g;
 	uint8_t b;
-	GFXcanvas1 canvas;
-	GFXcanvas1 infoCanvas;
 	GFXcanvas1 *_canvas;
 	GFXcanvas1 *_infoCanvas;
 

@@ -94,6 +94,8 @@ zPrinter drucker;
 zLog logbuch;
 MD_MIDIFile SMF;
 MD_YX5300 mp3 = MD_YX5300(MP3Stream);
+GFXcanvas1 canvas(65,22);
+GFXcanvas1 infoCanvas(200,160);
 
 void setup(void) {
 	//Erstmal bei den anderen MCs den Strom an
@@ -117,7 +119,7 @@ void setup(void) {
 	flowmeter.initialise();
 
 	//TFT
-	ZD.beginn(&SD);  //mit Pointer zur SD starten
+	ZD.beginn(&SD, &canvas, &infoCanvas);  //mit Pointer zur SD starten
 
 	//SD
 	if (!SD.begin(SD_CS)) {  // nachschauen ob die SD-Karte drin und gut ist
