@@ -137,14 +137,14 @@ void setup(void) {
     drucker.printerButtonPressed();
 	//Temperaturfuehler
 	temp.begin(); //Wire sollte konfiguriert sein!
-	ZD._tft.println(" Temperaturfuehler hochgefahren...");
-
+	ZD.printInitText(" Temperaturfuehler hochgefahren...");
+    delay(500);
 	//FLOWMETER
 	pinMode(FLOW_SM6020, OUTPUT);
 	digitalWrite(FLOW_SM6020, HIGH);
 	pinMode(FLOW_WINDOW, INPUT);    //Wenn durchfluss, dann true
-	ZD._tft.println(" Flowmeter ifm SM6020 ein");
-
+	ZD.printInitText(" Flowmeter ifm SM6020 ein");
+	delay(500);
 	//Rotary Encoder
 	pinMode(ROTARY_SW_PIN, INPUT); // Drehgeberknopf auf Input
 	attachInterrupt(digitalPinToInterrupt(ROTARY_SW_PIN),
@@ -160,22 +160,22 @@ void setup(void) {
 	pinMode(WSready, INPUT);  //Wählscheibe Puls
 
 	sound.starte(&SD, &SMF, &mp3);
-	ZD.println("Harte Musik bereit");
+	ZD.printInitText(" Harte Musik bereit");
 
 	//Altdaten auslesen (SD karte) nach Stromweg oder so...
 
 	//PWM Treiber hochfahren
 	beginWaehlscheibeLed();
-	ZD.println("PWM Waehlscheibe ready...");
+	ZD.printInitText(" PWM Waehlscheibe ready...");
 
 	//Valve
 	ventil.begin();
 	ventil.check();   //dann sollte das aufgehen
-	ZD.println("Ventilsteuerung aktiviert");
+	ZD.printInitText(" Ventilsteuerung aktiviert");
 
 	//DCF RTC
 	logbuch.initialise(&SD, &user, &temp, buf);
-	ZD.println("RTC DCF77 aktiviert");
+	ZD.printInitText(" RTC DCF77 aktiviert");
 
 	//Make Windows 95 great again
 	anfang();

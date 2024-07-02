@@ -40,16 +40,21 @@ void zDisplay::beginn(SdFat *psd) {
 	_tft.setTextColor(ZGRUEN, WHITE);
 
 	_tft.setCursor(240, 10); //Cursor setzen
-    _tft.setAddrWindow(240, 10, 480, 320);
 	_tft.println(" Zapfapparat");
-	_tft.println(" Version 0.6 BETA 2024"); //Bootausgabe
-
+	_tft.setCursor(240, 26); //Cursor setzen
+	_tft.println(_VERSION_); //Bootausgabe
+	_tft.setCursor(0,240); //für die nachfolgende Ausgabe
 
 	//BMP SHOW
 	root = _sd->open(namebuf);
 	pathlen = strlen(namebuf);
 
 }
+void zDisplay::printInitText(const char *text){
+    _tft.vertScroll(0, 1, 16);
+    _tft.println(text);
+}
+
 
 void zDisplay::printText(void) {
 	_tft.setFont(0);
