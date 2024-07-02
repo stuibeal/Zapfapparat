@@ -40,11 +40,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/common}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/PCA9685_LED_DRIVER/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/MCUFRIEND_kbv/utility}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/MCUFRIEND_kbv}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/PCA9685_RT}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/DS18B20/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.84790751" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
@@ -67,11 +63,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/Adafruit_PWM_Servo_Driver_Library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/core/core}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/PCA9685_LED_DRIVER/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/MCUFRIEND_kbv/utility}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/MCUFRIEND_kbv}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/PCA9685_RT}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/DS18B20/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.c.sketch.input.493068515" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
 							</tool>
@@ -93,11 +85,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/Adafruit_PWM_Servo_Driver_Library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/core/core}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/PCA9685_LED_DRIVER/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/MCUFRIEND_kbv/utility}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/MCUFRIEND_kbv}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/PCA9685_RT}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/DS18B20/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.S.sketch.input.1427311441" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
 							</tool>

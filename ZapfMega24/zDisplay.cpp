@@ -12,10 +12,8 @@
 
 
 zDisplay::zDisplay() :
-		MCUFRIEND_kbv(0, 0, 0, 0, 0), GFXcanvas1(0,0){
+		MCUFRIEND_kbv(0, 0, 0, 0, 0){
 	_sd = nullptr;
-	_canvas = nullptr;
-	_infoCanvas = nullptr;
 	r = 0;
 	g = 0;
 	b = 0;
@@ -33,29 +31,19 @@ zDisplay::~zDisplay() {
 /*
  * Hauptprogramm übergibt Pointer zum SD Objekt
  */
-void zDisplay::beginn(SdFat *psd, GFXcanvas1 *pcanvas, GFXcanvas1 *pinfoCanvas) {
+void zDisplay::beginn(SdFat *psd) {
 	_sd = psd; //speichert den Pointer
-    _canvas = pcanvas;
-    _infoCanvas = pinfoCanvas;
 	_tft.begin(0x9486); //ID für ILI9486 Chipsatz
 	_tft.setRotation(1);
 	_tft.setTextSize(2);
 	_tft.fillScreen(TFT_WHITE);
 	_tft.setTextColor(ZGRUEN, WHITE);
 
-	_tft.setCursor(0, 10); //Cursor setzen
-
+	_tft.setCursor(240, 10); //Cursor setzen
+    _tft.setAddrWindow(240, 10, 480, 320);
 	_tft.println(" Zapfapparat");
 	_tft.println(" Version 0.6 BETA 2024"); //Bootausgabe
 
-	_canvas->setTextWrap(false);
-//	_infoCanvas->setTextWrap(true);
-//    _infoCanvas->setFont(0);
-//    _infoCanvas->setTextSize(2);
-//    _infoCanvas->setCursor(0,0);
-//    _infoCanvas->println("Zapfapparat");
-//    _infoCanvas->println(_VERSION_);
-//    //_tft.drawBitmap(280, 190, _infoCanvas->getBuffer(), _infoCanvas->width(),	_infoCanvas->height(), ZGRUEN, WHITE);
 
 	//BMP SHOW
 	root = _sd->open(namebuf);
@@ -283,38 +271,22 @@ void zDisplay::print_val(int val, int16_t x, int16_t y, int c, bool komma) //Hil
 	_tft.print(buf);
 }
 
-void zDisplay::print_val2(int val, int16_t x, int16_t y, int c, bool komma) //Hilfsroutine zum Daten anzeigen
+
+void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsroutine zum Daten anzeigen
 		{
 	char buf[10];
-	_canvas->setTextSize(1);
-	_canvas->fillScreen(0);
-	_canvas->setCursor(0, 20);  //Text Cursor bei Fonts ist unten
+	_tft.setFont(0);
+	_tft.setTextSize(2);
+	_tft.setTextColor(WHITE, ZDUNKELGRUEN);
+    _tft.setCursor(x,y);
 	if (komma == 1) {
 		sprintf(buf, "%d,%02d", val / 100, val % 100);
 	} else {
 		sprintf(buf, "%d", val);
 	}
-	if (c == 1) //schwarz fett
-			{
-		_canvas->setFont(&FETT);
-		_canvas->print(buf);
-		_tft.drawBitmap(x, y, _canvas->getBuffer(), _canvas->width(),
-				_canvas->height(), BLACK, ZDUNKELGRUEN);
-	} else //weiß
-	{
-		_canvas->setFont(&NORMAL);
-		_canvas->print(buf);
-		_tft.drawBitmap(x, y, _canvas->getBuffer(), _canvas->width(),
-				_canvas->height(), WHITE, ZDUNKELGRUEN);
-	}
-	if (c == 2) //rot
-			{
-		_canvas->setFont(&NORMAL);
-		_canvas->print(buf);
-		_tft.drawBitmap(x, y, _canvas->getBuffer(), _canvas->width(),
-				_canvas->height(), RED, ZDUNKELGRUEN);
-	}
+		_tft.print(buf);
 }
+
 
 /**
  * Schreibt einen INT in einen Canvas und Zeigt ihn an
@@ -326,25 +298,25 @@ void zDisplay::print_val2(int val, int16_t x, int16_t y, int c, bool komma) //Hi
  * @param _pfont	Pointer zur Schriftart
  * @param komma		Darstellung mit oder ohne Komma (def KOMMA/GANZZAHL)
  */
-void zDisplay::printVal(int val, int16_t x, int16_t y, uint16_t textColor,
-		uint16_t backColor, const GFXfont *_pfont, bool komma) //Hilfsroutine zum Daten anzeigen
-		{
-	char buf[10];
-	_canvas->setTextSize(1);
-	_canvas->fillScreen(0);
-	_canvas->setCursor(0, 20);  //Text Cursor bei Fonts ist unten
-
-	if (komma) {
-		sprintf(buf, "%d,%02d", val / 100, val % 100);
-	} else {
-		sprintf(buf, "%d", val);
-	}
-
-	_canvas->setFont(_pfont);
-	_canvas->print(buf);
-	_tft.drawBitmap(x, y, _canvas->getBuffer(), _canvas->width(),
-			_canvas->height(), textColor, backColor);
-}
+//void zDisplay::printVal(int val, int16_t x, int16_t y, uint16_t textColor,
+//		uint16_t backColor, const GFXfont *_pfont, bool komma) //Hilfsroutine zum Daten anzeigen
+//		{
+//	char buf[10];
+//	_canvas->setTextSize(1);
+//	_canvas->fillScreen(0);
+//	_canvas->setCursor(0, 20);  //Text Cursor bei Fonts ist unten
+//
+//	if (komma) {
+//		sprintf(buf, "%d,%02d", val / 100, val % 100);
+//	} else {
+//		sprintf(buf, "%d", val);
+//	}
+//
+//	_canvas->setFont(_pfont);
+//	_canvas->print(buf);
+//	_tft.drawBitmap(x, y, _canvas->getBuffer(), _canvas->width(),
+//			_canvas->height(), textColor, backColor);
+//}
 
 void zDisplay::setCursor(int16_t x, int16_t y) {
 	_tft.setCursor(x, y);

@@ -86,7 +86,7 @@ void zWireHelper::flowDataSend (uint8_t befehl, uint8_t option1, uint8_t option2
 }
 
 uint16_t zWireHelper::getFreshZapfMillis() {
-	flowDataSend(GET_ML, 0);
+	flowDataSend(GET_ML, 0, 0);
 	return zapfMillis;
 }
 

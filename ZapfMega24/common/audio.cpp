@@ -60,7 +60,7 @@ void audio::starte(SdFat *pSD, MD_MIDIFile * pSMF, MD_YX5300 * pMp3) {
 	delay(600);
 	digitalWrite(AUDIO_AMP, HIGH);
 	//ZD.println ("Harte Musik bereit");
-	_SMF->load("Ein-Prosit-1.mid");
+	//_SMF->load("Ein-Prosit-1.mid");
 	_SMF->looping(false);
 
 }

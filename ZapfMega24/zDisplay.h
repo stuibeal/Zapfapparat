@@ -83,17 +83,18 @@
 #define BMPIMAGEOFFSET 54
 #define BUFFPIXEL      20
 
-class zDisplay: public MCUFRIEND_kbv, GFXcanvas1 {
+class zDisplay: public MCUFRIEND_kbv {
 public:
 	zDisplay(); //Constructor
 	virtual ~zDisplay(); //Destructor
-	void beginn(SdFat *psd, GFXcanvas1 *pcanvas, GFXcanvas1 *pinfoCanvas);
+	void beginn(SdFat *psd);
 	void printText(void);  //Zeigt Text an
 	void infoText(const char* text);
 	uint8_t showBMP(char const *nm, int16_t x, int16_t y);
 	void print_val(int val, int16_t x, int16_t y, int c, bool komma);
 	//void fillScreen(unsigned short int color);
-	void print_val2(int val, int16_t x, int16_t y, int c, bool komma);
+	void print_val3(int val, int16_t x, int16_t y, bool komma);
+
 	void printVal(int val, int16_t x, int16_t y, uint16_t textColor,
 			uint16_t backColor, const GFXfont *_pfont, bool komma);
 	void setCursor(int16_t x, int16_t y);
@@ -117,8 +118,6 @@ private:
 	uint8_t r;
 	uint8_t g;
 	uint8_t b;
-	GFXcanvas1 *_canvas;
-	GFXcanvas1 *_infoCanvas;
 
 protected:
 	SdFat *_sd; 		// Pointer zum SD-Objekt vom Hauptprogramm

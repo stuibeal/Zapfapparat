@@ -49,10 +49,10 @@ void tempControl::begin() {
 	oneWire36 = new OneWire(ONE_WIRE_BUS36);
 
 	auslauf = new DS18B20(oneWire30);
-	block = new DS18B20(oneWire32);
+	kuehlwasser = new DS18B20(oneWire32);
 	gehaeuse = new DS18B20(oneWire34);
 	zulauf = new DS18B20(oneWire35);
-	kuehlwasser = new DS18B20(oneWire36);
+	block = new DS18B20(oneWire36);
 
 	//Temperaturfuehler hochfahren
 	auslauf->begin();

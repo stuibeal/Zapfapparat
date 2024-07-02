@@ -83,6 +83,7 @@ long oldPosition = 0; //Fuer Drehgeber
 unsigned int tempAnzeigeZeit = millis(); //für zehnsekündige Temperaturanzeige
 
 // Variablen aus
+
 SdFat SD;  // SD-KARTE
 zDisplay ZD;   // neues zDisplay Objekt
 zWireHelper flowmeter;
@@ -94,8 +95,6 @@ zPrinter drucker;
 zLog logbuch;
 MD_MIDIFile SMF;
 MD_YX5300 mp3 = MD_YX5300(MP3Stream);
-GFXcanvas1 canvas(65,22);
-GFXcanvas1 infoCanvas(200,160);
 
 void setup(void) {
 	//Erstmal bei den anderen MCs den Strom an
@@ -119,7 +118,7 @@ void setup(void) {
 	flowmeter.initialise();
 
 	//TFT
-	ZD.beginn(&SD, &canvas, &infoCanvas);  //mit Pointer zur SD starten
+	ZD.beginn(&SD);  //mit Pointer zur SD starten
 
 	//SD
 	if (!SD.begin(SD_CS)) {  // nachschauen ob die SD-Karte drin und gut ist
@@ -134,8 +133,8 @@ void setup(void) {
 	ZD.showBMP("/bmp/z-logo.bmp", 20, 20);
 
 	//Printer
-	drucker.initialise(&Serial2, &user, &buf[0]);
-
+	drucker.initialise(&user, buf);
+    drucker.printerButtonPressed();
 	//Temperaturfuehler
 	temp.begin(); //Wire sollte konfiguriert sein!
 	ZD._tft.println(" Temperaturfuehler hochgefahren...");
@@ -175,7 +174,7 @@ void setup(void) {
 	ZD.println("Ventilsteuerung aktiviert");
 
 	//DCF RTC
-	logbuch.initialise(&SD, &user, &temp, &buf[0]);
+	logbuch.initialise(&SD, &user, &temp, buf);
 	ZD.println("RTC DCF77 aktiviert");
 
 	//Make Windows 95 great again
@@ -543,6 +542,8 @@ void beginnZapfProgramm() {
 	flowmeter.flowDataSend(GET_ML, 0, 0);
 	// Nachschaun ob er fertig ist und dann bingen und zamschreim
 	if (flowmeter.getMilliliter() >= user.menge() || digitalRead(TASTE2_PIN)) {
+		DEBUGMSG("jetzt zapfmenge erreicht");
+		//delay(3000);
 		if (user.getGodMode() == 1) {
 			ZD.showBMP("/god/11.bmp", 300, 50);
 		}
@@ -551,11 +552,22 @@ void beginnZapfProgramm() {
 		ventil.check();
 		sound.bing();
 		//Sollte er abgebrochen haben:
+		DEBUGMSG("vor printererror");
+		//delay(2000);
+
 		if (flowmeter.getMilliliter() < user.menge()) {
 			drucker.printerErrorZapfEnde(flowmeter.getMilliliter());
 		}
-		user.addBier(flowmeter.getFreshZapfMillis());
-		drucker.printerZapfEnde(flowmeter.getMilliliter());
+		DEBUGMSG("vor addbier");
+		//delay(2000);
+		uint16_t zapfMenge = flowmeter.getMilliliter()+ flowmeter.getFreshZapfMillis();
+		user.addBier(zapfMenge); //alte ml dazurechnen
+		DEBUGMSG("vor printer");
+		//delay(2000);
+
+		drucker.printerZapfEnde(zapfMenge);
+		DEBUGMSG("vor userdatashow");
+		//delay(2000);
 		UserDataShow();
 		beginZapfBool = false;
 		sound.setStandby(beginZapfBool);
@@ -610,7 +622,7 @@ void loop() {
 	 * Hier nur checken wenn kein Godmode weil sonst Midi zu langsam spielt
 	 * ansonsten jede Sekunde mal Daten aktualisieren
 	 */
-	if ( ((millis() - oldTime) > 1000) && user.getGodMode()>0)  {
+	if ( ((millis() - oldTime) > 1000) && user.getGodMode()==0)  {
 		oldTime = millis();
 		anzeigeAmHauptScreen();
 		sound.pruefe();
@@ -646,10 +658,10 @@ void anzeigeAmHauptScreen(void) {
 	//ZD.printVal(temp.getBlockAussenTemp(), 25, 100, WHITE, ZDUNKELGRUEN, &FETT,	KOMMA);
 	//DEBUGMSG("vor transmitauslauf");
 	//DEBUGMSG("vor transmitauslauf");
-	ZD.print_val2(temp.getBlockAussenTemp(), 20, 125, 1, 1);
-	ZD.print_val2((int) flowmeter.getFreshZapfMillis(), 20, 150, 1, 0);
+	ZD.print_val3(temp.getBlockAussenTemp(), 20, 125,  KOMMA);
+	ZD.print_val3((int) flowmeter.getMilliliter(), 20, 150, GANZZAHL);
 	//ZD.printText();
-	ZD.print_val2((int) ventil.getPressure(), 20, 175, 1, 1);
+	ZD.print_val3((int) ventil.getPressure(), 20, 175, KOMMA);
 
 }
 

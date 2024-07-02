@@ -1,5 +1,5 @@
 /*
- * z_printer->cpp
+ * zprinter.cpp
  *
  *  Created on: 15.07.2023
  *      Author: alfred3
@@ -7,216 +7,201 @@
 
 #include "zPrinter.h"
 
-zPrinter::zPrinter ()
-  //:Adafruit_Thermal(0, 0)
-
+zPrinter::zPrinter() :
+		Adafruit_Thermal(0, 0)
+//:Adafruit_Thermal(0, 0)
 {
-  _user = nullptr;
-  _printer = nullptr;
-  _buf = nullptr;
-  printerOn = 1;
+	_user = nullptr;
+	_buf = nullptr;
+	printerOn = 1;
+	printer = Adafruit_Thermal(&Serial2, PRINTER_DTR);
 
 }
 
-zPrinter::~zPrinter ()
-{
+zPrinter::~zPrinter() {
 
 }
 
-void
-zPrinter::initialise (HardwareSerial *S, benutzer *_puser, char *pbuf) {
-  _user = _puser;
-  _buf = pbuf;
-  Adafruit_Thermal *_printer = new Adafruit_Thermal(S, PRINTER_DTR); //PRINTERm, Hardware Serial2 DTR pin
-  pinMode (PRINTER_ON_PIN, OUTPUT);
-  //pinMode (PRINTER_DTR, INPUT);
-  digitalWrite (PRINTER_ON_PIN, HIGH);
-  S->begin (printerBaudRate);
-  delay (1000);
-  _printer->begin ();
-  delay (1000);
-  _printer->println ("HONK");
-  _printer->sleep ();
-  //digitalWrite (PRINTER_ON_PIN, LOW);
+void zPrinter::initialise(benutzer *_puser, char *pbuf) {
+	_user = _puser;
+	_buf = pbuf;
+	//Adafruit_Thermal *_printer = new Adafruit_Thermal(S, PRINTER_DTR); //PRINTERm, Hardware Serial2 DTR pin
+	//Adafruit_Thermal printer = Adafruit_Thermal(S, PRINTER_DTR);
+	pinMode(PRINTER_ON_PIN, OUTPUT);
+	//pinMode (PRINTER_DTR, INPUT);
+	digitalWrite(PRINTER_ON_PIN, HIGH);
+	Serial2.begin(PRINTER_BAUDRATE);
+	delay(1000);
+	printer.begin();
+	delay(1000);
+	printer.println("Zapfapparat");
+	printer.println(_VERSION_);
+	printer.setLineHeight(24);
+	printer.feedRows(2);
+	printer.sleep();
+	//_printer = &printer;
+	//digitalWrite (PRINTER_ON_PIN, LOW);
 
 }
 
-void
-zPrinter::printerSleep (void)
-{
+void zPrinter::printerSleep(void) {
 
-  _printer->sleep ();
-  //digitalWrite (PRINTER_ON_PIN, LOW);
+	printer.sleep();
+	//digitalWrite (PRINTER_ON_PIN, LOW);
 }
-
 
 /*
  * Command: wake up printer for action
  */
-void
-zPrinter::printerWakeUp (void)
-{
-  digitalWrite (PRINTER_ON_PIN, HIGH);
-  //delay(1000);
-  //_printer->begin();
-  //delay(1000);
-  _printer->wake ();       // MUST wake() before printing again, even if reset
-  _printer->setDefault (); // Restore printer to defaults
+void zPrinter::printerWakeUp(void) {
+	digitalWrite(PRINTER_ON_PIN, HIGH);
+	//delay(1000);
+	//printer.begin();
+	//delay(1000);
+	printer.wake();       // MUST wake() before printing again, even if reset
+	printer.setDefault(); // Restore printer to defaults
 }
 
 /*
  * Command: run simple print job when button pressed
  */
-void
-zPrinter::printerButtonPressed ()
-{
-  printerWakeUp ();
-  _printer->justify ('C');
-  _printer->setSize ('L');
-  _printer->println (F("Bier her"));
-  _printer->println (F("Bier her"));
-  _printer->println (F("oda I foll um"));
-  _printer->feed (2);
-  printerSleep ();
+void zPrinter::printerButtonPressed() {
+	printerWakeUp();
+	printer.justify('C');
+	printer.setSize('L');
+	printer.println(F("Bier her"));
+	printer.println(F("Bier her"));
+	printer.println(F("oda I foll um"));
+	printer.feed(2);
+	printerSleep();
 }
 
-void
-zPrinter::printerZapfEnde (unsigned int zahl)
-{
-  if (printerOn)
-    {
-      printerWakeUp ();
-      _printer->justify ('C');
-      _printer->setSize ('S');
-      _printer->println (_user->getName ());
-      _printer->print (zahl);
-      _printer->println (" ml gezapft!");
-      _printer->setSize ('S');
-      _printer->println (_user->gesamt ());
-      if (_user->aktuell == 3)
-	{
-	  _printer->setSize ('L');
-	  _printer->println ("OPTIMAL!");
+void zPrinter::printerZapfEnde(uint16_t zahl) {
+	if (printerOn) {
+		printerWakeUp();
+		printer.justify('L');
+		printer.setSize('S');
+		printer.setLineHeight(24);
+		printer.print("Zapfkamerad ");
+		printer.print(_user->getName());
+		printer.println(" hat gerade");
+		printer.print((int) zahl);
+		printer.println(" ml gezapft!");
+		printer.print("Gesamtmenge des Tages: ");
+		printer.print(_user->gesamt());
+		printer.println(" ml");
+		if (_user->aktuell == 3) {
+			printer.setSize('L');
+			printer.println("OPTIMAL!");
+		}
+		printer.feed(20);
+		printerSleep();
 	}
-      _printer->feed (20);
-      printerSleep ();
-    }
 }
 
-void
-zPrinter::printerErrorZapfEnde (unsigned int zahl)
-{
-  if (printerOn)
-    {
-      printerWakeUp ();
-      _printer->justify ('C');
-      _printer->setSize ('S');
-      sprintf (_buf, "Du hast nur %d ml gezapft!", zahl);
-      _printer->println (_buf);
-      _printer->setSize ('L');
-      _printer->println (_user->getName ());
-      _printer->println ("Schämen Sie sich!");
-      _printer->setSize ('S');
-      _printer->feed (20);
-      printerSleep ();
-    }
+void zPrinter::printerErrorZapfEnde(unsigned int zahl) {
+	if (printerOn) {
+		printerWakeUp();
+		printer.justify('C');
+		printer.setSize('S');
+
+		sprintf(_buf, "Du hast nur %d ml gezapft!", zahl);
+		printer.println(_buf);
+		printer.setSize('L');
+		printer.println(_user->getName());
+		printer.println("Schämen Sie sich!");
+		printer.setSize('S');
+		printer.feed(20);
+		printerSleep();
+	}
 }
 
-void
-zPrinter::printMessage (String printMessage)
-{
-  printerWakeUp ();
-  _printer->setSize ('S');
-  _printer->justify ('L');
-  _printer->println (printMessage);
-  printerSleep ();
+void zPrinter::printMessage(String printMessage) {
+	printerWakeUp();
+	printer.setSize('S');
+	printer.justify('L');
+	printer.println(printMessage);
+	printerSleep();
 }
 
-void
-zPrinter::printFeed (int feedrate)
-{
-  printerWakeUp();
-  _printer->feed (feedrate);
-  printerSleep ();
+void zPrinter::printFeed(int feedrate) {
+	printerWakeUp();
+	printer.feed(feedrate);
+	printerSleep();
 }
 
 /*
  * Command: run a test print job
  */
-void
-zPrinter::printerTest ()
-{
-  printerWakeUp ();
+void zPrinter::printerTest() {
+	printerWakeUp();
 
-  // Test inverse on & off
-  _printer->inverseOn ();
-  _printer->println (F("Inverse ON"));
-  _printer->inverseOff ();
+	// Test inverse on & off
+	printer.inverseOn();
+	printer.println(F("Inverse ON"));
+	printer.inverseOff();
 
-  // Test character double-height on & off
-  _printer->doubleHeightOn ();
-  _printer->println (F("Double Height ON"));
-  _printer->doubleHeightOff ();
+	// Test character double-height on & off
+	printer.doubleHeightOn();
+	printer.println(F("Double Height ON"));
+	printer.doubleHeightOff();
 
-  // Set text justification (right, center, left) -- accepts 'L', 'C', 'R'
-  _printer->justify ('R');
-  _printer->println (F("Right justified"));
-  _printer->justify ('C');
-  _printer->println (F("Center justified"));
-  _printer->justify ('L');
-  _printer->println (F("Left justified"));
+	// Set text justification (right, center, left) -- accepts 'L', 'C', 'R'
+	printer.justify('R');
+	printer.println(F("Right justified"));
+	printer.justify('C');
+	printer.println(F("Center justified"));
+	printer.justify('L');
+	printer.println(F("Left justified"));
 
-  // Test more styles
-  _printer->boldOn ();
-  _printer->println (F("Bold text"));
-  _printer->boldOff ();
+	// Test more styles
+	printer.boldOn();
+	printer.println(F("Bold text"));
+	printer.boldOff();
 
-  _printer->underlineOn ();
-  _printer->println (F("Underlined text"));
-  _printer->underlineOff ();
+	printer.underlineOn();
+	printer.println(F("Underlined text"));
+	printer.underlineOff();
 
-  _printer->setSize ('L');        // Set type size, accepts 'S', 'M', 'L'
-  _printer->println (F("Large"));
-  _printer->setSize ('M');
-  _printer->println (F("Medium"));
-  _printer->setSize ('S');
-  _printer->println (F("Small"));
+	printer.setSize('L');        // Set type size, accepts 'S', 'M', 'L'
+	printer.println(F("Large"));
+	printer.setSize('M');
+	printer.println(F("Medium"));
+	printer.setSize('S');
+	printer.println(F("Small"));
 
-  _printer->justify ('C');
-  _printer->println (F("normal\nline\nspacing"));
-  _printer->setLineHeight (50);
-  _printer->println (F("Taller\nline\nspacing"));
-  _printer->setLineHeight (); // Reset to default
-  _printer->justify ('L');
+	printer.justify('C');
+	printer.println(F("normal\nline\nspacing"));
+	printer.setLineHeight(50);
+	printer.println(F("Taller\nline\nspacing"));
+	printer.setLineHeight(); // Reset to default
+	printer.justify('L');
 
-  // CODE39 is the most common alphanumeric barcode:
-  _printer->printBarcode ("LEAP", CODE39);
-  _printer->setBarcodeHeight (100);
-  // Print UPC line on product barcodes:
-  _printer->printBarcode ("123456789123", UPC_A);
+	// CODE39 is the most common alphanumeric barcode:
+	printer.printBarcode("LEAP", CODE39);
+	printer.setBarcodeHeight(100);
+	// Print UPC line on product barcodes:
+	printer.printBarcode("123456789123", UPC_A);
 
-  // Print QR code bitmap:
-  //_printer->printBitmap(qrcode_width, qrcode_height, qrcode_data);
+	// Print QR code bitmap:
+	//printer.printBitmap(qrcode_width, qrcode_height, qrcode_data);
 
-  _printer->feed (2);
-  printerSleep ();
+	printer.feed(2);
+	printerSleep();
 }
 
 /*
  * Command: one-time setup
  */
-void
-zPrinter::printerSetup ()
-{
+void zPrinter::printerSetup() {
 
 }
 
-void
-zPrinter::printKaethe() {
-  printMessage("Z-Apfapparat Version 0.4");
-  printMessage("ready!");
-  printMessage("Prost!");
-  printMessage("Ich weis nichts");  //programmiert von Käthe 30.7.22
-  printFeed(4);
+void zPrinter::printKaethe() {
+	printMessage("Z-Apfapparat Version 0.4");
+	printMessage("ready!");
+	printMessage("Prost!");
+	printMessage("Ich weis nichts");  //programmiert von Käthe 30.7.22
+	printFeed(4);
 }
 

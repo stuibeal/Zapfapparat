@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 
-const uint8_t arrayGroesse = 15;
+const uint8_t arrayGroesse = 12;
 
 class benutzer {
 public:

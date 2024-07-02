@@ -13,7 +13,7 @@
 #include "string.h"
 
 #ifndef DEBUG_A
-#define DEBUG_A 1
+#define DEBUG_A 0
 #endif
 //#define AUDIO_WARTEZEIT 1500
 
