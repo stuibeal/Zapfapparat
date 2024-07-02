@@ -13,17 +13,19 @@
 
 
 zDisplay::zDisplay() :
-		MCUFRIEND_kbv(0, 0, 0, 0, 0), GFXcanvas1(65, 22) {
+		MCUFRIEND_kbv(0, 0, 0, 0, 0), GFXcanvas1(65,22), GFXcanvas1(200,160){
 	_sd = nullptr;
 	_canvas = nullptr;
+	_infoCanvas = nullptr;
 	r = 0;
 	g = 0;
 	b = 0;
 	strcpy(namebuf, "/");
 	MCUFRIEND_kbv _tft;  //tft objekt
+	canvas = GFXcanvas1(65,22);
+	infoCanvas = GFXcanvas1( 200, 160);
 	//myCanvas = new
-	_canvas = new GFXcanvas1(65, 22);
-	_infoCanvas = new GFXcanvas1(200, 160);
+	//_infoCanvas = new GFXcanvas1(200, 160);
 
 }
 
@@ -36,7 +38,8 @@ zDisplay::~zDisplay() {
  */
 void zDisplay::beginn(SdFat *psd) {
 	_sd = psd; //speichert den Pointer
-
+    _canvas = &canvas;
+    _infoCanvas = &infoCanvas;
 	_tft.begin(0x9486); //ID für ILI9486 Chipsatz
 	_tft.setRotation(1);
 	_tft.setTextSize(2);
@@ -49,14 +52,13 @@ void zDisplay::beginn(SdFat *psd) {
 	_tft.println(" Version 0.6 BETA 2024"); //Bootausgabe
 
 	_canvas->setTextWrap(false);
-	_infoCanvas->setTextWrap(true);
-    _infoCanvas->setFont(0);
-    _infoCanvas->setTextSize(2);
-    _infoCanvas->setCursor(0,0);
-    _infoCanvas->println("Zapfapparat");
-    _infoCanvas->println(_VERSION_);
-    _tft.drawBitmap(280, 190, _infoCanvas->getBuffer(), _infoCanvas->width(),
-    				_infoCanvas->height(), ZGRUEN, WHITE);
+//	_infoCanvas->setTextWrap(true);
+//    _infoCanvas->setFont(0);
+//    _infoCanvas->setTextSize(2);
+//    _infoCanvas->setCursor(0,0);
+//    _infoCanvas->println("Zapfapparat");
+//    _infoCanvas->println(_VERSION_);
+//    //_tft.drawBitmap(280, 190, _infoCanvas->getBuffer(), _infoCanvas->width(),	_infoCanvas->height(), ZGRUEN, WHITE);
 
 	//BMP SHOW
 	root = _sd->open(namebuf);

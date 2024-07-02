@@ -116,6 +116,8 @@ private:
 	uint8_t r;
 	uint8_t g;
 	uint8_t b;
+	GFXcanvas1 canvas;
+	GFXcanvas1 infoCanvas;
 	GFXcanvas1 *_canvas;
 	GFXcanvas1 *_infoCanvas;
 
