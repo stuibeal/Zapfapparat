@@ -43,7 +43,6 @@ void zDisplay::beginn(SdFat *psd) {
 	_tft.println(" Zapfapparat");
 	_tft.setCursor(240, 26); //Cursor setzen
 	_tft.println(_VERSION_); //Bootausgabe
-	_tft.setCursor(0,240); //für die nachfolgende Ausgabe
 
 	//BMP SHOW
 	root = _sd->open(namebuf);
@@ -51,8 +50,11 @@ void zDisplay::beginn(SdFat *psd) {
 
 }
 void zDisplay::printInitText(const char *text){
-    _tft.vertScroll(0, 1, 16);
+    static uint8_t line=4;
+	_tft.setCursor(230, line*16);
     _tft.println(text);
+    line++;
+
 }
 
 

@@ -122,28 +122,28 @@ void setup(void) {
 
 	//SD
 	if (!SD.begin(SD_CS)) {  // nachschauen ob die SD-Karte drin und gut ist
-		ZD._tft.println(" SD Karte nicht vorhanden! Bitte richten!");
+		ZD.printInitText("SD Karte Error!");
 		/***Hier funktion programmieren:
 		 ZD.println("Ohne SD Karte fortfahren: Z-Knopf drücken!");
 		 ***/
 		return;   // don't do anything more if not
 	} else {
-		ZD._tft.println(" SD Karte bassd - OPTIMAL!");
+		ZD.printInitText("SD Karte OPTIMAL!");
 	}
 	ZD.showBMP("/bmp/z-logo.bmp", 20, 20);
 
 	//Printer
 	drucker.initialise(&user, buf);
-    drucker.printerButtonPressed();
+	drucker.printerButtonPressed();
 	//Temperaturfuehler
 	temp.begin(); //Wire sollte konfiguriert sein!
-	ZD.printInitText(" Temperaturfuehler hochgefahren...");
-    delay(500);
+	ZD.printInitText("Temperaturfuehler...");
+	delay(500);
 	//FLOWMETER
 	pinMode(FLOW_SM6020, OUTPUT);
 	digitalWrite(FLOW_SM6020, HIGH);
 	pinMode(FLOW_WINDOW, INPUT);    //Wenn durchfluss, dann true
-	ZD.printInitText(" Flowmeter ifm SM6020 ein");
+	ZD.printInitText("Flowmeter ifm SM6020");
 	delay(500);
 	//Rotary Encoder
 	pinMode(ROTARY_SW_PIN, INPUT); // Drehgeberknopf auf Input
@@ -160,22 +160,22 @@ void setup(void) {
 	pinMode(WSready, INPUT);  //Wählscheibe Puls
 
 	sound.starte(&SD, &SMF, &mp3);
-	ZD.printInitText(" Harte Musik bereit");
+	ZD.printInitText("Harte Musik bereit");
 
 	//Altdaten auslesen (SD karte) nach Stromweg oder so...
 
 	//PWM Treiber hochfahren
 	beginWaehlscheibeLed();
-	ZD.printInitText(" PWM Waehlscheibe ready...");
+	ZD.printInitText("Wählscheibe ready...");
 
 	//Valve
 	ventil.begin();
 	ventil.check();   //dann sollte das aufgehen
-	ZD.printInitText(" Ventilsteuerung aktiviert");
+	ZD.printInitText("Ventilsteuerung...");
 
 	//DCF RTC
 	logbuch.initialise(&SD, &user, &temp, buf);
-	ZD.printInitText(" RTC DCF77 aktiviert");
+	ZD.printInitText("RTC DCF77...");
 
 	//Make Windows 95 great again
 	anfang();
@@ -380,7 +380,7 @@ void seltencheck(void) {
 	//DEBUGMSG(buf);
 
 	//hell = analogRead(helligkeitSensor);
-    //for DEBUG reasons!!!!
+	//for DEBUG reasons!!!!
 	hell = 200;
 
 	//Hier checken ob was gespielt wird, ansonsten audio aus
@@ -520,7 +520,6 @@ void infoseite(void) {
 
 }
 
-
 void godModeZapfMidi() {
 	if (user.getGodMode() > 0) {
 		static uint8_t oldFlowWindow;
@@ -544,8 +543,6 @@ void beginnZapfProgramm() {
 	flowmeter.flowDataSend(GET_ML, 0, 0);
 	// Nachschaun ob er fertig ist und dann bingen und zamschreim
 	if (flowmeter.getMilliliter() >= user.menge() || digitalRead(TASTE2_PIN)) {
-		DEBUGMSG("jetzt zapfmenge erreicht");
-		//delay(3000);
 		if (user.getGodMode() == 1) {
 			ZD.showBMP("/god/11.bmp", 300, 50);
 		}
@@ -554,22 +551,15 @@ void beginnZapfProgramm() {
 		ventil.check();
 		sound.bing();
 		//Sollte er abgebrochen haben:
-		DEBUGMSG("vor printererror");
-		//delay(2000);
-
 		if (flowmeter.getMilliliter() < user.menge()) {
 			drucker.printerErrorZapfEnde(flowmeter.getMilliliter());
 		}
-		DEBUGMSG("vor addbier");
-		//delay(2000);
-		uint16_t zapfMenge = flowmeter.getMilliliter()+ flowmeter.getFreshZapfMillis();
+		uint16_t zapfMenge = flowmeter.getMilliliter()
+				+ flowmeter.getFreshZapfMillis();
 		user.addBier(zapfMenge); //alte ml dazurechnen
-		DEBUGMSG("vor printer");
-		//delay(2000);
-
 		drucker.printerZapfEnde(zapfMenge);
-		DEBUGMSG("vor userdatashow");
-		//delay(2000);
+        flowmeter.flowDataSend(END_ZAPF, 0); //damit die Zapfmillis wieder auf null sind
+
 		UserDataShow();
 		beginZapfBool = false;
 		sound.setStandby(beginZapfBool);
@@ -624,7 +614,7 @@ void loop() {
 	 * Hier nur checken wenn kein Godmode weil sonst Midi zu langsam spielt
 	 * ansonsten jede Sekunde mal Daten aktualisieren
 	 */
-	if ( ((millis() - oldTime) > 1000) && user.getGodMode()==0)  {
+	if (((millis() - oldTime) > 1000) && user.getGodMode() == 0) {
 		oldTime = millis();
 		anzeigeAmHauptScreen();
 		sound.pruefe();
@@ -633,7 +623,7 @@ void loop() {
 		}
 	}
 
-	if ((millis() - nachSchauZeit) > 10000 && !beginZapfBool) {
+	if ((millis() - nachSchauZeit) > 10000 && !beginZapfBool && !sound.isOn()) {
 		seltencheck();
 		nachSchauZeit = millis();
 	}
@@ -660,13 +650,12 @@ void anzeigeAmHauptScreen(void) {
 	//ZD.printVal(temp.getBlockAussenTemp(), 25, 100, WHITE, ZDUNKELGRUEN, &FETT,	KOMMA);
 	//DEBUGMSG("vor transmitauslauf");
 	//DEBUGMSG("vor transmitauslauf");
-	ZD.print_val3(temp.getBlockAussenTemp(), 20, 125,  KOMMA);
+	ZD.print_val3(temp.getBlockAussenTemp(), 20, 125, KOMMA);
 	ZD.print_val3((int) flowmeter.getMilliliter(), 20, 150, GANZZAHL);
 	//ZD.printText();
 	ZD.print_val3((int) ventil.getPressure(), 20, 175, KOMMA);
 
 }
-
 
 void UserDataShow() {
 	int x = 400;
