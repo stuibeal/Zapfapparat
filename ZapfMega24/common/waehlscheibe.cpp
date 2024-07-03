@@ -1,5 +1,5 @@
 /*
- * waehlscheibe.c
+ * waehlscheibe.cpp
  *
  *  Created on: 29.06.2024
  *      Author: al
@@ -12,7 +12,6 @@
 #include "globalVariables.h"
 #include "audio.h"
 
-/* Class Constructor */
 PCA9685 wsLed(WS_LED_ADDRESS);
 
 /* Variables */
@@ -21,6 +20,17 @@ void beginWaehlscheibeLed(void) {
 	wsLed.begin();
 	wsLed.setFrequency(200, 0);
 	wsLedGrundbeleuchtung();
+	//Wählscheibe
+	pinMode(WSpuls, INPUT); // WSpuls auf Input (Interrupt)
+	pinMode(WSready, INPUT);  //Wählscheibe Puls
+
+	// Tasten in der Front
+	pinMode(TASTE1_PIN, INPUT);
+	pinMode(TASTE2_PIN, INPUT);
+	pinMode(TASTE1_LED, OUTPUT);
+	pinMode(TASTE2_LED, OUTPUT);
+	analogWrite(TASTE1_LED, TASTEN_LED_NORMAL);
+	analogWrite(TASTE2_LED, TASTEN_LED_NORMAL);
 }
 
 void wsLedGrundbeleuchtung() {
@@ -31,14 +41,12 @@ void wsLedGrundbeleuchtung() {
 	//weiß
 	wsLed.setPWM(0, WEISS_LED_ABGEDUNKELT);
 	wsLed.setPWM(11, WEISS_LED_ABGEDUNKELT);
-
 }
 
 uint8_t readWaehlscheibe(void) {
 	for (uint8_t channel = 0; channel < 12; channel++) {
 		wsLed.setPWM(channel, 0xFFF);
 	}
-
 
 	bool old_waehler2 = 1;
 	bool waehler2 = digitalRead(WSpuls);
@@ -67,7 +75,6 @@ uint8_t readWaehlscheibe(void) {
 
 			}
 
-
 		}
 	}
 	wsLedGrundbeleuchtung();
@@ -88,7 +95,7 @@ void oldWaehlscheibeFun(void) {
 			delay(50);
 			for (uint8_t x = 11; x > 0; x--) {
 				delay(30);
-				wsLed.setPWM(x+i, 0xFFF); //pwm.setPWM(x + i, 4096, 0);
+				wsLed.setPWM(x + i, 0xFFF); //pwm.setPWM(x + i, 4096, 0);
 				wsLed.setPWM(x + i + 1, 0x00); //pwm.setPWM(x + i + 1, 0, 4096);
 			}
 		}
@@ -97,8 +104,8 @@ void oldWaehlscheibeFun(void) {
 			delay(100 % i);
 			for (uint8_t x = 0; x < 11; x++) {
 				delay(50);
-				wsLed.setPWM(x + i - 1,  0x00); //pwm.setPWM(x + i - 1, 0, 4096);
-				wsLed.setPWM(x + i,  0xFFF); //pwm.setPWM(x + i, 4096, 0);
+				wsLed.setPWM(x + i - 1, 0x00); //pwm.setPWM(x + i - 1, 0, 4096);
+				wsLed.setPWM(x + i, 0xFFF); //pwm.setPWM(x + i, 4096, 0);
 			}
 		}
 		delay(500);

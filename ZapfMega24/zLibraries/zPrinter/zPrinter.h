@@ -19,12 +19,12 @@
 #define PRINTER_BAUDRATE  9600
 #define PRINTER_DTR 	  A10
 
-class zPrinter : public Adafruit_Thermal {
+class zPrinter : public Adafruit_Thermal, benutzer {
 public:
 	zPrinter();
 	virtual
 	~zPrinter();
-	void initialise(benutzer *_puser, char *pbuf);
+	void initialise();
 	void printerSleep(void);
 	void printerWakeUp(void);
 	void printerButtonPressed();
@@ -44,11 +44,8 @@ public:
 	Adafruit_Thermal printer;// = Adafruit_Thermal(Serial2, PRINTER_DTR);//(HardwareSerial *serial, uint8_t dtr); //PRINTERm, Hardware Serial2 DTR pin
 
 private:
-	benutzer *_user;
 	//Adafruit_Thermal *_printer;
 	bool printerOn;
-	char *_buf;
-
 };
 
 #endif /* ZPRINTER_H_ */

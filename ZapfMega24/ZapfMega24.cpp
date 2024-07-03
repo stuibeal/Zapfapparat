@@ -21,11 +21,12 @@
 #include "benutzer.h"
 #include "MD_MIDIFile.h"
 #include "MD_YX5300.h"
+#include "tempControl.h"
 #include "audio.h"
 #include "zValve.h"
 #include "zLog.h"
+#include "zPower.h"
 #include "zWireHelper.h"
-#include "tempControl.h"
 
 // Defines
 #define USE_SDFAT
@@ -41,24 +42,11 @@
 #endif
 // Defines aus
 
-// Variablen
-char buf[80];
-
 //Hier Variablen definieren
-byte aktuellerTag = 1;  //dann gehts mit der Musik aus
-unsigned int minTemp = 200;
-unsigned int zielTemp = 200;
 unsigned long auswahlZeit = 0;
-unsigned int hell;
 
 unsigned long oldTime = millis();
 unsigned long nachSchauZeit = 0;
-unsigned long hellZeit = 0;
-unsigned int hellCount = 0;
-unsigned int dunkelCount = 0;
-bool dunkelBool = false;
-
-byte lichtan = LOW;
 
 //Waehlscheibe
 unsigned long kienmuehle = 0;  //Sondereingabe bei drücken der Taste2
@@ -68,10 +56,6 @@ bool ebiModeBool = false; //#define ebiMode               0xF9      //    1 an, 
 bool beginZapfBool = false; // #define beginZapf             0xFA      //    Beginn das Zapfprogramm -> PID auf aggressiv
 bool endZapfBool = false; //#define endZapf               0xFB      //    Data send : milliliter
 bool kurzBevorZapfEndeBool = false; //#define kurzBevorZapfEnde     0xFC      //    sagt das wir kurz vor Ende sind → Valve schließen -> PID auf konservativ
-
-String dataOnSd = "";
-
-bool debugMode = false;
 
 // DREHENCODER
 #define ENCODER_OPTIMIZE_INTERRUPTS
@@ -84,98 +68,77 @@ unsigned int tempAnzeigeZeit = millis(); //für zehnsekündige Temperaturanzeige
 
 // Variablen aus
 
+// Globale Variablen erstmalig hier initialisieren
+char buf[80];
+audio sound; 	//Audioobjekt
+benutzer user;  //Benutzer
+tempControl temp;	//Temperatursensorik
+
+// Variablen für hier
 SdFat SD;  // SD-KARTE
 zDisplay ZD;   // neues zDisplay Objekt
 zWireHelper flowmeter;
-tempControl temp;	//Temperatursensorik
-benutzer user;  //Benutzer
-audio sound; 	//Audioobjekt
 zValve ventil; // Ventilsteuerung, Druck, Reinigungspumpe
 zPrinter drucker;
 zLog logbuch;
 MD_MIDIFile SMF;
 MD_YX5300 mp3 = MD_YX5300(MP3Stream);
+zPower power;
 
 void setup(void) {
-	//Erstmal bei den anderen MCs den Strom an
-	pinMode(otherMcOn, OUTPUT);
-	digitalWrite(otherMcOn, HIGH);
+	power.begin(); /* STROM AN */
+	flowmeter.initialise(); /* HIER i2c begin!*/
+	ZD.beginn(&SD); /* Display mit Pointer zur SD starten */
 
-	//Pins herrichten
-	pinMode(helligkeitSensor, INPUT);
-	pinMode(lcdBacklightPwm, OUTPUT); //LCD Display Hintergrundbeleuchtung
-	analogWrite(lcdBacklightPwm, 128);
-
-	// Tasten in der Front
-	pinMode(TASTE1_PIN, INPUT);
-	pinMode(TASTE2_PIN, INPUT);
-	pinMode(TASTE1_LED, OUTPUT);
-	pinMode(TASTE2_LED, OUTPUT);
-	analogWrite(TASTE1_LED, 10);
-	analogWrite(TASTE2_LED, 10);
-
-	// i2c etc
-	flowmeter.initialise();
-
-	//TFT
-	ZD.beginn(&SD);  //mit Pointer zur SD starten
+	beginWaehlscheibeLed(); /* WS und Tastenpins */
+	ZD.printInitText("Wählscheibe ready");
 
 	//SD
 	if (!SD.begin(SD_CS)) {  // nachschauen ob die SD-Karte drin und gut ist
 		ZD.printInitText("SD Karte Error!");
-		/***Hier funktion programmieren:
-		 ZD.println("Ohne SD Karte fortfahren: Z-Knopf drücken!");
-		 ***/
+		ZD.printInitText("Knoppen drucken");
+		ZD.printInitText("um ohne zu laden");
+		errorLed();
 		return;   // don't do anything more if not
 	} else {
 		ZD.printInitText("SD Karte OPTIMAL!");
 	}
 	ZD.showBMP("/bmp/z-logo.bmp", 20, 20);
 
-	//Printer
-	drucker.initialise(&user, buf);
-	drucker.printerButtonPressed();
-	//Temperaturfuehler
-	temp.begin(); //Wire sollte konfiguriert sein!
-	ZD.printInitText("Temperaturfuehler...");
-	delay(500);
+	drucker.initialise(); /* Thermodrucker */
+
+	temp.begin(); /* Temperaturcontrol uC - Wire sollte gestartet sein! */
+	ZD.printInitText("Temperaturfühler...");
+
 	//FLOWMETER
 	pinMode(FLOW_SM6020, OUTPUT);
 	digitalWrite(FLOW_SM6020, HIGH);
 	pinMode(FLOW_WINDOW, INPUT);    //Wenn durchfluss, dann true
 	ZD.printInitText("Flowmeter ifm SM6020");
-	delay(500);
+
 	//Rotary Encoder
 	pinMode(ROTARY_SW_PIN, INPUT); // Drehgeberknopf auf Input
 	attachInterrupt(digitalPinToInterrupt(ROTARY_SW_PIN),
-			Einstellerumsteller_ISR, FALLING); //ISR= interrupt service routine; alternativ: (digitalPinToInterrupt(pin), ISR, mode)
+			Einstellerumsteller_ISR, FALLING);
 	/*External Interrupts: 2 (interrupt 0), 3 (interrupt 1), 18 (interrupt 5), 19 (interrupt 4), 20 (interrupt 3), and 21 (interrupt 2).
 	 These pins can be configured to trigger an interrupt on a low value, a rising or falling edge, or a change in value. See the attachInterrupt() function for details.
 	 Den Schalter hardwaremäßig entprellt: 320k pullup, 10k pulldown und signal-kondensator-ground -> kondensator lädt und entprellt.
 	 ABER: SDA/SCL ist parallel zu PIN 20/21, brauch den Interrupt also selber. So sind nur pins 2,3,18,19 am MEGA frei.
 	 */
-	//Aktueller Einstellmodus (1=Temperatur in °C*100, 2=Zapfmenge in ml
-	//Wählscheibe
-	pinMode(WSpuls, INPUT); // WSpuls auf Input (Interrupt)
-	pinMode(WSready, INPUT);  //Wählscheibe Puls
 
 	sound.starte(&SD, &SMF, &mp3);
-	ZD.printInitText("Harte Musik bereit");
+	ZD.printInitText("Harte Musik ok");
 
 	//Altdaten auslesen (SD karte) nach Stromweg oder so...
-
-	//PWM Treiber hochfahren
-	beginWaehlscheibeLed();
-	ZD.printInitText("Wählscheibe ready...");
 
 	//Valve
 	ventil.begin();
 	ventil.check();   //dann sollte das aufgehen
-	ZD.printInitText("Ventilsteuerung...");
+	ZD.printInitText("Ventilsteuerung");
 
 	//DCF RTC
 	logbuch.initialise(&SD, &user, &temp, buf);
-	ZD.printInitText("RTC DCF77...");
+	ZD.printInitText("RTC DCF77");
 
 	//Make Windows 95 great again
 	anfang();
@@ -236,12 +199,6 @@ void waehlscheibe() {
 			case 2:
 				sound.loadLoopMidi("keen.mid");
 				break;
-			}
-
-			if (user.temp() > minTemp) {
-				zielTemp = user.temp();
-			} else {
-				zielTemp = minTemp;
 			}
 
 			userShow();  // Zeigt die Userdaten an
@@ -317,7 +274,6 @@ void anfang(void) {
 
 	analogWrite(TASTE2_LED, 10);
 	analogWrite(TASTE1_LED, 10);
-	analogWrite(lcdBacklightPwm, 20);
 	wsLedGrundbeleuchtung();
 	userShow();
 	sound.bing();
@@ -328,7 +284,8 @@ void aufWachen(void) {
 }
 
 void einSchlafen(void) {
-	//nothing
+	//nothingvoid g
+
 }
 
 void tickMetronome(void)
@@ -378,98 +335,7 @@ void tickMetronome(void)
 void seltencheck(void) {
 	//sprintf(buf, "hell: %d dunkelcount %d", hell, dunkelCount);
 	//DEBUGMSG(buf);
-
-	//hell = analogRead(helligkeitSensor);
-	//for DEBUG reasons!!!!
-	hell = 200;
-
-	//Hier checken ob was gespielt wird, ansonsten audio aus
-	//audio.check();
-
-	if (hell < 6) {
-		dunkelCount++;
-	} else {
-		dunkelCount = 0;
-	}
-
-	if (dunkelCount > 9) {
-		//Nachtprogramm
-		DEBUGMSG("Nachtprogramm")
-		dunkelBool = true;
-
-		sound.mp3Play(12, 1); //Gute NAcht Freunde
-
-		for (int x = 0; x < 256; x++) {
-			analogWrite(lcdBacklightPwm, x);
-			delay(50);
-		}
-
-		for (int x = 255; x >= 0; x--) {
-			analogWrite(TASTE1_LED, x);
-			delay(50);
-		}
-
-		for (int x = 255; x >= 0; x--) {
-			analogWrite(TASTE2_LED, x);
-			delay(50);
-		}
-
-//		for (int x = 255; x >= 0; x--) {
-//			for (uint8_t pwmnum = 0; pwmnum < 13; pwmnum++) {
-//				pwm.setPWM(pwmnum, 0, x); //Wählscheibe runterdimmen
-//			}
-//			delay(10);
-//		}
-
-		flowmeter.flowDataSend(END_ZAPF, 0, 0);
-		flowmeter.flowDataSend(ZAPFEN_STREICH, 0, 0);
-		temp.sendeBefehl(ZAPFEN_STREICH, 0x0);
-		user.gesamtMengeTag = 0;
-		aktuellerTag++;
-		ventil.closeValve();
-		for (int x = 0; x <= 11; x++) {
-			ventil.check();
-			delay(1000);
-		}
-
-		delay(130000); //dann ist gute nach Freunde aus
-		sound.mp3Play(12, aktuellerTag); //lied 2-7
-		delay(240000);
-
-		digitalWrite(AUDIO_AMP, LOW);
-		digitalWrite(otherMcOn, LOW);
-		//Daten noch loggen
-
-		//Userdaten noch löschen
-		for (int x = 0; x <= 10; x++) {
-			user.bierTag[x] = 0;
-		}
-
-		while (dunkelBool == true) {
-			hell = analogRead(helligkeitSensor);
-			if (hell > 200) {
-				hellCount++;
-				delay(10000);
-			} else {
-				hellCount = 0;
-			}
-			if (digitalRead(TASTE1_PIN) == HIGH) {
-				dunkelBool = false;
-				delay(100);
-				anfang();
-			}
-			if (hellCount > 9) {
-				dunkelBool = false;
-				digitalWrite(AUDIO_AMP, HIGH);
-				digitalWrite(otherMcOn, HIGH);
-				delay(3000);   //pause machen damit die auch alle hochkommen
-				anfang();
-			}
-		}
-	}
-
 	temp.requestSensors();
-	temp.holeDaten();
 
 }
 //ZD.print_val(zulauf.getTempC() * 100, 200, 170, 1, 1);
@@ -558,7 +424,7 @@ void beginnZapfProgramm() {
 				+ flowmeter.getFreshZapfMillis();
 		user.addBier(zapfMenge); //alte ml dazurechnen
 		drucker.printerZapfEnde(zapfMenge);
-        flowmeter.flowDataSend(END_ZAPF, 0); //damit die Zapfmillis wieder auf null sind
+		flowmeter.flowDataSend(END_ZAPF, 0); //damit die Zapfmillis wieder auf null sind
 
 		UserDataShow();
 		beginZapfBool = false;
@@ -583,7 +449,7 @@ void beginnZapfProgramm() {
 void loop() {
 	byte oldeinsteller = Einsteller;
 	sound.midiNextEvent();
-
+	temp.holeDaten();
 	Drehgeber();
 
 	//Valve Control
@@ -614,7 +480,7 @@ void loop() {
 	 * Hier nur checken wenn kein Godmode weil sonst Midi zu langsam spielt
 	 * ansonsten jede Sekunde mal Daten aktualisieren
 	 */
-	if (((millis() - oldTime) > 1000) && user.getGodMode() == 0) {
+	if (((millis() - oldTime) > 200) && user.getGodMode() == 0) {
 		oldTime = millis();
 		anzeigeAmHauptScreen();
 		sound.pruefe();
@@ -637,6 +503,18 @@ void loop() {
 	//Zwischendurch mal was protokollieren (alle 5 minuten oder so)
 }
 
+void errorLed() {
+	while (!digitalRead(TASTE1_PIN) && !digitalRead(TASTE2_PIN)) {
+		digitalWrite(TASTE1_LED, HIGH);
+		digitalWrite(TASTE2_LED, LOW);
+		delay(200);
+		digitalWrite(TASTE1_LED, LOW);
+		digitalWrite(TASTE2_LED, HIGH);
+	}
+	analogWrite(TASTE1_LED, TASTEN_LED_NORMAL);
+	analogWrite(TASTE2_LED, TASTEN_LED_NORMAL);
+}
+
 void userShow(void) {
 	Einsteller = 2; //Wieder bei mL beginnen beim Drehknebel
 	ZD.userShow(&user);
@@ -644,12 +522,6 @@ void userShow(void) {
 }
 
 void anzeigeAmHauptScreen(void) {
-	//DEBUGMSG("vor transmitBlocktemp");
-	//ZD.print_val2 (temp.getBlock1Temp (), 20, 100, 3, 1);
-	//temp.holeDaten();
-	//ZD.printVal(temp.getBlockAussenTemp(), 25, 100, WHITE, ZDUNKELGRUEN, &FETT,	KOMMA);
-	//DEBUGMSG("vor transmitauslauf");
-	//DEBUGMSG("vor transmitauslauf");
 	ZD.print_val3(temp.getBlockAussenTemp(), 20, 125, KOMMA);
 	ZD.print_val3((int) flowmeter.getMilliliter(), 20, 150, GANZZAHL);
 	//ZD.printText();
@@ -685,8 +557,8 @@ void Drehgeber() {
 		switch (Einsteller) {
 		case 1:
 			user.setTemp(user.temp() + (newPosition - oldPosition));
-			if ((user.temp() < minTemp)) {
-				user.setTemp(minTemp);
+			if ((user.temp() < MIN_TEMP)) {
+				user.setTemp(MIN_TEMP);
 			}
 			ZD.print_val(user.temp(), x, y, 1, 1);
 			break;

@@ -94,6 +94,7 @@ public:
 	uint8_t showBMP(char const *nm, int16_t x, int16_t y);
 	void print_val(int val, int16_t x, int16_t y, int c, bool komma);
 	//void fillScreen(unsigned short int color);
+
 	void print_val3(int val, int16_t x, int16_t y, bool komma);
 
 	void printVal(int val, int16_t x, int16_t y, uint16_t textColor,
@@ -105,6 +106,10 @@ public:
 	void setTextColor(uint16_t c);
 	void setTextSize(uint8_t s);
 	void infoscreen(tempControl *temp, benutzer *user);
+	void printValue(bool komma, int val);
+	void printlnTempC(const char *text, int16_t tempInC);
+
+
 	MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
 
 

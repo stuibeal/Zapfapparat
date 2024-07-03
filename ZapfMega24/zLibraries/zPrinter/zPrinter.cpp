@@ -6,25 +6,21 @@
  */
 
 #include "zPrinter.h"
+#include "globalVariables.h"
 
 zPrinter::zPrinter() :
-		Adafruit_Thermal(0, 0)
+		Adafruit_Thermal(0, 0), benutzer()
 //:Adafruit_Thermal(0, 0)
 {
-	_user = nullptr;
-	_buf = nullptr;
 	printerOn = 1;
 	printer = Adafruit_Thermal(&Serial2, PRINTER_DTR);
-
 }
 
 zPrinter::~zPrinter() {
 
 }
 
-void zPrinter::initialise(benutzer *_puser, char *pbuf) {
-	_user = _puser;
-	_buf = pbuf;
+void zPrinter::initialise() {
 	//Adafruit_Thermal *_printer = new Adafruit_Thermal(S, PRINTER_DTR); //PRINTERm, Hardware Serial2 DTR pin
 	//Adafruit_Thermal printer = Adafruit_Thermal(S, PRINTER_DTR);
 	pinMode(PRINTER_ON_PIN, OUTPUT);
@@ -83,14 +79,14 @@ void zPrinter::printerZapfEnde(uint16_t zahl) {
 		printer.setSize('S');
 		printer.setLineHeight(24);
 		printer.print("Zapfkamerad ");
-		printer.print(_user->getName());
+		printer.print(user.getName());
 		printer.println(" hat gerade");
 		printer.print((int) zahl);
 		printer.println(" ml gezapft!");
 		printer.print("Gesamtmenge des Tages: ");
-		printer.print(_user->gesamt());
+		printer.print(user.gesamt());
 		printer.println(" ml");
-		if (_user->aktuell == 3) {
+		if (user.aktuell == 3) {
 			printer.setSize('L');
 			printer.println("OPTIMAL!");
 		}
@@ -105,10 +101,10 @@ void zPrinter::printerErrorZapfEnde(unsigned int zahl) {
 		printer.justify('C');
 		printer.setSize('S');
 
-		sprintf(_buf, "Du hast nur %d ml gezapft!", zahl);
-		printer.println(_buf);
+		sprintf(buf, "Du hast nur %d ml gezapft!", zahl);
+		printer.println(buf);
 		printer.setSize('L');
-		printer.println(_user->getName());
+		printer.println(user.getName());
 		printer.println("Schämen Sie sich!");
 		printer.setSize('S');
 		printer.feed(20);

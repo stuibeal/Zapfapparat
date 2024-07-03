@@ -20,7 +20,11 @@
 #include "tempControl.h"
 
 #define Z_SCH_LAMPE_PIN 5  // output for the Lampe
-#define LICHT_SENSOR  A6
+#define LICHT_SENSOR_PIN  A6
+#define LCD_BACKLIGHT_PIN 4   //Hintergrundbeleuchtung Display
+#define OTHER_MC_PIN	  A5
+#define LAMPE_ON 💡
+#define LAMPE_AUS 🚫
 
 class zPower {
 public:
@@ -41,24 +45,27 @@ inline zPower::powerState getPowerState() {
 inline zPower::machineState getMachineState() {
 	return bkMachineState;
 }
-inline void setState(zPower::powerState state) {
+inline void setPowerState(zPower::powerState state) {
 	bkPowerState = state;
 }
 
-void begin(tempControl *pTemp);
+void begin();
 void check();
 void setLed(uint8_t offon);
 void schLampeControl(uint8_t offon, uint16_t dimspeed);
+void zapfLichtControl(uint8_t offon, uint16_t dimspeed);
+void autoLight(uint8_t offon);
+void goSleep(void);
 
 private:
 uint8_t inVoltage;
 int helligkeit;
+uint8_t autoLightBool;
 uint8_t lampenOutput;
 powerState bkPowerState;
 machineState bkMachineState;
-static unsigned long millisSeitZapfEnde;
-static unsigned long millisSeitLetztemCheck;
-tempControl *_pTemp;
+unsigned long millisSeitZapfEnde;
+unsigned long millisSeitLetztemCheck;
 
 };
 

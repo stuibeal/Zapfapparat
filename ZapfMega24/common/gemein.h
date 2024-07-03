@@ -8,16 +8,15 @@
 #ifndef GEMEIN_H_
 #define GEMEIN_H_
 /*
- * HARDWARE
+ * Allgemein
  */
 #define _VERSION_ "V 0.6 Beta 2024"
+#define MIN_TEMP 200 /* 2°C, kälter sollts nicht eingestellt sein */
+
 
 
 //SD Karte
 #define SD_CS     53 //CS Pin am MEGA für SPI
-
-//Input Pins
-#define helligkeitSensor  A6
 
 // Taster etc
 #define TASTE1_PIN		  37//Taster unterm Drehencoder (hardwareentprellt)
@@ -27,12 +26,11 @@
 #define ROTARY_CLK_PIN	  2
 
 //Output Pins
-#define otherMcOn         A5  //schaltet die anderen Microcontroller mit P-Mosfet ein
-#define lcdBacklightPwm   4   //Hintergrundbeleuchtung Display
 #define FLOW_SM6020       A9  // ein aus
 #define FLOW_WINDOW		  A8   //hier schickt der flowmeter ein signal wenns flowt
 #define TASTE1_LED 6
 #define TASTE2_LED 8
+#define TASTEN_LED_NORMAL 10 //grundbeleuchtung der Tasten
 
 // Darstellung
 #define BLACK   0x0000

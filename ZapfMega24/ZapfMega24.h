@@ -28,6 +28,7 @@ void infoseite(void) ;
 void beginZapfProgramm(void);
 void godModeZapfMidi(void);
 void loop() ;
+void errorLed(void);
 void userShow(void) ;
 void anzeigeAmHauptScreen(void) ;
 void dataLogger(void) ;

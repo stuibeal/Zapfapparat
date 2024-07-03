@@ -10,9 +10,8 @@
 
 #include "zDisplay.h"
 
-
 zDisplay::zDisplay() :
-		MCUFRIEND_kbv(0, 0, 0, 0, 0){
+		MCUFRIEND_kbv(0, 0, 0, 0, 0) {
 	_sd = nullptr;
 	r = 0;
 	g = 0;
@@ -49,14 +48,13 @@ void zDisplay::beginn(SdFat *psd) {
 	pathlen = strlen(namebuf);
 
 }
-void zDisplay::printInitText(const char *text){
-    static uint8_t line=4;
-	_tft.setCursor(230, line*16);
-    _tft.println(text);
-    line++;
+void zDisplay::printInitText(const char *text) {
+	static uint8_t line = 4;
+	_tft.setCursor(230, line * 16);
+	_tft.println(text);
+	line++;
 
 }
-
 
 void zDisplay::printText(void) {
 	_tft.setFont(0);
@@ -278,22 +276,24 @@ void zDisplay::print_val(int val, int16_t x, int16_t y, int c, bool komma) //Hil
 	_tft.print(buf);
 }
 
-
-void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsroutine zum Daten anzeigen
-		{
+void zDisplay::printValue(bool komma, int val) {
 	char buf[10];
-	_tft.setFont(0);
-	_tft.setTextSize(2);
-	_tft.setTextColor(WHITE, ZDUNKELGRUEN);
-    _tft.setCursor(x,y);
 	if (komma == 1) {
 		sprintf(buf, "%d,%02d", val / 100, val % 100);
 	} else {
 		sprintf(buf, "%d", val);
 	}
-		_tft.print(buf);
+	_tft.print(buf);
 }
 
+void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsroutine zum Daten anzeigen
+		{
+	_tft.setFont(0);
+	_tft.setTextSize(2);
+	_tft.setTextColor(WHITE, ZDUNKELGRUEN);
+	_tft.setCursor(x, y);
+	printValue(komma, val);
+}
 
 /**
  * Schreibt einen INT in einen Canvas und Zeigt ihn an
@@ -324,7 +324,6 @@ void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsrout
 //	_tft.drawBitmap(x, y, _canvas->getBuffer(), _canvas->width(),
 //			_canvas->height(), textColor, backColor);
 //}
-
 void zDisplay::setCursor(int16_t x, int16_t y) {
 	_tft.setCursor(x, y);
 }
@@ -407,13 +406,13 @@ void zDisplay::setTextSize(uint8_t s) {
 void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 	temp->requestSensors();
 	temp->holeDaten();
-	_tft.setFont(&NORMAL);
+	_tft.setFont(&FETT);
 	_tft.fillScreen(BLACK);
 	_tft.setTextColor(WHITE);
-	_tft.setTextSize(1);
 	_tft.setCursor(10, 20);
-	_tft.println("Z-Apfapparat INFORMATIONSTAFEL");
+	_tft.println("Zapfapparat INFORMATIONSTAFEL");
 	_tft.setCursor(0, 40);
+    _tft.setFont(&FreeSans9pt7b);
 
 	for (int x = 0; x < 10; x++) {
 		_tft.setCursor(230, 60 + x * 25);
@@ -427,20 +426,21 @@ void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 	_tft.setCursor(0, 60);
 	_tft.setFont(0);
 	_tft.setTextSize(2);
-	_tft.print("blockD:");
-	_tft.println(temp->getDSblockTemp());
-	_tft.print("blockA:");
-	_tft.println(temp->getBlockAussenTemp());
-	_tft.print("blockI:");
-	_tft.println(temp->getBlockInnenTemp());
-	_tft.print("hahn:  ");
-	_tft.println(temp->getHahnTemp());
-	_tft.print("haus:  ");
-	_tft.println(temp->getHausTemp());
-	_tft.print("kuehlw:");
-	_tft.println(temp->getKuehlWasserTemp());
-	_tft.print("zulauf:");
-	_tft.println(temp->getZulaufTemp());
-	temp->requestSensors();
+	_tft.println("ZAPFZYSTEM");
+	_tft.println(_VERSION_);
+	printlnTempC("Block DS18:", temp->getDSblockTemp());
+	printlnTempC("Block Auss:", temp->getBlockAussenTemp());
+	printlnTempC("Block Inn :", temp->getBlockInnenTemp());
+	printlnTempC("Hahn      :", temp->getHahnTemp());
+	printlnTempC("Gehäuse   :", temp->getHausTemp());
+	printlnTempC("Zulauf    :", temp->getZulaufTemp());
+	printlnTempC("Kühlwasser:", temp->getKuehlWasserTemp());
 
+	temp->requestSensors();
+}
+
+void zDisplay::printlnTempC(const char *text, int16_t tempInC) {
+	_tft.print(text);
+	printValue(tempInC, KOMMA);
+	_tft.println("°C");
 }
