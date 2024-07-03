@@ -106,7 +106,7 @@ public:
 	void setTextColor(uint16_t c);
 	void setTextSize(uint8_t s);
 	void infoscreen(tempControl *temp, benutzer *user);
-	void printValue(bool komma, int val);
+	void printValue(int val, bool komma);
 	void printlnTempC(const char *text, int16_t tempInC);
 
 

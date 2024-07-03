@@ -276,7 +276,7 @@ void zDisplay::print_val(int val, int16_t x, int16_t y, int c, bool komma) //Hil
 	_tft.print(buf);
 }
 
-void zDisplay::printValue(bool komma, int val) {
+void zDisplay::printValue(int val, bool komma) {
 	char buf[10];
 	if (komma == 1) {
 		sprintf(buf, "%d,%02d", val / 100, val % 100);
@@ -292,7 +292,7 @@ void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsrout
 	_tft.setTextSize(2);
 	_tft.setTextColor(WHITE, ZDUNKELGRUEN);
 	_tft.setCursor(x, y);
-	printValue(komma, val);
+	printValue(val, komma);
 }
 
 /**
@@ -410,6 +410,7 @@ void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 	_tft.fillScreen(BLACK);
 	_tft.setTextColor(WHITE);
 	_tft.setCursor(10, 20);
+	_tft.setTextSize(0);
 	_tft.println("Zapfapparat INFORMATIONSTAFEL");
 	_tft.setCursor(0, 40);
     _tft.setFont(&FreeSans9pt7b);
@@ -424,8 +425,7 @@ void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 		_tft.println(" ml");
 	}
 	_tft.setCursor(0, 60);
-	_tft.setFont(0);
-	_tft.setTextSize(2);
+	_tft.setTextSize(0);
 	_tft.println("ZAPFZYSTEM");
 	_tft.println(_VERSION_);
 	printlnTempC("Block DS18:", temp->getDSblockTemp());
