@@ -285,7 +285,7 @@ void zDisplay::printValue(int val, bool komma) {
 	} else {
 		sprintf(buf, "%d", val);
 	}
-	_tft.print(buf);
+	u8g2.print(buf);
 }
 
 void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsroutine zum Daten anzeigen
@@ -414,46 +414,50 @@ void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 //	_tft.setCursor(10, 20);
 //	_tft.setTextSize(0);
 //	_tft.println("Zapfapparat INFORMATIONSTAFEL");
-	 u8g2.setFontMode(0);                 // use u8g2 none transparent mode
-	  u8g2.setFontDirection(0);            // left to right (this is default)
-	  u8g2.setForegroundColor(WHITE);      // apply Adafruit GFX color
-	  u8g2.setFont(u8g2_font_oldwizard_tf);  // select u8g2 font from here: https://github.com/olikraus/u8g2/wiki/fntlistall
-	  u8g2.setCursor(10,20);                // start writing at this position
-	  u8g2.print("Zäpfzyszäm");
-	  u8g2.setCursor(240,20);                // start writing at this position
-	  u8g2.setFontMode(0);                 // use u8g2 none transparent mode
-	  u8g2.setBackgroundColor(ZDUNKELGRUEN);
-	  u8g2.print("Infodings");            // UTF-8 string with german umlaut chars
-
-	_tft.setCursor(0, 40);
-    _tft.setFont(&FreeSans9pt7b);
+	_tft.fillRect(0, 0, 480, 27, ZDUNKELGRUEN);
+	u8g2.setFontMode(0);                 // use u8g2 none transparent mode
+	u8g2.setFontDirection(0);            // left to right (this is default)
+	u8g2.setForegroundColor(WHITE);      // apply Adafruit GFX color
+	u8g2.setBackgroundColor(ZDUNKELGRUEN);
+	u8g2.setFont(u8g2_font_luBS19_tf); // select u8g2 font from here: https://github.com/olikraus/u8g2/wiki/fntlistall
+	u8g2.setCursor(5, 20);                // start writing at this position
+	u8g2.print("Zäpfzystäm");
+	u8g2.setCursor(240, 20);                // start writing at this position
+	u8g2.setFontMode(0);                 // use u8g2 none transparent mode
+	u8g2.print("Infodings");            // UTF-8 string with german umlaut chars
+	u8g2.setBackgroundColor(BLACK);
+	u8g2.setCursor(240, 60);
+	u8g2.setFont(u8g2_font_luRS12_tf);
 
 	for (int x = 0; x < 10; x++) {
-		_tft.setCursor(230, 60 + x * 25);
-		_tft.print(x);
-		_tft.print(" ");
-		_tft.print(user->username[x]);
-		_tft.setCursor(350, 60 + x * 25);
-		_tft.print(user->bierTag[x]);
-		_tft.println(" ml");
+		u8g2.setCursor(240, u8g2.getCursorY());
+		u8g2.print(x);
+		u8g2.setCursor(260, u8g2.getCursorY());
+		u8g2.print(user->username[x]);
+		u8g2.setCursor(380, u8g2.getCursorY());
+		u8g2.print(user->bierTag[x]);
+		u8g2.println(" ml");
 	}
-	_tft.setCursor(0, 60);
-	_tft.setTextSize(0);
-	_tft.println("ZAPFZYSTEM");
-	_tft.println(_VERSION_);
-	printlnTempC("Block DS18:", temp->getDSblockTemp());
-	printlnTempC("Block Auss:", temp->getBlockAussenTemp());
-	printlnTempC("Block Inn :", temp->getBlockInnenTemp());
-	printlnTempC("Hahn      :", temp->getHahnTemp());
-	printlnTempC("Gehäuse   :", temp->getHausTemp());
-	printlnTempC("Zulauf    :", temp->getZulaufTemp());
+	u8g2.setCursor(5, 60);
+	u8g2.setFont(u8g2_font_luBS12_tf);
+	u8g2.println("ZAPFZYSTEM");
+	u8g2.setFont(u8g2_font_luRS12_tf);
+	u8g2.println(_VERSION_);
+	u8g2.println();
+	printlnTempC("Block DS18B20:", temp->getDSblockTemp());
+	printlnTempC("Block außen:", temp->getBlockAussenTemp());
+	printlnTempC("Block innen:", temp->getBlockInnenTemp());
+	printlnTempC("Zapfhahn:", temp->getHahnTemp());
+	printlnTempC("Gehäuse:", temp->getHausTemp());
+	printlnTempC("Zulauf:", temp->getZulaufTemp());
 	printlnTempC("Kühlwasser:", temp->getKuehlWasserTemp());
 
 	temp->requestSensors();
 }
 
 void zDisplay::printlnTempC(const char *text, int16_t tempInC) {
-	_tft.print(text);
+	u8g2.print(text);
+	u8g2.setCursor(160, u8g2.getCursorY());
 	printValue(tempInC, KOMMA);
-	_tft.println("°C");
+	u8g2.println("°C");
 }
