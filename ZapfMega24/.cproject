@@ -41,6 +41,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/common}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/PCA9685_RT}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/U8g2_for_Adafruit_GFX/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.84790751" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
@@ -64,6 +65,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/PCA9685_RT}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/U8g2_for_Adafruit_GFX/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.c.sketch.input.493068515" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
 							</tool>
@@ -86,6 +88,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/PCA9685_RT}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/U8g2_for_Adafruit_GFX/src}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.S.sketch.input.1427311441" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
 							</tool>

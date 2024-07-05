@@ -28,8 +28,10 @@
 #include <string.h>
 #include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
 #include "Adafruit_GFX.h"
+#include "U8g2_for_Adafruit_GFX.h"
 #include "tempControl.h"
 #include "benutzer.h"
+
 //Fonts
 #include <Fonts/FreeSans9pt7b.h>
 #include <Fonts/FreeSans12pt7b.h>
@@ -83,7 +85,7 @@
 #define BMPIMAGEOFFSET 54
 #define BUFFPIXEL      20
 
-class zDisplay: public MCUFRIEND_kbv {
+class zDisplay: public MCUFRIEND_kbv, U8G2_FOR_ADAFRUIT_GFX {
 public:
 	zDisplay(); //Constructor
 	virtual ~zDisplay(); //Destructor
@@ -111,6 +113,7 @@ public:
 
 
 	MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
+	U8G2_FOR_ADAFRUIT_GFX u8g2;
 
 
 private:

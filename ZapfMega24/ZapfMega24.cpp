@@ -13,6 +13,7 @@
 #include "Adafruit_Thermal.h"
 #include "Adafruit_GFX.h"
 #include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
+#include "U8g2_for_Adafruit_GFX.h"
 #include "zDisplay.h"
 #include "Encoder.h"  //für Drehencoder
 #include "./zLibraries/RTC_DCF/DateTime.h"   // ELV RTC mit DCF

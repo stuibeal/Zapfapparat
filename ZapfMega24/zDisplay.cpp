@@ -11,13 +11,14 @@
 #include "zDisplay.h"
 
 zDisplay::zDisplay() :
-		MCUFRIEND_kbv(0, 0, 0, 0, 0) {
+		MCUFRIEND_kbv(0, 0, 0, 0, 0), U8G2_FOR_ADAFRUIT_GFX() {
 	_sd = nullptr;
 	r = 0;
 	g = 0;
 	b = 0;
 	strcpy(namebuf, "/");
 	MCUFRIEND_kbv _tft;  //tft objekt
+	U8G2_FOR_ADAFRUIT_GFX u8g2;
 	//myCanvas = new
 	//_infoCanvas = new GFXcanvas1(200, 160);
 
@@ -34,6 +35,7 @@ void zDisplay::beginn(SdFat *psd) {
 	_sd = psd; //speichert den Pointer
 	_tft.begin(0x9486); //ID für ILI9486 Chipsatz
 	_tft.setRotation(1);
+	u8g2.begin(_tft);
 	_tft.setTextSize(2);
 	_tft.fillScreen(TFT_WHITE);
 	_tft.setTextColor(ZGRUEN, WHITE);
@@ -406,12 +408,23 @@ void zDisplay::setTextSize(uint8_t s) {
 void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 	temp->requestSensors();
 	temp->holeDaten();
-	_tft.setFont(&FETT);
+//	_tft.setFont(&FETT);
 	_tft.fillScreen(BLACK);
-	_tft.setTextColor(WHITE);
-	_tft.setCursor(10, 20);
-	_tft.setTextSize(0);
-	_tft.println("Zapfapparat INFORMATIONSTAFEL");
+//	_tft.setTextColor(WHITE);
+//	_tft.setCursor(10, 20);
+//	_tft.setTextSize(0);
+//	_tft.println("Zapfapparat INFORMATIONSTAFEL");
+	 u8g2.setFontMode(0);                 // use u8g2 none transparent mode
+	  u8g2.setFontDirection(0);            // left to right (this is default)
+	  u8g2.setForegroundColor(WHITE);      // apply Adafruit GFX color
+	  u8g2.setFont(u8g2_font_oldwizard_tf);  // select u8g2 font from here: https://github.com/olikraus/u8g2/wiki/fntlistall
+	  u8g2.setCursor(10,20);                // start writing at this position
+	  u8g2.print("Zäpfzyszäm");
+	  u8g2.setCursor(240,20);                // start writing at this position
+	  u8g2.setFontMode(0);                 // use u8g2 none transparent mode
+	  u8g2.setBackgroundColor(ZDUNKELGRUEN);
+	  u8g2.print("Infodings");            // UTF-8 string with german umlaut chars
+
 	_tft.setCursor(0, 40);
     _tft.setFont(&FreeSans9pt7b);
 
