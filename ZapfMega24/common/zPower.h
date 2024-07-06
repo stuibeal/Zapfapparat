@@ -59,9 +59,10 @@ void goSleep(void);
 
 private:
 uint8_t inVoltage;
-int helligkeit;
+uint16_t helligkeit;
 uint8_t autoLightBool;
-uint8_t lampenOutput;
+uint8_t zSchLampeStatus;
+uint8_t bkLichtStatus;
 powerState bkPowerState;
 machineState bkMachineState;
 unsigned long millisSeitZapfEnde;

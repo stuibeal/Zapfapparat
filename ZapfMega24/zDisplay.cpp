@@ -36,14 +36,14 @@ void zDisplay::beginn(SdFat *psd) {
 	_tft.begin(0x9486); //ID für ILI9486 Chipsatz
 	_tft.setRotation(1);
 	u8g2.begin(_tft);
-	_tft.setTextSize(2);
 	_tft.fillScreen(TFT_WHITE);
-	_tft.setTextColor(ZGRUEN, WHITE);
-
-	_tft.setCursor(240, 10); //Cursor setzen
-	_tft.println(" Zapfapparat");
-	_tft.setCursor(240, 26); //Cursor setzen
-	_tft.println(_VERSION_); //Bootausgabe
+	u8g2.setForegroundColor(ZDUNKELGRUEN);
+	u8g2.setBackgroundColor(WHITE);
+	u8g2.setCursor(230, 10);
+	u8g2.setFont(FONT_BOLD12);
+	u8g2.println(_NAME_);
+	u8g2.setFont(FONT_NORMAL10);
+	printInitText(_VERSION_);
 
 	//BMP SHOW
 	root = _sd->open(namebuf);
@@ -51,11 +51,8 @@ void zDisplay::beginn(SdFat *psd) {
 
 }
 void zDisplay::printInitText(const char *text) {
-	static uint8_t line = 4;
-	_tft.setCursor(230, line * 16);
-	_tft.println(text);
-	line++;
-
+	u8g2.setCursor(230, u8g2.getCursorY());
+	u8g2.println(text);
 }
 
 void zDisplay::printText(void) {
@@ -363,7 +360,7 @@ void zDisplay::userShow(benutzer *user) {
 		namebuf[5] = user->aktuell + 48; //ASCII Wert für Zahlemann in Char schreiben (Zahl 5 = Ascii 5 wenn man 48 dazu tut
 		break;
 	}
-	showBMP(namebuf, 300, 50);
+	showBMP(namebuf, 290, 26);
 	_tft.setTextSize(1);
 	_tft.setFont(&FETT);
 	_tft.setTextColor(ZGRUEN);
@@ -440,9 +437,9 @@ void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 		u8g2.println(" ml");
 	}
 	u8g2.setCursor(5, 60);
-	u8g2.setFont(u8g2_font_luBS12_tf);
+	u8g2.setFont(FONT_BOLD12);
 	u8g2.println("ZAPFZYSTEM");
-	u8g2.setFont(u8g2_font_luRS12_tf);
+	u8g2.setFont(FONT_NORMAL12);
 	u8g2.println(_VERSION_);
 	u8g2.println();
 	printlnTempC("Block DS18B20:", temp->getDSblockTemp());
@@ -461,4 +458,15 @@ void zDisplay::printlnTempC(const char *text, int16_t tempInC) {
 	u8g2.setCursor(160, u8g2.getCursorY());
 	printValue(tempInC, KOMMA);
 	u8g2.println("°C");
+}
+
+void zDisplay::backgroundPicture(){
+	_tft.fillScreen(ZBRAUN);
+	_tft.fillRect(0, 293, 480, 28, BLACK);
+	showBMP("/bmp/bg_zapf.bmp", 0, 0); /* Zapfsäule, w:102 h:291 */
+	showBMP("/bmp/bg_leer.bmp", 0, 0); /* Bier leer, w:132 h:291 */
+	showBMP("/bmp/bg_rahm.bmp", 271, 8); /* Userbildrahmen, w:199 h:136 */
+	/* Userbild 160x100 geht nach x290 y26 */
+
+
 }

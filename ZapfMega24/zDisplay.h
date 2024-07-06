@@ -39,6 +39,12 @@
 #include "./zLibraries/MCUFRIEND_kbv/FreeDefaultFonts.h"
 
 //#include "Adafruit_GFX.h" // Hardware-specific library
+#define FONT_NORMAL10 u8g2_font_luRS10_tf
+#define FONT_BOLD10 u8g2_font_luBS10_tf
+#define FONT_NORMAL12 u8g2_font_luRS12_tf
+#define FONT_BOLD12 u8g2_font_luBS12_tf
+#define FONT_NORMAL19 u8g2_font_luRS19_tf
+#define FONT_BOLD19 u8g2_font_luBS19_tf
 
 
 // TFT-DISPLAY
@@ -110,7 +116,7 @@ public:
 	void infoscreen(tempControl *temp, benutzer *user);
 	void printValue(int val, bool komma);
 	void printlnTempC(const char *text, int16_t tempInC);
-
+	void backgroundPicture(void);
 
 	MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
 	U8G2_FOR_ADAFRUIT_GFX u8g2;

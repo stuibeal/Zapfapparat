@@ -20,8 +20,9 @@ zPower::zPower ()
 	bkMachineState = WAKE_UP;
 	millisSeitZapfEnde = 0;
 	millisSeitLetztemCheck = 0;
-	lampenOutput = 0;
 	autoLightBool = 1;
+	zSchLampeStatus = 0;
+	bkLichtStatus = 0;
 }
 
 zPower::~zPower ()
@@ -40,7 +41,8 @@ void zPower::begin() {
 }
 
 void zPower::check() {
-   switch (temp.getBatterieStatus()) {
+   uint16_t oldHelligkeit = helligkeit;
+	switch (temp.getBatterieStatus()) {
    case 0x00:
    	   bkPowerState = BATT_ULTRAHIGH;
    	   break;
@@ -57,24 +59,25 @@ void zPower::check() {
    	   bkPowerState = BATT_ULTRALOW;
    	   break;
    }
-   helligkeit = digitalRead(LICHT_SENSOR_PIN);
+   uint16_t newHelligkeit = analogRead(LICHT_SENSOR_PIN);
+   helligkeit = (oldHelligkeit + newHelligkeit) /8;
 }
 
 void zPower::setLed(uint8_t offon) {
 
 }
-void schLampeControl(uint8_t offon, uint16_t dimspeed) {
+void zPower::schLampeControl(uint8_t offon, uint16_t dimspeed) {
 
 }
 
-void zapfLichtControl(uint8_t offon, uint16_t dimspeed) {
+void zPower::zapfLichtControl(uint8_t offon, uint16_t dimspeed) {
 
 }
-void autoLight(uint8_t offon) {
+void zPower::autoLight(uint8_t offon) {
 
 }
 
-void goSleep(void) {
+void zPower::goSleep(void) {
 	/*
 	 * hell = 200;
 

@@ -278,8 +278,8 @@ void anfang(void) {
 	//mp3.playTrack(3); //Brantl Edel Pils
 	//ZD._tft.fillScreen(BLACK);
 
-	ZD.showBMP("/bmp/back01.bmp", 0, 0);
 
+	ZD.backgroundPicture();
 	analogWrite(TASTE2_LED, 10);
 	analogWrite(TASTE1_LED, 10);
 	wsLedGrundbeleuchtung();
