@@ -117,6 +117,7 @@ public:
 	void printValue(int val, bool komma);
 	void printlnTempC(const char *text, int16_t tempInC);
 	void backgroundPicture(void);
+	void showUserPic(const char *bmp);
 
 	MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
 	U8G2_FOR_ADAFRUIT_GFX u8g2;

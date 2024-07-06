@@ -345,8 +345,6 @@ void zDisplay::printInt(uint16_t wertInt) {
  * @param user 	Pointer zum Benutzerobjekt
  */
 void zDisplay::userShow(benutzer *user) {
-	_tft.fillRect(280, 30, 200, 160, WHITE);
-	_tft.drawRect(280, 30, 200, 160, ZGRUEN);
 	char namebuf[32] = "/usr/x.bmp";
 
 	switch (user->getGodMode()) {
@@ -360,7 +358,7 @@ void zDisplay::userShow(benutzer *user) {
 		namebuf[5] = user->aktuell + 48; //ASCII Wert für Zahlemann in Char schreiben (Zahl 5 = Ascii 5 wenn man 48 dazu tut
 		break;
 	}
-	showBMP(namebuf, 290, 26);
+	showUserPic(namebuf);
 	_tft.setTextSize(1);
 	_tft.setFont(&FETT);
 	_tft.setTextColor(ZGRUEN);
@@ -460,13 +458,15 @@ void zDisplay::printlnTempC(const char *text, int16_t tempInC) {
 	u8g2.println("°C");
 }
 
-void zDisplay::backgroundPicture(){
+void zDisplay::backgroundPicture() {
 	_tft.fillScreen(ZBRAUN);
 	_tft.fillRect(0, 293, 480, 28, BLACK);
 	showBMP("/bmp/bg_zapf.bmp", 0, 0); /* Zapfsäule, w:102 h:291 */
-	showBMP("/bmp/bg_leer.bmp", 0, 0); /* Bier leer, w:132 h:291 */
+	showBMP("/bmp/bg_leer.bmp", 102, 0); /* Bier leer, w:132 h:291 */
 	showBMP("/bmp/bg_rahm.bmp", 271, 8); /* Userbildrahmen, w:199 h:136 */
 	/* Userbild 160x100 geht nach x290 y26 */
+}
 
-
+void zDisplay::showUserPic(const char *bmp) {
+	showBMP(bmp, 290, 26);
 }

@@ -418,7 +418,7 @@ void beginnZapfProgramm() {
 	// Nachschaun ob er fertig ist und dann bingen und zamschreim
 	if (flowmeter.getMilliliter() >= user.menge() || digitalRead(TASTE2_PIN)) {
 		if (user.getGodMode() == 1) {
-			ZD.showBMP("/god/11.bmp", 300, 50);
+			ZD.showUserPic("/god/11.bmp");
 		}
 		sound._SMF->close();
 		sound.midiSilence();
