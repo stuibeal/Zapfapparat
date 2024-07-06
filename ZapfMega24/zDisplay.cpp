@@ -359,33 +359,37 @@ void zDisplay::userShow(benutzer *user) {
 		break;
 	}
 	showUserPic(namebuf);
-	_tft.setTextSize(1);
-	_tft.setFont(&FETT);
-	_tft.setTextColor(ZGRUEN);
-	_tft.setCursor(300, 175);
-	//_tft.print(*userName);
-	_tft.print(user->getName()); //konvertiert den Pointer von userName in c-String
-	//_tft.print(user->getName()->c_str());  //konvertiert den Pointer von userName in c-String
-	_tft.setFont(&NORMAL);
-	int x = 300;
-	int y = 210;
-	_tft.fillRect(280, 190, 200, 130, ZGRUEN);
-	_tft.setTextColor(WHITE);
-	_tft.setTextSize(1);
-	_tft.setCursor(x, y - 5);
-	_tft.print("o");
-	// _tft.setTextSize(3);
-	_tft.setCursor(x + 15, y);
-	_tft.println("°C");
+	/*USERNAME*/
+	_tft.fillRect(235, 10, 35, 271, ZBRAUN); /* vorsichtshalber ausbraunen */
+	u8g2.setFont(FONT_BOLD19);
+	u8g2.setFontDirection(3); /* font DOWN TO TOP */
+	u8g2.setBackgroundColor(ZBRAUN);
+	u8g2.setForegroundColor(ZDUNKELGRUEN);
+	u8g2.setCursor(260, 280);
+	u8g2.print(user->getName()); //konvertiert den Pointer von userName in c-String
 
-	_tft.setCursor(x, y + 30);
-	_tft.println("ml");
-
-	_tft.setCursor(x, y + 60);
-	_tft.println("Hoibe");
-
-	_tft.setCursor(x, y + 90);
-	_tft.println("Mass");
+	/*VOREINSTELLUNG INFOANZEIGE*/
+	u8g2.setFont(FONT_NORMAL19);
+	_tft.fillRect(271, 146, 209, 140, ZBRAUN);
+	u8g2.setFont(FONT_NORMAL10); /*10er font is 16 hoch*/
+	u8g2.setForegroundColor(BLACK);
+	u8g2.setBackgroundColor(ZBRAUN);
+	u8g2.setCursor(271, 156); /* In Linie mit dem Rahmen */
+	u8g2.println("TEMPERATUR");
+	u8g2.setCursor(271, u8g2.getCursorY());
+	u8g2.println("in °C");
+	u8g2.setCursor(271, 190);
+	u8g2.println("ZAPFMENGE");
+	u8g2.setCursor(271, u8g2.getCursorY());
+	u8g2.println("in ml");
+	u8g2.setCursor(271, 224);
+	u8g2.println("HOIWE");
+	u8g2.setCursor(271, u8g2.getCursorY());
+	u8g2.println("BIS JETZT");
+	u8g2.setCursor(271, 258);
+	u8g2.println("REST IM FASS");
+	u8g2.setCursor(271, u8g2.getCursorY());
+	u8g2.println("in Liter");
 }
 
 void zDisplay::println(const char *text) {
@@ -404,26 +408,21 @@ void zDisplay::setTextSize(uint8_t s) {
 void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 	temp->requestSensors();
 	temp->holeDaten();
-//	_tft.setFont(&FETT);
 	_tft.fillScreen(BLACK);
-//	_tft.setTextColor(WHITE);
-//	_tft.setCursor(10, 20);
-//	_tft.setTextSize(0);
-//	_tft.println("Zapfapparat INFORMATIONSTAFEL");
 	_tft.fillRect(0, 0, 480, 27, ZDUNKELGRUEN);
 	u8g2.setFontMode(0);                 // use u8g2 none transparent mode
 	u8g2.setFontDirection(0);            // left to right (this is default)
 	u8g2.setForegroundColor(WHITE);      // apply Adafruit GFX color
 	u8g2.setBackgroundColor(ZDUNKELGRUEN);
-	u8g2.setFont(u8g2_font_luBS19_tf); // select u8g2 font from here: https://github.com/olikraus/u8g2/wiki/fntlistall
+	u8g2.setFont(FONT_BOLD19); // select u8g2 font from here: https://github.com/olikraus/u8g2/wiki/fntlistall
 	u8g2.setCursor(5, 20);                // start writing at this position
-	u8g2.print("Zäpfzystäm");
+	u8g2.print(_NAME_);
 	u8g2.setCursor(240, 20);                // start writing at this position
 	u8g2.setFontMode(0);                 // use u8g2 none transparent mode
-	u8g2.print("Infodings");            // UTF-8 string with german umlaut chars
+	u8g2.print("Information");          // UTF-8 string with german umlaut chars
 	u8g2.setBackgroundColor(BLACK);
 	u8g2.setCursor(240, 60);
-	u8g2.setFont(u8g2_font_luRS12_tf);
+	u8g2.setFont(FONT_NORMAL12);
 
 	for (int x = 0; x < 10; x++) {
 		u8g2.setCursor(240, u8g2.getCursorY());
