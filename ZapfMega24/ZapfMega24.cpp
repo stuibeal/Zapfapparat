@@ -146,6 +146,8 @@ void setup(void) {
 	oldTime = millis();
 	nachSchauZeit = millis();
 
+
+
 }  //VOID SETUP
 
 void waehlscheibe() {
@@ -251,6 +253,11 @@ void waehlFunktionen() {
 	case 1275: //Die Telefonnummer der Kienmühle
 		oldWaehlscheibeFun();
 		break;
+	case 54248: /* LICHT*/
+		flowmeter.flowDataSend(LED_FUN_4, 0b11111111, 128);
+		digitalWrite(Z_SCH_LAMPE_PIN, 1);
+		break;
+
 	case 9413: //Telefonnummer
 		reinigungsprogramm();
 		break;
@@ -481,7 +488,7 @@ void loop() {
 	 * Hier nur checken wenn kein Godmode weil sonst Midi zu langsam spielt
 	 * ansonsten jede Sekunde mal Daten aktualisieren
 	 */
-	if (((millis() - oldTime) > 200) && user.getGodMode() == 0) {
+	if (((millis() - oldTime) > 200)      ){// && user.getGodMode() == 0) {
 		oldTime = millis();
 		anzeigeAmHauptScreen();
 		sound.pruefe();

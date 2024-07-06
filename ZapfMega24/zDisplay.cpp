@@ -290,10 +290,11 @@ void zDisplay::printValue(int val, bool komma) {
 
 void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsroutine zum Daten anzeigen
 		{
-	_tft.setFont(0);
-	_tft.setTextSize(2);
-	_tft.setTextColor(WHITE, ZDUNKELGRUEN);
-	_tft.setCursor(x, y);
+	u8g2.setForegroundColor(WHITE);      // apply Adafruit GFX color
+	u8g2.setBackgroundColor(ZDUNKELGRUEN);
+	u8g2.setFontMode(0);
+	u8g2.setFont(u8g2_font_profont29_tn);
+	u8g2.setCursor(x, y);
 	printValue(val, komma);
 }
 
