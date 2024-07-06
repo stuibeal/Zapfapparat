@@ -367,7 +367,7 @@ void zDisplay::userShow(benutzer *user) {
 	u8g2.setForegroundColor(ZDUNKELGRUEN);
 	u8g2.setCursor(260, 280);
 	u8g2.print(user->getName()); //konvertiert den Pointer von userName in c-String
-
+	u8g2.setFontDirection(0);
 	/*VOREINSTELLUNG INFOANZEIGE*/
 	u8g2.setFont(FONT_NORMAL19);
 	_tft.fillRect(271, 146, 209, 140, ZBRAUN);
