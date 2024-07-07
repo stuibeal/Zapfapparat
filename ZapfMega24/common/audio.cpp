@@ -6,6 +6,8 @@
  */
 
 #include "audio.h"
+#include "globalVariables.h"
+
 //#include "gemein.h"
 
 //Class c_audio

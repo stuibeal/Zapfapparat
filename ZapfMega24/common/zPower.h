@@ -14,7 +14,6 @@
 
 #ifndef ZPOWER_H_
 #define ZPOWER_H_
-#include "gemein.h"
 #include "Arduino.h"
 #include "stdint.h"
 #include "PCA9685.h"
@@ -34,55 +33,52 @@
 #define TASTE2_LED 8
 #define TASTEN_LED_NORMAL 10 //grundbeleuchtung der Tasten
 
-
-
-class zPower : public PCA9685 {
+class zPower: public PCA9685 {
 public:
 	enum powerState {
-	BATT_ULTRAHIGH, BATT_HIGH, BATT_NORMAL, BATT_LOW, BATT_ULTRALOW
+		BATT_ULTRAHIGH, BATT_HIGH, BATT_NORMAL, BATT_LOW, BATT_ULTRALOW
 	};
 
-enum machineState {
-	SLEEP, WAKE_UP, WORK, STANDBY, GO_SLEEP
-};
+	enum machineState {
+		SLEEP, WAKE_UP, WORK, STANDBY, GO_SLEEP
+	};
 
-zPower();
-virtual
-~zPower();
-inline zPower::powerState getPowerState() {
-	return bkPowerState;
-}
-inline zPower::machineState getMachineState() {
-	return bkMachineState;
-}
-inline void setPowerState(zPower::powerState state) {
-	bkPowerState = state;
-}
+	zPower();
+	virtual
+	~zPower();
+	inline zPower::powerState getPowerState() {
+		return bkPowerState;
+	}
+	inline zPower::machineState getMachineState() {
+		return bkMachineState;
+	}
+	inline void setPowerState(zPower::powerState state) {
+		bkPowerState = state;
+	}
 
-void begin();
-void check();
-void tastenLed(uint8_t taste, uint8_t helligkeit);
-void setLed(uint8_t offon);
-void ledGrundbeleuchtung(void);
-void wsLedGrundbeleuchtung(void);
-void schLampeControl(uint8_t offon);
-void zapfLichtControl(uint8_t pwmValue);
-void autoLight(uint8_t offon);
-void goSleep(void);
+	void beginPower();
+	void check();
+	void tastenLed(uint8_t taste, uint8_t helligkeit);
+	void setLed(uint8_t offon);
+	void ledGrundbeleuchtung(void);
+	void wsLedGrundbeleuchtung(void);
+	void schLampeControl(uint8_t offon);
+	void zapfLichtControl(uint8_t pwmValue);
+	void autoLight(uint8_t offon);
+	void goSleep(void);
 
-PCA9685 wsLed;
-
+	PCA9685 wsLed;
 
 private:
-uint8_t inVoltage;
-uint16_t helligkeit;
-uint8_t autoLightBool;
-uint8_t zSchLampeStatus;
-uint8_t bkLichtStatus;
-powerState bkPowerState;
-machineState bkMachineState;
-unsigned long millisSeitZapfEnde;
-unsigned long millisSeitLetztemCheck;
+	uint8_t inVoltage;
+	uint16_t helligkeit;
+	uint8_t autoLightBool;
+	uint8_t zSchLampeStatus;
+	uint8_t bkLichtStatus;
+	powerState bkPowerState;
+	machineState bkMachineState;
+	unsigned long millisSeitZapfEnde;
+	unsigned long millisSeitLetztemCheck;
 
 };
 

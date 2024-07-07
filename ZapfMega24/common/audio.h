@@ -11,7 +11,6 @@
 #include "MD_MIDIFile.h"
 #include "MD_YX5300.h"
 #include "string.h"
-#include "globalVariables.h"
 
 #ifndef DEBUG_A
 #define DEBUG_A 0

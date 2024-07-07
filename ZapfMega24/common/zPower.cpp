@@ -8,9 +8,12 @@
 #include "zPower.h"
 #include "gemein.h"
 #include "globalVariables.h"
+#include "PCA9685.h"
 #include "Wire.h"
 
-zPower::zPower() {
+zPower::zPower() : PCA9685(0)
+
+{
 	inVoltage = 120;
 	helligkeit = 0;
 	bkPowerState = BATT_NORMAL;
@@ -20,14 +23,14 @@ zPower::zPower() {
 	autoLightBool = 1;
 	zSchLampeStatus = 0;
 	bkLichtStatus = 0;
-	wsLed = PCA9685(WS_LED_ADDRESS);
+	PCA9685 wsLed(WS_LED_ADDRESS);
 }
 
 zPower::~zPower() {
 	/* Auto-generated destructor stub */
 }
 
-void zPower::begin() {
+void zPower::beginPower() {
 	//I2C
 	Wire.begin(); // Master of the universe
 	Wire.setClock(400000); // I2C in FastMode 400kHz

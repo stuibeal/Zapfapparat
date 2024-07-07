@@ -26,6 +26,7 @@
 #include "audio.h"
 #include "zValve.h"
 #include "zLog.h"
+#include "PCA9685.h"
 #include "zPower.h"
 #include "zWireHelper.h"
 
@@ -87,7 +88,7 @@ MD_YX5300 mp3 = MD_YX5300(MP3Stream);
 zPower power;
 
 void setup(void) {
-	power.begin(); /* STROM AN */
+	power.beginPower(); /* STROM AN */
 	flowmeter.initialise(); /* HIER i2c begin!*/
 	beginWaehlscheibe(); /* WS und Tastenpins */
 
@@ -181,7 +182,7 @@ void loop() {
 	case user.zapfModus::kurzVorZapfEnde:
 		break;
 	case user.zapfModus::zapfEnde:
-		user.zapfModus = user.zapfModus::zapfStandby;
+		user.zapfStatus = user.zapfModus::zapfStandby;
 		break;
 
 	}
@@ -537,7 +538,7 @@ void reinigungsprogramm(void) {
 	delay(20); //zum taste loslassen!
 	unsigned long waitingTime = millis();
 	int sekunden = 0;
-	power.tastenLed(1, 255)
+	power.tastenLed(1, 255);
 	while (!digitalRead(TASTE1_PIN)) {
 		if (millis() - waitingTime >= 1000) {
 			waitingTime = millis();
