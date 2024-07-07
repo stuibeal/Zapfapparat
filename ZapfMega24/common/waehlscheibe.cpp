@@ -8,9 +8,9 @@
 #include "waehlscheibe.h"
 #include "gemein.h"
 #include "stdint.h"
-#include "globalVariables.h"
 #include "audio.h"
 #include "zPower.h"
+#include "globalVariables.h"
 
 
 /* Variables */
@@ -24,7 +24,7 @@ void beginWaehlscheibe(void) {
 
 uint8_t readWaehlscheibe(void) {
 	for (uint8_t channel = 0; channel < 12; channel++) {
-		power.wsLed.setPWM(channel, 0xFFF);
+		wsLed.setPWM(channel, 0xFFF);
 	}
 
 	bool old_waehler2 = 1;
@@ -45,19 +45,19 @@ uint8_t readWaehlscheibe(void) {
 		if ((waehler2 > old_waehler2) && (millis() - temptime > 50)) { //wenn Signal wieder von 0V auf 5V geht und mehr als 50ms vergangen sind, eins hochzählen
 			waehlZahl++; //Wählscheibe (US): 60ms PULS 0V, 40ms Pause (5V), ánsonsten immer 5V
 			temptime = millis();
-			power.wsLed.setPWM(waehlZahl, 0xFFF);
+			wsLed.setPWM(waehlZahl, 0xFFF);
 			if (waehlZahl > 1) {
-				power.wsLed.setPWM(waehlZahl - 1, GRUEN_LED_ABGEDUNKELT + 2000);
+				wsLed.setPWM(waehlZahl - 1, GRUEN_LED_ABGEDUNKELT + 2000);
 			}
 			if (waehlZahl > 2) {
-				power.wsLed.setPWM(waehlZahl - 2, GRUEN_LED_ABGEDUNKELT);
+				wsLed.setPWM(waehlZahl - 2, GRUEN_LED_ABGEDUNKELT);
 
 			}
 
 		}
 	}
 	power.wsLedGrundbeleuchtung();
-	power.wsLed.setPWM(waehlZahl, 0xFFF);
+	wsLed.setPWM(waehlZahl, 0xFFF);
 	if (waehlZahl > 10) {
 		/* not possible bei einer Wählscheibe */
 		waehlZahl = 0;
@@ -70,7 +70,7 @@ void oldWaehlscheibeFun(void) {
 	sound.on();
 	sound.mp3Play(11, 1);
 	for (uint8_t channel = 0; channel < 12; channel++) {
-		power.wsLed.setPWM(channel, 2047);
+		wsLed.setPWM(channel, 2047);
 	}
 
 	for (uint8_t dw = 0; dw < 2; dw++) { //mega Lightshow!!
@@ -78,8 +78,8 @@ void oldWaehlscheibeFun(void) {
 			delay(50);
 			for (uint8_t x = 11; x > 0; x--) {
 				delay(30);
-				power.wsLed.setPWM(x + i, 0xFFF); //pwm.setPWM(x + i, 4096, 0);
-				power.wsLed.setPWM(x + i + 1, 0x00); //pwm.setPWM(x + i + 1, 0, 4096);
+				wsLed.setPWM(x + i, 0xFFF); //pwm.setPWM(x + i, 4096, 0);
+				wsLed.setPWM(x + i + 1, 0x00); //pwm.setPWM(x + i + 1, 0, 4096);
 			}
 		}
 
@@ -87,8 +87,8 @@ void oldWaehlscheibeFun(void) {
 			delay(100 % i);
 			for (uint8_t x = 0; x < 11; x++) {
 				delay(50);
-				power.wsLed.setPWM(x + i - 1, 0x00); //pwm.setPWM(x + i - 1, 0, 4096);
-				power.wsLed.setPWM(x + i, 0xFFF); //pwm.setPWM(x + i, 4096, 0);
+				wsLed.setPWM(x + i - 1, 0x00); //pwm.setPWM(x + i - 1, 0, 4096);
+				wsLed.setPWM(x + i, 0xFFF); //pwm.setPWM(x + i, 4096, 0);
 			}
 		}
 		delay(500);

@@ -19,6 +19,6 @@ extern tempControl temp;
 extern benutzer user;
 extern zPower power;
 extern char buf[80];
-
+extern PCA9685 wsLed;
 #endif /* GLOBALVARIABLES_H_ */
 

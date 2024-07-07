@@ -6,13 +6,13 @@
  */
 
 #include "zPower.h"
+#include "Arduino.h"
 #include "gemein.h"
 #include "globalVariables.h"
 #include "PCA9685.h"
 #include "Wire.h"
 
-zPower::zPower() : PCA9685(0)
-
+zPower::zPower()
 {
 	inVoltage = 120;
 	helligkeit = 0;
@@ -23,7 +23,6 @@ zPower::zPower() : PCA9685(0)
 	autoLightBool = 1;
 	zSchLampeStatus = 0;
 	bkLichtStatus = 0;
-	PCA9685 wsLed(WS_LED_ADDRESS);
 }
 
 zPower::~zPower() {
@@ -34,6 +33,7 @@ void zPower::beginPower() {
 	//I2C
 	Wire.begin(); // Master of the universe
 	Wire.setClock(400000); // I2C in FastMode 400kHz
+
 
 	wsLed.begin();
 	wsLed.setFrequency(200, 0);

@@ -33,7 +33,7 @@
 #define TASTE2_LED 8
 #define TASTEN_LED_NORMAL 10 //grundbeleuchtung der Tasten
 
-class zPower: public PCA9685 {
+class zPower {
 public:
 	enum powerState {
 		BATT_ULTRAHIGH, BATT_HIGH, BATT_NORMAL, BATT_LOW, BATT_ULTRALOW
@@ -67,7 +67,6 @@ public:
 	void autoLight(uint8_t offon);
 	void goSleep(void);
 
-	PCA9685 wsLed;
 
 private:
 	uint8_t inVoltage;

@@ -9,6 +9,7 @@
 #include <string.h>
 #include <Wire.h>
 #include <SdFat.h>            // Use the SdFat library
+#include "zPower.h"
 #include "waehlscheibe.h"
 #include "Adafruit_Thermal.h"
 #include "Adafruit_GFX.h"
@@ -26,8 +27,6 @@
 #include "audio.h"
 #include "zValve.h"
 #include "zLog.h"
-#include "PCA9685.h"
-#include "zPower.h"
 #include "zWireHelper.h"
 
 // Defines
@@ -85,6 +84,7 @@ zPrinter drucker;
 zLog logbuch;
 MD_MIDIFile SMF;
 MD_YX5300 mp3 = MD_YX5300(MP3Stream);
+PCA9685 wsLed(WS_LED_ADDRESS);
 zPower power;
 
 void setup(void) {
