@@ -19,9 +19,10 @@ public:
 	virtual ~benutzer();
 	uint8_t aktuell = 1;
     String username[arrayGroesse] =
-    		{ "Honk", "Christoph", "NO-Y", "DJ R. Kentn", "Ebi", "Maex", "Didi", "Beda", "Basi", "Al" };
+    		{ "Null", "Christoph", "NO-Y", "DJ R. Kentn", "Ebi", "Maex", "Didi", "Beda", "Basi", "Al", "Special" };
     uint16_t gesamtMengeTotal;
     uint16_t gesamtMengeTag;
+    uint16_t restMengeFass; /*Fass sollte unter 65,535l haben*/
     uint16_t bierTemp[arrayGroesse];
     uint16_t bierMenge[arrayGroesse];
     uint16_t bierTag[arrayGroesse];
@@ -40,6 +41,9 @@ public:
     void setTemp(uint16_t tempvar);
     void setGodMode(uint8_t wasfuergott);
     uint8_t getGodMode();
+    enum zapfModus {zapfStandby, zapfBeginn, amZapfen, godZapfen, kurzVorZapfEnde, zapfEnde};
+    zapfModus zapfStatus;
+
 
 private:
 	uint16_t oldBierGesamt[arrayGroesse];

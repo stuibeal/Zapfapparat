@@ -27,9 +27,7 @@ zWireHelper::~zWireHelper ()
 void
 zWireHelper::initialise()
 {
-  //I2C
-    Wire.begin (); // Master of the universe
-    Wire.setClock (400000); // I2C in FastMode 400kHz
+//nothing to do?
 }
 
 /**

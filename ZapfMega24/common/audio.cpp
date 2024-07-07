@@ -9,8 +9,8 @@
 //#include "gemein.h"
 
 //Class c_audio
-audio::audio() : MD_YX5300(MP3Stream), MD_MIDIFile()
-{
+audio::audio() :
+		MD_YX5300(MP3Stream), MD_MIDIFile() {
 	audioMillis = millis();
 	_sd = nullptr;
 	_mp3 = nullptr;
@@ -24,7 +24,7 @@ audio::~audio() {
 	//  Auto-generated destructor stub
 }
 
-void audio::starte(SdFat *pSD, MD_MIDIFile * pSMF, MD_YX5300 * pMp3) {
+void audio::starte(SdFat *pSD, MD_MIDIFile *pSMF, MD_YX5300 *pMp3) {
 	//Überschreibt die Pointer mit den übergebenen Pointern
 	_sd = pSD;
 	_SMF = pSMF;
@@ -262,5 +262,57 @@ void audio::loadSingleMidi(const char *midiFile) {
 	_SMF->load(midiFile);
 	_SMF->looping(false);
 	_SMF->pause(true);
+}
+
+void audio::tickMetronome(void) {
+	static uint32_t lastBeatTime = 0;
+	static boolean inBeat = false;
+	static uint8_t leuchtLampe = B00000001;
+	uint16_t beatTime;
+
+	beatTime = 60000 / _SMF->getTempo() / 4; // msec/beat = ((60sec/min)*(1000 ms/sec))/(beats/min)
+	if (!inBeat) {
+		if ((millis() - lastBeatTime) >= beatTime) {
+			lastBeatTime = millis();
+
+			inBeat = true;
+			if (leuchtLampe & 1) {
+				digitalWrite(TASTE1_LED, HIGH);
+			} else {
+				digitalWrite(TASTE2_LED, HIGH);
+			}
+
+			flowmeter.flowDataSend(LED_FUN_4, leuchtLampe, 0xFF);
+			leuchtLampe++;
+
+		}
+	} else {
+		if ((millis() - lastBeatTime) >= 100) // keep the flash on for 100ms only
+				{
+
+
+	/*
+			if (!(leuchtLampe & 1)) {
+				analogWrite(TASTE1_LED, 20);
+			} else {
+				analogWrite(TASTE2_LED, 20);
+			}
+*/
+			inBeat = false;
+
+		}
+	}
+}
+
+void audio::godModeSound(uint8_t godMode) {
+	switch (godMode) {
+	case 1:
+		loadLoopMidi("d_runni2.mid");
+		break;
+	case 2:
+		loadLoopMidi("keen.mid");
+		break;
+	}
+
 }
 

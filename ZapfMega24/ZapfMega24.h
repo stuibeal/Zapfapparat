@@ -16,19 +16,16 @@
 //add your function definitions for the project ZapfMega24 here
 // Funktionen
 void setup(void) ;
+void anfang(void) ;
+void loop() ;
 void waehlscheibe() ;
 void waehlFunktionen() ;
-void anfang(void) ;
-void aufWachen(void) ;
-void einSchlafen(void) ;
-void tickMetronome(void)  		;
 void seltencheck(void) ;
 void belohnungsMusik() ;
 void infoseite(void) ;
-void beginZapfProgramm(void);
+void beginnZapfProgramm(void);
 void godModeZapfMidi(void);
-void loop() ;
-void errorLed(void);
+uint8_t errorLed(void);
 void userShow(void) ;
 void anzeigeAmHauptScreen(void) ;
 void dataLogger(void) ;

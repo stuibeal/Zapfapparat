@@ -10,12 +10,14 @@
 #include "audio.h"
 #include "tempControl.h"
 #include "benutzer.h"
+#include "zPower.h"
 
 //globale Variablen
 extern zWireHelper flowmeter;
 extern audio sound;
 extern tempControl temp;
 extern benutzer user;
+extern zPower power;
 extern char buf[80];
 
 #endif /* GLOBALVARIABLES_H_ */

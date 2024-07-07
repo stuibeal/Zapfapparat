@@ -20,6 +20,8 @@ benutzer::benutzer() {
 		musik[x] = 0;
 
 	}
+	zapfStatus= zapfStandby;
+	restMengeFass = 30000;
 
 
 

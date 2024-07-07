@@ -29,9 +29,6 @@
 //Output Pins
 #define FLOW_SM6020       A9  // ein aus
 #define FLOW_WINDOW		  A8   //hier schickt der flowmeter ein signal wenns flowt
-#define TASTE1_LED 6
-#define TASTE2_LED 8
-#define TASTEN_LED_NORMAL 10 //grundbeleuchtung der Tasten
 
 // Darstellung
 #define BLACK   0x0000
@@ -49,6 +46,8 @@
 #define FETT FreeSansBold12pt7b
 #define KOMMA 1
 #define GANZZAHL 0
+#define WARTE_ZEIT 30000
+
 
 
 // COMMUNICATION

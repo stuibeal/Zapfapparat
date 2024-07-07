@@ -39,7 +39,7 @@ void zDisplay::beginn(SdFat *psd) {
 	_tft.fillScreen(TFT_WHITE);
 	u8g2.setForegroundColor(ZDUNKELGRUEN);
 	u8g2.setBackgroundColor(WHITE);
-	u8g2.setCursor(230, 10);
+	u8g2.setCursor(230, 25);
 	u8g2.setFont(FONT_BOLD12);
 	u8g2.println(_NAME_);
 	u8g2.setFont(FONT_NORMAL10);
@@ -65,9 +65,12 @@ void zDisplay::printText(void) {
 }
 
 void zDisplay::infoText(const char *text) {
-	printText();
-	_tft.println(text);
-
+	_tft.fillRect(0, 292, 480, 28, BLACK);
+	u8g2.setCursor(10, 318);
+	u8g2.setForegroundColor(WHITE);
+	u8g2.setBackgroundColor(BLACK);
+	u8g2.setFont(FONT_NORMAL12);
+	u8g2.print(text);
 }
 
 uint16_t zDisplay::read16(File &f) {

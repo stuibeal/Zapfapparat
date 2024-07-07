@@ -17,6 +17,7 @@
 #include "gemein.h"
 #include "Arduino.h"
 #include "stdint.h"
+#include "PCA9685.h"
 #include "tempControl.h"
 
 #define Z_SCH_LAMPE_PIN 5  // output for the Lampe
@@ -25,8 +26,17 @@
 #define OTHER_MC_PIN	  A5
 #define LAMPE_ON 💡
 #define LAMPE_AUS 🚫
+#define WS_LED_ADDRESS     0x40
+#define WS_LED_FREQUENCY   400     //min 24Hz, max 1524Hz
+#define GRUEN_LED_ABGEDUNKELT 40
+#define WEISS_LED_ABGEDUNKELT 20
+#define TASTE1_LED 6
+#define TASTE2_LED 8
+#define TASTEN_LED_NORMAL 10 //grundbeleuchtung der Tasten
 
-class zPower {
+
+
+class zPower : public PCA9685 {
 public:
 	enum powerState {
 	BATT_ULTRAHIGH, BATT_HIGH, BATT_NORMAL, BATT_LOW, BATT_ULTRALOW
@@ -51,11 +61,17 @@ inline void setPowerState(zPower::powerState state) {
 
 void begin();
 void check();
+void tastenLed(uint8_t taste, uint8_t helligkeit);
 void setLed(uint8_t offon);
-void schLampeControl(uint8_t offon, uint16_t dimspeed);
-void zapfLichtControl(uint8_t offon, uint16_t dimspeed);
+void ledGrundbeleuchtung(void);
+void wsLedGrundbeleuchtung(void);
+void schLampeControl(uint8_t offon);
+void zapfLichtControl(uint8_t pwmValue);
 void autoLight(uint8_t offon);
 void goSleep(void);
+
+PCA9685 wsLed;
+
 
 private:
 uint8_t inVoltage;

@@ -11,6 +11,7 @@
 #include "MD_MIDIFile.h"
 #include "MD_YX5300.h"
 #include "string.h"
+#include "globalVariables.h"
 
 #ifndef DEBUG_A
 #define DEBUG_A 0
@@ -67,6 +68,8 @@ public:
 	void midiNextEvent(void);
 	void loadLoopMidi(const char*);
 	void loadSingleMidi(const char*);
+	void tickMetronome(void);
+	void godModeSound(uint8_t godMode);
 
 	char debugmessage[80];
 	int state;
