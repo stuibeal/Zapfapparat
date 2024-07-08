@@ -60,6 +60,7 @@ public:
 	void check();
 	void tastenLed(uint8_t taste, uint8_t helligkeit);
 	void setLed(uint8_t offon);
+	void setWhiteLed(uint16_t helligkeit);
 	void ledGrundbeleuchtung(void);
 	void wsLedGrundbeleuchtung(void);
 	void schLampeControl(uint8_t offon);

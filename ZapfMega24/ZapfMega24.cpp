@@ -51,7 +51,8 @@ unsigned long nachSchauZeit = 0;
 
 //Waehlscheibe
 unsigned long kienmuehle = 0;  //Sondereingabe bei drücken der Taste2
-byte Einsteller = 1; //Globale Variable für ISR, Start bei 1
+volatile uint8_t einsteller = 2;
+uint8_t oldeinsteller = 2;
 
 bool ebiModeBool = false; //#define ebiMode               0xF9      //    1 an, 0 aus       Temperatur auf 2°C, Hahn auf, Zapfmusik
 bool beginZapfBool = false; // #define beginZapf             0xFA      //    Beginn das Zapfprogramm -> PID auf aggressiv
@@ -61,9 +62,6 @@ bool kurzBevorZapfEndeBool = false; //#define kurzBevorZapfEnde     0xFC      //
 // DREHENCODER
 #define ENCODER_OPTIMIZE_INTERRUPTS
 Encoder Dreher(ROTARY_DT_PIN, ROTARY_CLK_PIN); //PINS für Drehgeber
-
-volatile int DreherKnopfStatus = 0; //Da wird der Statatus vom Drehgeberknopf gelesen
-long oldPosition = 0; //Fuer Drehgeber
 
 unsigned int tempAnzeigeZeit = millis(); //für zehnsekündige Temperaturanzeige
 
@@ -124,7 +122,7 @@ void setup(void) {
 	//Rotary Encoder
 	pinMode(ROTARY_SW_PIN, INPUT); // Drehgeberknopf auf Input
 	attachInterrupt(digitalPinToInterrupt(ROTARY_SW_PIN),
-			Einstellerumsteller_ISR, FALLING);
+			einstellerUmsteller_ISR, FALLING);
 	/*External Interrupts: 2 (interrupt 0), 3 (interrupt 1), 18 (interrupt 5), 19 (interrupt 4), 20 (interrupt 3), and 21 (interrupt 2).
 	 These pins can be configured to trigger an interrupt on a low value, a rising or falling edge, or a change in value. See the attachInterrupt() function for details.
 	 Den Schalter hardwaremäßig entprellt: 320k pullup, 10k pulldown und signal-kondensator-ground -> kondensator lädt und entprellt.
@@ -145,68 +143,209 @@ void setup(void) {
 	ZD.printInitText("RTC DCF77 Uhrensohn");
 
 	//Make Windows 95 great again
+
 	anfang();
 	oldTime = millis();
 	nachSchauZeit = millis();
+	sound.bing();
 }  //VOID SETUP
 
 void anfang(void) {
 	ZD.backgroundPicture();
 	power.ledGrundbeleuchtung();
 	userShow();
-	sound.bing();
+	ZD.showTastenFunktion("INFOSEITE", "SONDERFUNKTION");
 }
 
 void loop() {
-	byte oldeinsteller = Einsteller;
+	oldeinsteller = einsteller;
 	sound.midiNextEvent();
 	temp.holeDaten();
-	Drehgeber();
-
-	//Valve Control
+	drehgeber();
 	ventil.check();
-	if (digitalRead(WSready)) {
-		waehlscheibe();
-	}
 
 	switch (user.zapfStatus) {
 	case user.zapfModus::zapfStandby:
-
+		zapfStandbyProg();
 		break;
 	case user.zapfModus::zapfBeginn:
+		zapfBeginnProg();
 		break;
 	case user.zapfModus::amZapfen:
+		amZapfenProg();
 		break;
 	case user.zapfModus::godZapfen:
+		godZapfenProg();
 		break;
 	case user.zapfModus::kurzVorZapfEnde:
+		kurzVorZapfEndeProg();
 		break;
 	case user.zapfModus::zapfEnde:
-		user.zapfStatus = user.zapfModus::zapfStandby;
+		zapfEndeProg();
 		break;
+	}
+} /*LOOP*/
+
+void zapfStandbyProg(void) {
+	if (user.oldZapfStatus != user.zapfStatus) {
+		user.oldZapfStatus = user.zapfStatus;
+		ZD.showTastenFunktion("INFOSEITE", "SONDERFUNKTION");
+	}
+	dauerCheck();
+	if (digitalRead(FLOW_WINDOW) && user.aktuell == 0) {
+		ZD.infoText("HEY DU HONK! ERST BENUTZER WÄHLEN!");
+		ventil.closeValve();
+	}
+
+}
+void zapfBeginnProg(void) {
+	if (user.oldZapfStatus != user.zapfStatus) {
+		user.oldZapfStatus = user.zapfStatus;
+		ventil.openValve();
+		temp.sendeBefehl(BEGIN_ZAPF, 0x0);
+		flowmeter.flowDataSend(SET_USER_ML, user.menge());
+		sound.godModeSound(user.getGodMode());
+		delay(500); //damit der Zeit hat
+
+		flowmeter.flowDataSend(BEGIN_ZAPF, 0, 0);
+		userShow();  // Zeigt die Userdaten an
+		auswahlZeit = millis();
+		ZD.infoText("BITTE ZAPFHAHN BETÄTIGEN");
+	}
+
+	dauerCheck();
+	if (millis() - auswahlZeit > WARTE_ZEIT) {
+		user.zapfStatus = user.zapfModus::zapfStandby;
+		user.aktuell = 0;
+		ZD.userShow(&user);
+	}
+	if (digitalRead(FLOW_WINDOW)) {
+		user.zapfStatus = user.zapfModus::amZapfen;
+	}
+	if (user.getGodMode() > 0) {
+		user.zapfStatus = user.zapfModus::godZapfen;
+	}
+
+}
+void amZapfenProg(void) {
+	if (user.oldZapfStatus != user.zapfStatus) {
+		user.oldZapfStatus = user.zapfStatus;
+		ZD.showTastenFunktion("ZAPFABBRUCH", "ABBRUCH+SET ML");
+		sound.setStandby(1);
+		sound.pruefe();
+
+	}
+	flowmeter.flowDataSend(GET_ML, 0, 0);
+
+	// Nachschaun ob er fertig ist und dann bingen und zamschreim
+	if (flowmeter.getMilliliter() >= user.menge()) {
+	}
+// Nachschaun ob er eventuell zu lang braucht und nix zapft
+	if (((millis() - auswahlZeit) > 10000) && (flowmeter.getMilliliter() < 5)) {
+		beginZapfBool = false;
+		sound.setStandby(beginZapfBool);
+		temp.sendeBefehl(END_ZAPF, 0x0);
+		ventil.check();
+		power.ledGrundbeleuchtung();
+	}
+	if ((user.menge() - flowmeter.getMilliliter()) < 30) {
+		temp.sendeBefehl(KURZ_VOR_ZAPFENDE, 0x0);
+		ventil.check();
+	}
+
+	if (digitalRead(TASTE1_PIN)) {
+		user.zapfStatus = user.zapfModus::zapfEnde;
+		power.tastenLed(1, 255);
+	}
+
+}
+void godZapfenProg(void) {
+	if (user.oldZapfStatus != user.zapfStatus) {
+		user.oldZapfStatus = user.zapfStatus;
+	}
+
+	/*MIDI nach Zapfhahn*/
+	static uint8_t oldFlowWindow;
+	static uint8_t flowWindow;
+	oldFlowWindow = flowWindow;
+	flowWindow = digitalRead(FLOW_WINDOW);
+	if (oldFlowWindow == true && flowWindow == false) {
+		sound._SMF->pause(true);
+	}
+	if (oldFlowWindow == false && flowWindow == true) {
+		sound._SMF->pause(false);
+	}
+	if (!sound._SMF->isPaused()) {
+		sound.tickMetronome();
+	}
+}
+
+void kurzVorZapfEndeProg(void) {
+	if (user.oldZapfStatus != user.zapfStatus) {
+		user.oldZapfStatus = user.zapfStatus;
+		ZD.infoText("ZAPFVORGANG FAST FERTIG!");
+		power.setWhiteLed(0xFFF);
+	}
+
+}
+void zapfEndeProg(void) {
+	/* Einmalige Ausführung */
+	if (user.oldZapfStatus != user.zapfStatus) {
+		user.oldZapfStatus = user.zapfStatus;
+		sound.bing();
+		ZD.showTastenFunktion("TALON DRUCKEN", "");
+		auswahlZeit = millis();
+		ZD.showUserGod2Pic();
+		sound._SMF->close();
+		sound.midiSilence();
+		ventil.check();
+
+		//Sollte er abgebrochen haben:
+		if (flowmeter.getMilliliter() < user.menge()) {
+			drucker.printerErrorZapfEnde(flowmeter.getMilliliter());
+		}
+		uint16_t zapfMenge = flowmeter.getMilliliter()
+				+ flowmeter.getFreshZapfMillis();
+		user.addBier(zapfMenge); //alte ml dazurechnen
+		drucker.printerZapfEnde(zapfMenge);
+		flowmeter.flowDataSend(END_ZAPF, 0); //damit die Zapfmillis wieder auf null sind
+
+		ZD.showAllUserData();
+		beginZapfBool = false;
+		sound.setStandby(beginZapfBool);
+		logbuch.logAfterZapf();
+		belohnungsMusik();
+	}
+
+	/*Ab hier Dauerausführung*/
+	if (digitalRead(TASTE1_PIN)) {
+		while (digitalRead(TASTE1_PIN)) {
+			delay(1);
+		}
 
 	}
 
+	dauerCheck();
+	if (millis() - auswahlZeit > WARTE_ZEIT) {
+		user.aktuell = 0;
+		user.zapfStatus = user.zapfModus::zapfStandby;
+	}
+
+}
+
+void dauerCheck(void) {
+	if (digitalRead(WSready)) {
+		waehlscheibe();
+	}
 	//Wenn was rumgestellt wird
-	if (oldeinsteller != Einsteller) {
-		UserDataShow();
+	if (oldeinsteller != einsteller) {
+		ZD.showAllUserData();
 	}
-
 	//Wenn jemand an den Tasten rumspielt
 	if (digitalRead(TASTE1_PIN)) {
 		infoseite();
 	}
-
-	// Wenn Nummer Fertig und Taste losgelassen
-	if (!digitalRead(TASTE2_PIN) && kienmuehle > 0) {
-		analogWrite(TASTE2_LED, 20);
-		waehlFunktionen();
-	}
-
-	/*
-	 * Hier nur checken wenn kein Godmode weil sonst Midi zu langsam spielt
-	 * ansonsten jede Sekunde mal Daten aktualisieren
-	 */
+	// alle 200ms anzeige aktualisieren
 	if (((millis() - oldTime) > 200)) { // && user.getGodMode() == 0) {
 		oldTime = millis();
 		anzeigeAmHauptScreen();
@@ -216,19 +355,18 @@ void loop() {
 		}
 	}
 
+	//alle 10s mal alles nachkucken
 	if ((millis() - nachSchauZeit) > 10000 && !beginZapfBool && !sound.isOn()) {
 		seltencheck();
 		nachSchauZeit = millis();
 	}
-
-	if (beginZapfBool) {
-		beginnZapfProgramm();
+	// Wenn Nummer Fertig und Taste losgelassen
+	if (!digitalRead(TASTE2_PIN) && kienmuehle > 0) {
+		power.tastenLed(2, TASTEN_LED_NORMAL);
+		waehlFunktionen();
 	}
 
-	//Check Knöpfe (Benutzer) -> Display up -> Zapfprogramm
-
-	//Zwischendurch mal was protokollieren (alle 5 minuten oder so)
-} /*LOOP*/
+}
 
 void waehlscheibe() {
 	sound.setStandby(true); //dann checkt er nicht ob er ausschalten soll
@@ -243,16 +381,7 @@ void waehlscheibe() {
 		switch (digitalRead(TASTE2_PIN)) {
 		case 0: /* Wenn nicht, Zapfprogramm starten */
 			kienmuehle = 0; /*wenn man sich verwählt hat bei der Nummerneingabe wirds gelöscht*/
-			ventil.openValve();
-			temp.sendeBefehl(BEGIN_ZAPF, 0x0);
 			user.aktuell = zahlemann;
-			flowmeter.flowDataSend(SET_USER_ML, user.menge());
-			sound.godModeSound(user.getGodMode());
-			delay(500); //damit der Zeit hat
-
-			flowmeter.flowDataSend(BEGIN_ZAPF, 0, 0);
-			userShow();  // Zeigt die Userdaten an
-			auswahlZeit = millis();
 			user.zapfStatus = user.zapfModus::zapfBeginn;
 			beginZapfBool = true;
 
@@ -271,9 +400,6 @@ void waehlscheibe() {
 			break;
 		}
 	}
-	sound.setStandby(beginZapfBool); //wenn er nicht zapft, kein Standby!
-	sound.pruefe();
-	DEBUGMSG(sound.debugmessage);
 }
 
 void waehlFunktionen() {
@@ -293,6 +419,42 @@ void waehlFunktionen() {
 		break;
 	case 5336:
 		user.setGodMode(KEEN);
+		ZD.userShow(&user);
+		break;
+	case 624686:
+		user.setGodMode(MAGNUM);
+		ZD.userShow(&user);
+		break;
+	case 62249837:
+		user.setGodMode(MACGYVER);
+		ZD.userShow(&user);
+		break;
+	case 64264:
+		user.setGodMode(MIAMI);
+		ZD.userShow(&user);
+		break;
+	case 73463353:
+		user.setGodMode(SEINFELD);
+		ZD.userShow(&user);
+		break;
+	case 253:
+		user.setGodMode(ALF);
+		ZD.userShow(&user);
+		break;
+	case 2658:
+		user.setGodMode(COLT);
+		ZD.userShow(&user);
+		break;
+	case 3688:
+		user.setGodMode(DOTT);
+		ZD.userShow(&user);
+		break;
+	case 4639:
+		user.setGodMode(INDY);
+		ZD.userShow(&user);
+		break;
+	case 5824:
+		user.setGodMode(JUBI);
 		ZD.userShow(&user);
 		break;
 	case 1275: //Die Telefonnummer der Kienmühle
@@ -373,66 +535,6 @@ void infoseite(void) {
 
 }
 
-void godModeZapfMidi() {
-	if (user.getGodMode() > 0) {
-		static uint8_t oldFlowWindow;
-		static uint8_t flowWindow;
-		oldFlowWindow = flowWindow;
-		flowWindow = digitalRead(FLOW_WINDOW);
-		if (oldFlowWindow == true && flowWindow == false) {
-			sound._SMF->pause(true);
-		}
-		if (oldFlowWindow == false && flowWindow == true) {
-			sound._SMF->pause(false);
-		}
-		if (!sound._SMF->isPaused()) {
-			sound.tickMetronome();
-		}
-	}
-}
-
-void beginnZapfProgramm() {
-	godModeZapfMidi();
-	flowmeter.flowDataSend(GET_ML, 0, 0);
-// Nachschaun ob er fertig ist und dann bingen und zamschreim
-	if (flowmeter.getMilliliter() >= user.menge() || digitalRead(TASTE2_PIN)) {
-		if (user.getGodMode() == 1) {
-			ZD.showUserPic("/god/11.bmp");
-		}
-		sound._SMF->close();
-		sound.midiSilence();
-		ventil.check();
-		sound.bing();
-		//Sollte er abgebrochen haben:
-		if (flowmeter.getMilliliter() < user.menge()) {
-			drucker.printerErrorZapfEnde(flowmeter.getMilliliter());
-		}
-		uint16_t zapfMenge = flowmeter.getMilliliter()
-				+ flowmeter.getFreshZapfMillis();
-		user.addBier(zapfMenge); //alte ml dazurechnen
-		drucker.printerZapfEnde(zapfMenge);
-		flowmeter.flowDataSend(END_ZAPF, 0); //damit die Zapfmillis wieder auf null sind
-
-		UserDataShow();
-		beginZapfBool = false;
-		sound.setStandby(beginZapfBool);
-		logbuch.logAfterZapf();
-		belohnungsMusik();
-	}
-// Nachschaun ob er eventuell zu lang braucht und nix zapft
-	if (((millis() - auswahlZeit) > 10000) && (flowmeter.getMilliliter() < 5)) {
-		beginZapfBool = false;
-		sound.setStandby(beginZapfBool);
-		temp.sendeBefehl(END_ZAPF, 0x0);
-		ventil.check();
-		power.ledGrundbeleuchtung();
-	}
-	if ((user.menge() - flowmeter.getMilliliter()) < 30) {
-		temp.sendeBefehl(KURZ_VOR_ZAPFENDE, 0x0);
-		ventil.check();
-	}
-}
-
 uint8_t errorLed() {
 	uint8_t tasteGedrueckt = 0;
 	while (!digitalRead(TASTE1_PIN) && !digitalRead(TASTE2_PIN)) {
@@ -453,79 +555,39 @@ uint8_t errorLed() {
 }
 
 void userShow(void) {
-	Einsteller = 2; //Wieder bei mL beginnen beim Drehknebel
+	einsteller = 2; //Wieder bei mL beginnen beim Drehknebel
 	ZD.userShow(&user);
-	UserDataShow();
 }
 
 void anzeigeAmHauptScreen(void) {
 	ZD.print_val3(temp.getBlockAussenTemp(), 20, 125, KOMMA);
 	ZD.print_val3((int) flowmeter.getMilliliter(), 20, 150, GANZZAHL);
-//ZD.printText();
 	ZD.print_val3((int) ventil.getPressure(), 20, 175, KOMMA);
-
 }
 
-void UserDataShow() {
-	int x = 400;
-	int y = 210;
-	switch (Einsteller) {
-	case 1:
-		ZD.print_val(user.temp(), x, y, 1, 1);
-		ZD.print_val(user.menge(), x, y + 30, 0, 0);
-		ZD.print_val(user.tag() / 5, x, y + 60, 0, 1);
-		ZD.print_val(user.gesamtMengeTag / 10, x, y + 90, 0, 1);
-		break;
-	case 2:
-		ZD.print_val(user.temp(), x, y, 0, 1);
-		ZD.print_val(user.menge(), x, y + 30, 1, 0);
-		ZD.print_val(user.tag() / 5, x, y + 60, 0, 1);
-		ZD.print_val(user.gesamtMengeTag / 10, x, y + 90, 0, 1);
-		break;
-	}
-}
-
-void Drehgeber() {
-	int x = 400;
-	int y = 210;
-
+void drehgeber() {
+	static long oldPosition = 0;
 	long newPosition = Dreher.read();
 	if (newPosition != oldPosition) {
-		switch (Einsteller) {
+		switch (einsteller) {
 		case 1:
 			user.setTemp(user.temp() + (newPosition - oldPosition));
-			if ((user.temp() < MIN_TEMP)) {
-				user.setTemp(MIN_TEMP);
-			}
-			ZD.print_val(user.temp(), x, y, 1, 1);
+			ZD.showSingleUserData(1);
 			break;
 		case 2:
 			user.setMenge(user.menge() + (newPosition - oldPosition));
-			if (user.menge() <= 20) {
-				user.setMenge(20);
-			}
-			ZD.print_val(user.menge(), x, y + 30, 1, 0);
-			break;
-		case 3:
-			if (newPosition < oldPosition) {
-			} else {
-			}
-			ZD.print_val(user.tag(), x, y + 60, 2, 0);
+			ZD.showSingleUserData(2);
 			break;
 		}
-
 		oldPosition = newPosition;
-
 	}
 }
 
-void Einstellerumsteller_ISR() { //Interruptroutine, hier den Drehgeberknopf abfragen
-	DreherKnopfStatus = digitalRead(ROTARY_SW_PIN);
-	Einsteller++;
-	if (Einsteller > 2) {
-		Einsteller = 1;
+void einstellerUmsteller_ISR() { //Interruptroutine, hier den Drehgeberknopf abfragen
+	einsteller++;
+	if (einsteller > 2) {
+		einsteller = 1;
 	}
-	UserDataShow();
 }
 
 void reinigungsprogramm(void) {
@@ -576,10 +638,10 @@ void spezialprogramm(uint32_t input) {
 	case 0:
 		//play dööh dööh dööh
 		break;
-	case 2: // F für Fass
+	case 3: // F für Fass
 		if (varContent < 65) {
 			user.restMengeFass = varContent * 1000;
-			UserDataShow();
+			ZD.showAllUserData();
 		} else {
 			ZD.infoText("Fassgröße über 65l nicht möglich!");
 		}

@@ -17,9 +17,10 @@ class benutzer {
 public:
 	benutzer();
 	virtual ~benutzer();
-	uint8_t aktuell = 1;
+	uint8_t aktuell = 0;
     String username[arrayGroesse] =
-    		{ "Null", "Christoph", "NO-Y", "DJ R. Kentn", "Ebi", "Maex", "Didi", "Beda", "Basi", "Al", "Special" };
+    		{ "Bitte wählen", "Christoph", "NO-Y", "DJ R. Kentn", "Ebi", "Maex", "Didi", "Beda", "Basi", "Al", "Special" };
+    uint16_t zapfMenge;
     uint16_t gesamtMengeTotal;
     uint16_t gesamtMengeTag;
     uint16_t restMengeFass; /*Fass sollte unter 65,535l haben*/
@@ -43,6 +44,7 @@ public:
     uint8_t getGodMode();
     enum zapfModus {zapfStandby, zapfBeginn, amZapfen, godZapfen, kurzVorZapfEnde, zapfEnde};
     zapfModus zapfStatus;
+    zapfModus oldZapfStatus;
 
 
 private:

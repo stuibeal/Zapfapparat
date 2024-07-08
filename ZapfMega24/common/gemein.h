@@ -13,6 +13,7 @@
 #define _NAME_ "ZAPFAPPARAT"
 #define _VERSION_ "V 0.6 Beta 2024"
 #define MIN_TEMP 200 /* 2°C, kälter sollts nicht eingestellt sein */
+#define MIN_MENGE 20
 
 
 
@@ -126,6 +127,16 @@
 //God MODES
 #define IDDQD 1
 #define KEEN 2
+#define MAGNUM 3
+#define MACGYVER 4
+#define MIAMI 5
+#define SEINFELD 6
+#define ALF 7
+#define COLT 8
+#define DOTT 9
+#define INDY 10
+#define JUBI 11
+
 
 
 #endif /* GEMEIN_H_ */

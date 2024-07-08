@@ -9,6 +9,7 @@
  */
 
 #include "zDisplay.h"
+#include "globalVariables.h"
 
 zDisplay::zDisplay() :
 		MCUFRIEND_kbv(0, 0, 0, 0, 0), U8G2_FOR_ADAFRUIT_GFX() {
@@ -281,9 +282,9 @@ void zDisplay::print_val(int val, int16_t x, int16_t y, int c, bool komma) //Hil
 void zDisplay::printValue(int val, bool komma) {
 	char buf[10];
 	if (komma == 1) {
-		sprintf(buf, "%d,%02d", val / 100, val % 100);
+		sprintf(buf, " %d,%02d ", val / 100, val % 100);
 	} else {
-		sprintf(buf, "%d", val);
+		sprintf(buf, " %d ", val);
 	}
 	u8g2.print(buf);
 }
@@ -327,9 +328,6 @@ void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsrout
 //	_tft.drawBitmap(x, y, _canvas->getBuffer(), _canvas->width(),
 //			_canvas->height(), textColor, backColor);
 //}
-void zDisplay::setCursor(int16_t x, int16_t y) {
-	_tft.setCursor(x, y);
-}
 
 void zDisplay::printInt(uint16_t wertInt) {
 	int x = 300;
@@ -350,16 +348,11 @@ void zDisplay::printInt(uint16_t wertInt) {
 void zDisplay::userShow(benutzer *user) {
 	char namebuf[32] = "/usr/x.bmp";
 
-	switch (user->getGodMode()) {
-	case 1:
-		strcpy(namebuf, "/god/10.bmp");
-		break;
-	case 2:
-		strcpy(namebuf, "/god/20.bmp");
-		break;
-	case 0:  //keinGODMode
-		namebuf[5] = user->aktuell + 48; //ASCII Wert für Zahlemann in Char schreiben (Zahl 5 = Ascii 5 wenn man 48 dazu tut
-		break;
+	if (user->getGodMode() > 0) {
+		sprintf(namebuf, "/god/%d0.bmp", user->getGodMode());
+	}
+	else{
+		sprintf(namebuf, "/usr/%d.bmp", user->aktuell);
 	}
 	showUserPic(namebuf);
 	/*USERNAME*/
@@ -377,35 +370,24 @@ void zDisplay::userShow(benutzer *user) {
 	u8g2.setFont(FONT_NORMAL10); /*10er font is 16 hoch*/
 	u8g2.setForegroundColor(BLACK);
 	u8g2.setBackgroundColor(ZBRAUN);
-	u8g2.setCursor(271, 156); /* In Linie mit dem Rahmen */
+	u8g2.setCursor(271, 161); /* In Linie mit dem Rahmen */
 	u8g2.println("TEMPERATUR");
 	u8g2.setCursor(271, u8g2.getCursorY());
-	u8g2.println("in °C");
-	u8g2.setCursor(271, 190);
+	u8g2.print("in °C");
+	u8g2.setCursor(271, 195);
 	u8g2.println("ZAPFMENGE");
 	u8g2.setCursor(271, u8g2.getCursorY());
-	u8g2.println("in ml");
-	u8g2.setCursor(271, 224);
+	u8g2.print("in ml");
+	u8g2.setCursor(271, 229);
 	u8g2.println("HOIWE");
 	u8g2.setCursor(271, u8g2.getCursorY());
-	u8g2.println("BIS JETZT");
-	u8g2.setCursor(271, 258);
+	u8g2.print("BIS JETZT");
+	u8g2.setCursor(271, 263);
 	u8g2.println("REST IM FASS");
 	u8g2.setCursor(271, u8g2.getCursorY());
-	u8g2.println("in Liter");
-}
+	u8g2.print("in Liter");
 
-void zDisplay::println(const char *text) {
-	zDisplay::printText();
-	_tft.println(text);
-}
-
-void zDisplay::setTextColor(uint16_t c) {
-	_tft.setTextColor(c);
-}
-
-void zDisplay::setTextSize(uint8_t s) {
-	_tft.setTextSize(s);
+	showAllUserData();
 }
 
 void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
@@ -427,7 +409,7 @@ void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 	u8g2.setCursor(240, 60);
 	u8g2.setFont(FONT_NORMAL12);
 
-	for (int x = 0; x < 10; x++) {
+	for (int x = 0; x < 11; x++) {
 		u8g2.setCursor(240, u8g2.getCursorY());
 		u8g2.print(x);
 		u8g2.setCursor(260, u8g2.getCursorY());
@@ -471,4 +453,69 @@ void zDisplay::backgroundPicture() {
 
 void zDisplay::showUserPic(const char *bmp) {
 	showBMP(bmp, 290, 26);
+}
+
+void zDisplay::showUserGod2Pic(void) {
+	if (user.getGodMode() > 0) {
+		char namebuf[30] = "/god/10.bmp";
+		sprintf(namebuf, "/god/%d1.bmp", user.getGodMode());
+		showUserPic(namebuf);
+	}
+}
+
+void zDisplay::showSingleUserData(uint8_t whatLine) {
+	if (einsteller == whatLine) {
+		u8g2.setFont(FONT_BOLD19);
+		u8g2.setForegroundColor(BLACK);
+	} else {
+		u8g2.setFont(FONT_NORMAL19);
+		u8g2.setForegroundColor(ZDUNKELGRUEN);
+	}
+	uint8_t zeilenAbstand = 34;
+	uint16_t cursX = 385;
+	uint16_t cursY = 161 + 16 + (whatLine - 1) * zeilenAbstand;
+	u8g2.setCursor(cursX, cursY);
+	u8g2.setBackgroundColor(ZBRAUN);
+
+	switch (whatLine) {
+	case 0:
+		break;
+	case 1:
+		printValue(user.bierTemp[user.aktuell], KOMMA);
+		break;
+	case 2:
+		printValue(user.bierMenge[user.aktuell], GANZZAHL);
+		break;
+	case 3:
+		printValue(user.bierTag[user.aktuell] / 500, KOMMA);
+		break;
+	case 4:
+		printValue(user.restMengeFass / 1000, KOMMA);
+		break;
+	}
+}
+
+void zDisplay::showAllUserData() {
+	for (uint8_t i = 1; i < 5; i++) {
+		showSingleUserData(i);
+	}
+}
+
+void zDisplay::showBalken(uint16_t istwert, uint16_t zielwert) {
+	uint16_t aktuelleBreite = 0;
+	map(aktuelleBreite, 0, zielwert, 0, 480);
+	if (aktuelleBreite > 0){
+		_tft.fillRect(0, 315, aktuelleBreite, 5, ZDUNKELGRUEN);
+	}
+}
+
+void zDisplay::showTastenFunktion(const char* textTaste1, const char* textTaste2) {
+	_tft.fillRect(0, 292, 480, 28, BLACK);
+	u8g2.setCursor(10, 318);
+	u8g2.setForegroundColor(WHITE);
+	u8g2.setBackgroundColor(BLACK);
+	u8g2.setFont(FONT_NORMAL12);
+	u8g2.print(textTaste1);
+	u8g2.setCursor(250, 318);
+	u8g2.print(textTaste2);
 }

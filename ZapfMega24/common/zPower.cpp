@@ -98,6 +98,12 @@ void zPower::setLed(uint8_t offon) {
 
 }
 
+void zPower::setWhiteLed(uint16_t helligkeit) {
+	wsLed.setPWM(0, helligkeit);
+	wsLed.setPWM(11, helligkeit);
+
+}
+
 void zPower::ledGrundbeleuchtung() {
 	wsLedGrundbeleuchtung();
 	tastenLed(0, TASTEN_LED_NORMAL);

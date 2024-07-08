@@ -107,17 +107,18 @@ public:
 
 	void printVal(int val, int16_t x, int16_t y, uint16_t textColor,
 			uint16_t backColor, const GFXfont *_pfont, bool komma);
-	void setCursor(int16_t x, int16_t y);
 	void printInt(uint16_t zahl);
 	void userShow(benutzer *user);
-	void println(const char *text);
-	void setTextColor(uint16_t c);
-	void setTextSize(uint8_t s);
 	void infoscreen(tempControl *temp, benutzer *user);
 	void printValue(int val, bool komma);
 	void printlnTempC(const char *text, int16_t tempInC);
 	void backgroundPicture(void);
 	void showUserPic(const char *bmp);
+	void showUserGod2Pic(void);
+	void showSingleUserData(uint8_t whatLine);
+	void showAllUserData(void);
+	void showBalken(uint16_t istwert, uint16_t zielwert);
+	void showTastenFunktion(const char* textTaste1, const char* textTaste2);
 
 	MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
 	U8G2_FOR_ADAFRUIT_GFX u8g2;

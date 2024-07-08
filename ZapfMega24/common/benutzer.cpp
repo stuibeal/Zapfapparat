@@ -6,13 +6,14 @@
  */
 
 #include "benutzer.h"
+#include "gemein.h"
 
 benutzer::benutzer() {
 	gesamtMengeTotal = 0;
     gesamtMengeTag = 0;
 
 	for(uint8_t x = 0; x < 11; x++) {
-		bierTemp[x] = 300;
+		bierTemp[x] = 500;
 		bierMenge[x] = 333;
 		bierTag[x] = 0;
 		bierGesamt[x] = 0;
@@ -68,10 +69,16 @@ void benutzer::setMusik(uint8_t musikvar)  {
 }
 
 void benutzer::setMenge(uint16_t mengevar)  {
+	if (mengevar < MIN_MENGE) {
+		mengevar = MIN_MENGE;
+	}
 	bierMenge[aktuell] = mengevar;
 }
 
 void benutzer::setTemp(uint16_t tempvar)  {
+	if (tempvar < MIN_TEMP) {
+		tempvar = MIN_TEMP;
+	}
 	bierTemp[aktuell] = tempvar;
 }
 

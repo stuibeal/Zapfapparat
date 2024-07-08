@@ -20,5 +20,6 @@ extern benutzer user;
 extern zPower power;
 extern char buf[80];
 extern PCA9685 wsLed;
+extern volatile uint8_t einsteller;
 #endif /* GLOBALVARIABLES_H_ */
 
