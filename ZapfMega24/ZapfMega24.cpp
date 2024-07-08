@@ -165,12 +165,12 @@ void loop() {
 
 	//Valve Control
 	ventil.check();
+	if (digitalRead(WSready)) {
+		waehlscheibe();
+	}
 
 	switch (user.zapfStatus) {
 	case user.zapfModus::zapfStandby:
-		if (digitalRead(WSready)) {
-			waehlscheibe();
-		}
 
 		break;
 	case user.zapfModus::zapfBeginn:
