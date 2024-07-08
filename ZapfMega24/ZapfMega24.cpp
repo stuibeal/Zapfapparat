@@ -163,7 +163,8 @@ void loop() {
 	temp.holeDaten();
 	drehgeber();
 	ventil.check();
-
+	sprintf(buf, "Valvestate: %d old %d ist %d soll %d rt %lu vm %lu ", ventil.getValveState(),ventil.getOldState(), ventil.getValveProzent(), ventil.getValveProzentSoll(),ventil.getRunTime(), ventil.getValveMillis());
+	ZD.infoText(buf);
 	switch (user.zapfStatus) {
 	case user.zapfModus::zapfStandby:
 		zapfStandbyProg();
@@ -457,6 +458,12 @@ void waehlFunktionen() {
 		user.setGodMode(JUBI);
 		ZD.userShow(&user);
 		break;
+	case 8100:
+		ventil.openValve();
+		break;
+	case 80:
+		ventil.closeValve();
+		break;
 	case 1275: //Die Telefonnummer der Kienmühle
 		oldWaehlscheibeFun();
 		break;
@@ -645,6 +652,13 @@ void spezialprogramm(uint32_t input) {
 		} else {
 			ZD.infoText("Fassgröße über 65l nicht möglich!");
 		}
+		break;
+	case 8: //Ventil
+		if (varContent > 100) {
+			varContent = 100;
+		}
+		ventil.setValveProzent(varContent);
+
 		break;
 	case 9: //Mediaplayer
 		sound.mp3Play(11, varContent);
