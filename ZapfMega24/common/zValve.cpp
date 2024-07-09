@@ -57,9 +57,9 @@ int zValve::getPressure() {
 //		druck=0;
 //	}
 
-	int16_t druckWert = analogRead(PRESSURE_SENS_PIN);
-	long int druck = 0;
-	map(druck, 120, 730, 0, 500);
+	long int druckWert = analogRead(PRESSURE_SENS_PIN);
+	long int druck = map(druckWert, 120, 730, 0, 500);
+
 	return (int)druck;
 }
 

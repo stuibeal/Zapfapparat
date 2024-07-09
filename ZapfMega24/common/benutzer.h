@@ -42,6 +42,10 @@ public:
     void setTemp(uint16_t tempvar);
     void setGodMode(uint8_t wasfuergott);
     uint8_t getGodMode();
+    uint8_t checkNullUser(void);
+    inline uint16_t getMenge(void) {
+    	return bierMenge[aktuell];
+    }
     enum zapfModus {zapfStandby, zapfError, zapfBeginn, amZapfen, godZapfen, kurzVorZapfEnde, zapfEnde};
     zapfModus zapfStatus;
     zapfModus oldZapfStatus;

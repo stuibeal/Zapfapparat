@@ -14,6 +14,8 @@
 #define _VERSION_ "V 0.6 Beta 2024"
 #define MIN_TEMP 200 /* 2°C, kälter sollts nicht eingestellt sein */
 #define MIN_MENGE 20
+#define STANDARD_TEMP 500
+#define STANDARD_MENGE 250
 
 
 

@@ -39,13 +39,15 @@
 #include "./zLibraries/MCUFRIEND_kbv/FreeDefaultFonts.h"
 
 //#include "Adafruit_GFX.h" // Hardware-specific library
-#define FONT_NORMAL10 u8g2_font_t0_11_te
+#define FONT_SMALL u8g2_font_t0_11_te
+#define FONT_NORMAL10 u8g2_font_luRS10_tf
 #define FONT_BOLD10 u8g2_font_luBS10_tf
 #define FONT_NORMAL12 u8g2_font_luRS12_tf
 #define FONT_BOLD12 u8g2_font_luBS12_tf
 #define FONT_NORMAL19 u8g2_font_luRS19_tf
 #define FONT_BOLD19 u8g2_font_luBS19_tf
-#define FONT_ZAHLEN u8g2_font_t0_22b_mn
+//#define FONT_ZAHLEN u8g2_font_t0_22b_mn
+#define FONT_ZAHLEN u8g2_font_inb19_mn
 
 
 // TFT-DISPLAY

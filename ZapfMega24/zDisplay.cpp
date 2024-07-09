@@ -377,8 +377,8 @@ void zDisplay::userShow(benutzer *user) {
 	u8g2.setFont(FONT_NORMAL10); /*10er font is 16 hoch*/
 	u8g2.setForegroundColor(BLACK);
 	u8g2.setBackgroundColor(ZBRAUN);
-	uint8_t x = 271; /*da fängt der Rahmen an*/
-	uint8_t y = 180; /*erste Zeile*/
+	uint16_t x = 271; /*da fängt der Rahmen an*/
+	uint16_t y = 180; /*erste Zeile*/
 
 	u8g2.drawUTF8(x, y-15, "TEMPERATUR");
 	u8g2.drawUTF8(x, y, "SOLL IN °C");
@@ -452,12 +452,12 @@ void zDisplay::backgroundPicture() {
 	showBMP("/bmp/bg_leer.bmp", 102, 0); /* Bier leer, w:132 h:291 */
 	showBMP("/bmp/bg_rahm.bmp", 271, 8); /* Userbildrahmen, w:199 h:136 */
 	/* Userbild 160x100 geht nach x290 y26 */
-	u8g2.setFont(FONT_NORMAL10);
+	u8g2.setFont(FONT_SMALL);
 	u8g2.setForegroundColor(WHITE);
 	u8g2.setBackgroundColor(ZDUNKELGRUEN);
 	u8g2.setFontMode(0);
 	u8g2.drawUTF8(17, 40, "KÜHLBLOCK");
-	u8g2.drawUTF8(17, 55, "TEMPERATUR");
+	u8g2.drawUTF8(17, 52, "TEMPERATUR");
 	u8g2.drawUTF8(70, 110, "°C");
 	u8g2.drawUTF8(17, 140, "ZAPFMENGE");
 	u8g2.drawUTF8(70, 205, "ml");
@@ -480,11 +480,10 @@ void zDisplay::showUserGod2Pic(void) {
 }
 
 void zDisplay::showSingleUserData(uint8_t whatLine) {
+	u8g2.setFont(FONT_ZAHLEN);
 	if (einsteller == whatLine) {
-		u8g2.setFont(FONT_ZAHLEN);
 		u8g2.setForegroundColor(BLACK);
 	} else {
-		u8g2.setFont(FONT_ZAHLEN);
 		u8g2.setForegroundColor(ZDUNKELGRUEN);
 	}
 	uint8_t zeilenAbstand = 35;
@@ -520,7 +519,7 @@ void zDisplay::showBalken(uint16_t istwert, uint16_t zielwert) {
 	uint16_t aktuelleBreite = 0;
 	map(aktuelleBreite, 0, zielwert, 0, 480);
 	if (aktuelleBreite > 0){
-		_tft.fillRect(0, 315, aktuelleBreite, 5, ZDUNKELGRUEN);
+		_tft.fillRect(0, 292, aktuelleBreite, 4, ZDUNKELGRUEN);
 	}
 }
 
@@ -531,6 +530,7 @@ void zDisplay::showTastenFunktion(const char* textTaste1, const char* textTaste2
 	u8g2.setBackgroundColor(BLACK);
 	u8g2.setFont(FONT_NORMAL12);
 	u8g2.print(textTaste1);
-	u8g2.setCursor(250, 318);
+	uint16_t stringWeite = u8g2.getUTF8Width(textTaste2);
+	u8g2.setCursor(470-stringWeite, 318);
 	u8g2.print(textTaste2);
 }

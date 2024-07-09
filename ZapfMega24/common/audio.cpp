@@ -281,7 +281,7 @@ void audio::tickMetronome(void) {
 			if (leuchtLampe & 1) {
 				power.tastenLed(1, 255);
 			} else {
-				power.tastenLed(2,255);
+				power.tastenLed(2, 255);
 			}
 
 			flowmeter.flowDataSend(LED_FUN_4, leuchtLampe, 0xFF);
@@ -291,7 +291,6 @@ void audio::tickMetronome(void) {
 	} else {
 		if ((millis() - lastBeatTime) >= 100) // keep the flash on for 100ms only
 				{
-
 
 			if (!(leuchtLampe & 1)) {
 				power.tastenLed(1, TASTEN_LED_NORMAL);
@@ -313,7 +312,33 @@ void audio::godModeSound(uint8_t godMode) {
 	case KEEN:
 		loadLoopMidi("keen.mid");
 		break;
+	case MAGNUM:
+		loadLoopMidi("Magnum.mid");
+		break;
+	case MACGYVER:
+		loadLoopMidi("Macgyver.mid");
+		break;
+	case MIAMI:
+		loadLoopMidi("MiamiVice.mid");
+		break;
+	case SEINFELD:
+		loadLoopMidi("Seinfeld.mid");
+		break;
+	case ALF:
+		loadLoopMidi("ALF.mid");
+		break;
+	case COLT:
+		loadLoopMidi("FALLGUY.mid");
+		break;
+	case DOTT:
+		loadLoopMidi("Dott.mid");
+		break;
+	case INDY:
+		loadLoopMidi("indy4Theme and Opening Credits.mid");
+		break;
+	case JUBI:
+		loadLoopMidi("leaving_schlosskeller_bummbuumm.mid");
+		break;
+
 	}
-
 }
-
