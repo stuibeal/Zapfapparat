@@ -94,7 +94,8 @@ void zPower::tastenLed(uint8_t taste, uint8_t helligkeit) {
 	}
 }
 
-void zPower::setLed(uint8_t offon) {
+void zPower::setLed(uint8_t ledNr, uint16_t pwm) {
+	wsLed.setPWM(ledNr, pwm);
 
 }
 

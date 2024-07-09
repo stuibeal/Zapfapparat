@@ -99,7 +99,6 @@ private:
 	unsigned long runTime;
 	int8_t valveProzentSoll;
 	int8_t valveProzentIst;
-	unsigned int druck;
 
 	void open();
 	void close();

@@ -84,9 +84,14 @@ MD_MIDIFile SMF;
 MD_YX5300 mp3 = MD_YX5300(MP3Stream);
 PCA9685 wsLed(WS_LED_ADDRESS);
 zPower power;
+bool debugflowBool = 0;
 
 void setup(void) {
 	power.beginPower(); /* STROM AN */
+	pinMode(FLOW_SM6020, OUTPUT);
+	oldTime = millis();
+	digitalWrite(FLOW_SM6020, HIGH);
+
 	flowmeter.initialise(); /* HIER i2c begin!*/
 	beginWaehlscheibe(); /* WS und Tastenpins */
 
@@ -113,12 +118,6 @@ void setup(void) {
 	temp.begin(); /* Temperaturcontrol uC - Wire sollte gestartet sein! */
 	ZD.printInitText("Temperaturfühler bereit");
 
-	//FLOWMETER
-	pinMode(FLOW_SM6020, OUTPUT);
-	digitalWrite(FLOW_SM6020, HIGH);
-	pinMode(FLOW_WINDOW, INPUT);    //Wenn durchfluss, dann true
-	ZD.printInitText("Flowmeter ifm SM6020");
-
 	//Rotary Encoder
 	pinMode(ROTARY_SW_PIN, INPUT); // Drehgeberknopf auf Input
 	attachInterrupt(digitalPinToInterrupt(ROTARY_SW_PIN),
@@ -142,6 +141,14 @@ void setup(void) {
 	logbuch.initialise(&SD, &user, &temp, buf);
 	ZD.printInitText("RTC DCF77 Uhrensohn");
 
+	//FLOWMETER
+	pinMode(FLOW_WINDOW, INPUT);    //Wenn durchfluss, dann true
+	while (digitalRead(FLOW_WINDOW))	//Warten bis das Hochgefahren ist
+	{
+		delay(1);
+	}
+	ZD.printInitText("Flowmeter ifm SM6020 ready");
+
 	//Make Windows 95 great again
 
 	anfang();
@@ -162,12 +169,16 @@ void loop() {
 	sound.midiNextEvent();
 	temp.holeDaten();
 	drehgeber();
+
 	ventil.check();
-	sprintf(buf, "Valvestate: %d old %d ist %d soll %d rt %lu vm %lu ", ventil.getValveState(),ventil.getOldState(), ventil.getValveProzent(), ventil.getValveProzentSoll(),ventil.getRunTime(), ventil.getValveMillis());
-	ZD.infoText(buf);
+
+	//sprintf(buf, "Valvestate: %d old %d ist %d soll %d rt %lu vm %lu ", ventil.getValveState(),ventil.getOldState(), ventil.getValveProzent(), ventil.getValveProzentSoll(),ventil.getRunTime(), ventil.getValveMillis());
 	switch (user.zapfStatus) {
 	case user.zapfModus::zapfStandby:
 		zapfStandbyProg();
+		break;
+	case user.zapfModus::zapfError:
+		zapfErrorProg();
 		break;
 	case user.zapfModus::zapfBeginn:
 		zapfBeginnProg();
@@ -185,6 +196,8 @@ void loop() {
 		zapfEndeProg();
 		break;
 	}
+	//debugFlow();
+
 } /*LOOP*/
 
 void zapfStandbyProg(void) {
@@ -193,12 +206,42 @@ void zapfStandbyProg(void) {
 		ZD.showTastenFunktion("INFOSEITE", "SONDERFUNKTION");
 	}
 	dauerCheck();
-	if (digitalRead(FLOW_WINDOW) && user.aktuell == 0) {
-		ZD.infoText("HEY DU HONK! ERST BENUTZER WÄHLEN!");
-		ventil.closeValve();
+	if (user.aktuell == 0 && ventil.getValveProzent() > 50) {
+		if (digitalRead(FLOW_WINDOW)) {
+			user.zapfStatus = user.zapfModus::zapfError;
+		}
 	}
 
 }
+
+void debugFlow() {
+	static uint16_t wieoft = 0;
+	wieoft++;
+	uint32_t t = 0;
+	while (debugflowBool && t < 100) {
+		t++;
+		sprintf(buf, "wieoft %u state: %d ventil %d window %d t %lu", wieoft,
+				user.zapfStatus, ventil.getValveProzent(),
+				digitalRead(FLOW_WINDOW), t);
+		ZD.infoText(buf);
+	}
+}
+
+void zapfErrorProg() {
+	if (user.oldZapfStatus != user.zapfStatus) {
+		user.oldZapfStatus = user.zapfStatus;
+		ZD.infoText("HEY DU HONK! ERST BENUTZER WÄHLEN!");
+		ventil.closeValve();
+		while (ventil.getValveProzent() > 0) {
+			ventil.check();
+		}
+		user.zapfStatus = user.zapfModus::zapfStandby;
+		debugflowBool = 1;
+
+	}
+
+}
+
 void zapfBeginnProg(void) {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
@@ -223,9 +266,6 @@ void zapfBeginnProg(void) {
 	if (digitalRead(FLOW_WINDOW)) {
 		user.zapfStatus = user.zapfModus::amZapfen;
 	}
-	if (user.getGodMode() > 0) {
-		user.zapfStatus = user.zapfModus::godZapfen;
-	}
 
 }
 void amZapfenProg(void) {
@@ -234,6 +274,9 @@ void amZapfenProg(void) {
 		ZD.showTastenFunktion("ZAPFABBRUCH", "ABBRUCH+SET ML");
 		sound.setStandby(1);
 		sound.pruefe();
+		if (user.getGodMode() > 0) {
+			user.zapfStatus = user.zapfModus::godZapfen;
+		}
 
 	}
 	flowmeter.flowDataSend(GET_ML, 0, 0);
@@ -244,7 +287,7 @@ void amZapfenProg(void) {
 // Nachschaun ob er eventuell zu lang braucht und nix zapft
 	if (((millis() - auswahlZeit) > 10000) && (flowmeter.getMilliliter() < 5)) {
 		beginZapfBool = false;
-		sound.setStandby(beginZapfBool);
+		sound.setStandby(0);
 		temp.sendeBefehl(END_ZAPF, 0x0);
 		ventil.check();
 		power.ledGrundbeleuchtung();
@@ -279,6 +322,11 @@ void godZapfenProg(void) {
 	if (!sound._SMF->isPaused()) {
 		sound.tickMetronome();
 	}
+	if (digitalRead(TASTE1_PIN)) {
+		user.zapfStatus = user.zapfModus::zapfEnde;
+		power.tastenLed(1, 255);
+	}
+
 }
 
 void kurzVorZapfEndeProg(void) {
@@ -294,7 +342,7 @@ void zapfEndeProg(void) {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
 		sound.bing();
-		ZD.showTastenFunktion("TALON DRUCKEN", "");
+		ZD.showTastenFunktion("", "TALON DRUCKEN");
 		auswahlZeit = millis();
 		ZD.showUserGod2Pic();
 		sound._SMF->close();
@@ -302,13 +350,9 @@ void zapfEndeProg(void) {
 		ventil.check();
 
 		//Sollte er abgebrochen haben:
-		if (flowmeter.getMilliliter() < user.menge()) {
-			drucker.printerErrorZapfEnde(flowmeter.getMilliliter());
-		}
 		uint16_t zapfMenge = flowmeter.getMilliliter()
 				+ flowmeter.getFreshZapfMillis();
 		user.addBier(zapfMenge); //alte ml dazurechnen
-		drucker.printerZapfEnde(zapfMenge);
 		flowmeter.flowDataSend(END_ZAPF, 0); //damit die Zapfmillis wieder auf null sind
 
 		ZD.showAllUserData();
@@ -319,19 +363,12 @@ void zapfEndeProg(void) {
 	}
 
 	/*Ab hier Dauerausführung*/
-	if (digitalRead(TASTE1_PIN)) {
-		while (digitalRead(TASTE1_PIN)) {
-			delay(1);
-		}
-
+	if (readTaste(2)) {
+		drucker.printerZapfEnde(user.zapfMenge);
 	}
 
 	dauerCheck();
-	if (millis() - auswahlZeit > WARTE_ZEIT) {
-		user.aktuell = 0;
-		user.zapfStatus = user.zapfModus::zapfStandby;
-	}
-
+	warteZeitCheck();
 }
 
 void dauerCheck(void) {
@@ -365,8 +402,39 @@ void dauerCheck(void) {
 	if (!digitalRead(TASTE2_PIN) && kienmuehle > 0) {
 		power.tastenLed(2, TASTEN_LED_NORMAL);
 		waehlFunktionen();
+		power.ledGrundbeleuchtung();
+		power.setLed(user.aktuell, 0xFFF);
 	}
 
+}
+
+void warteZeitCheck() {
+	if (millis() - auswahlZeit > WARTE_ZEIT) {
+		user.aktuell = 0;
+		power.ledGrundbeleuchtung();
+		user.zapfStatus = user.zapfModus::zapfStandby;
+		ZD.userShow(&user);
+	}
+
+}
+uint8_t readTaste(uint8_t taste) {
+	uint8_t tastendruck = 0;
+	uint8_t tastenPin = TASTE1_PIN;
+	switch (taste) {
+	case 1:
+		tastenPin = TASTE1_PIN;
+		break;
+	case 2:
+		tastenPin = TASTE2_PIN;
+	}
+	if (digitalRead(tastenPin)) {
+		while (digitalRead(tastenPin)) {
+			power.tastenLed(taste, 255);
+		}
+		power.tastenLed(taste, TASTEN_LED_NORMAL);
+		tastendruck = 1;
+	}
+	return tastendruck;
 }
 
 void waehlscheibe() {
@@ -377,6 +445,11 @@ void waehlscheibe() {
 	uint8_t zahlemann = readWaehlscheibe(); /*Wählscheibe auslesen*/
 	flowmeter.flowDataSend(GET_ML, 0, 0);  //LEDFun ausschalten
 	sound.pruefe();
+
+	if (zahlemann == 0) {
+		user.aktuell = 0;
+		ZD.userShow(&user);
+	}
 
 	if (zahlemann > 0) {
 		switch (digitalRead(TASTE2_PIN)) {

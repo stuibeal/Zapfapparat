@@ -59,7 +59,7 @@ public:
 	void beginPower();
 	void check();
 	void tastenLed(uint8_t taste, uint8_t helligkeit);
-	void setLed(uint8_t offon);
+	void setLed(uint8_t ledNr, uint16_t pwm);
 	void setWhiteLed(uint16_t helligkeit);
 	void ledGrundbeleuchtung(void);
 	void wsLedGrundbeleuchtung(void);

@@ -13,7 +13,6 @@ zValve::zValve() {
 	state = MACH_AUF;
 	runTime = 0;
 	cleanPumpState = OFF;
-	druck = 0;
 	valveProzentSoll = 100;
 	valveProzentIst = 0;
 }
@@ -52,8 +51,11 @@ void zValve::begin() {
  * @return Druck in ATÜ * 100
  */
 int zValve::getPressure() {
-	druck = analogRead(PRESSURE_SENS_PIN) - PRESSURE_ZERO;
-	druck = druck / 1.46; //dann hat man das ergebnis in atü * 100
+	uint32_t druckWert = (analogRead(PRESSURE_SENS_PIN) - PRESSURE_ZERO)*100;
+	int druck = (int) (druckWert / 146); //dann hat man das ergebnis in atü * 100
+	if (druck < 0) {
+		druck=0;
+	}
 	return druck;
 }
 
@@ -106,12 +108,6 @@ void zValve::check() {
 			state = MACH_ZU;
 		}
 
-		if (state == ZWISCHENDRIN) {
-			digitalWrite(8, 1);
-			delay(20);
-			digitalWrite(8, 0);
-
-		}
 		switch (state) {
 		case MACH_AUF:
 			open();

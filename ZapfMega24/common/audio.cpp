@@ -279,9 +279,9 @@ void audio::tickMetronome(void) {
 
 			inBeat = true;
 			if (leuchtLampe & 1) {
-				digitalWrite(TASTE1_LED, HIGH);
+				power.tastenLed(1, 255);
 			} else {
-				digitalWrite(TASTE2_LED, HIGH);
+				power.tastenLed(2,255);
 			}
 
 			flowmeter.flowDataSend(LED_FUN_4, leuchtLampe, 0xFF);
@@ -293,13 +293,12 @@ void audio::tickMetronome(void) {
 				{
 
 
-	/*
 			if (!(leuchtLampe & 1)) {
-				analogWrite(TASTE1_LED, 20);
+				power.tastenLed(1, TASTEN_LED_NORMAL);
 			} else {
-				analogWrite(TASTE2_LED, 20);
+				power.tastenLed(2, TASTEN_LED_NORMAL);
 			}
-*/
+
 			inBeat = false;
 
 		}
@@ -308,10 +307,10 @@ void audio::tickMetronome(void) {
 
 void audio::godModeSound(uint8_t godMode) {
 	switch (godMode) {
-	case 1:
+	case IDDQD:
 		loadLoopMidi("d_runni2.mid");
 		break;
-	case 2:
+	case KEEN:
 		loadLoopMidi("keen.mid");
 		break;
 	}
