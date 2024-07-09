@@ -663,9 +663,9 @@ void userShow(void) {
 }
 
 void anzeigeAmHauptScreen(void) {
-	ZD.print_val3(temp.getBlockAussenTemp(), 19, 95, KOMMA);
-	ZD.print_val3((int) flowmeter.getMilliliter(), 19, 190, GANZZAHL);
-	ZD.print_val3((int) ventil.getPressure(), 19, 275, KOMMA);
+	ZD.print_val3(temp.getBlockAussenTemp(), 17, 82, KOMMA);
+	ZD.print_val3((int) flowmeter.getMilliliter(), 17, 170, GANZZAHL);
+	ZD.print_val3((int) ventil.getPressure(), 17, 260, KOMMA);
 
 	/*
 	 *

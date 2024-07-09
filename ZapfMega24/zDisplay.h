@@ -113,7 +113,7 @@ public:
 	void printInt(uint16_t zahl);
 	void userShow(benutzer *user);
 	void infoscreen(tempControl *temp, benutzer *user);
-	void printValue(uint8_t x, uint8_t y, int val, bool komma);
+	void printValue(uint16_t x, uint16_t y, int val, bool komma);
 	void printlnTempC(const char *text, int16_t tempInC);
 	void backgroundPicture(void);
 	void showUserPic(const char *bmp);

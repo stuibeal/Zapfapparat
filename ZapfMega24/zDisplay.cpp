@@ -279,7 +279,7 @@ void zDisplay::print_val(int val, int16_t x, int16_t y, int c, bool komma) //Hil
 	_tft.print(buf);
 }
 
-void zDisplay::printValue(uint8_t x, uint8_t y, int val, bool komma) {
+void zDisplay::printValue(uint16_t x, uint16_t y, int val, bool komma) {
 	char buf[10];
 	if (komma == 1) {
 		sprintf(buf, "%2d,%02d ", val / 100, val % 100);
@@ -297,9 +297,9 @@ void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsrout
 	u8g2.setFont(FONT_ZAHLEN);
 	char buf[10];
 	if (komma == 1) {
-		sprintf(buf, "%d,%02d" , val / 100, val % 100);
+		sprintf(buf, "%2d,%02d" , val / 100, val % 100);
 	} else {
-		sprintf(buf, "%d", val);
+		sprintf(buf, "%4d", val);
 	}
 	//u8g2.print(buf);
 	u8g2.drawStr(x, y, buf);
@@ -458,11 +458,11 @@ void zDisplay::backgroundPicture() {
 	u8g2.setFontMode(0);
 	u8g2.drawUTF8(17, 40, "KÜHLBLOCK");
 	u8g2.drawUTF8(17, 52, "TEMPERATUR");
-	u8g2.drawUTF8(70, 110, "°C");
+	u8g2.drawUTF8(75, 92, "°C");
 	u8g2.drawUTF8(17, 140, "ZAPFMENGE");
-	u8g2.drawUTF8(70, 205, "ml");
-	u8g2.drawUTF8(17, 225, "DRUCK");
-	u8g2.drawUTF8(70, 290, "atü");
+	u8g2.drawUTF8(75, 180, "ml");
+	u8g2.drawUTF8(17, 230, "DRUCK");
+	u8g2.drawUTF8(75, 270, "atü");
 
 
 }
@@ -486,7 +486,7 @@ void zDisplay::showSingleUserData(uint8_t whatLine) {
 	} else {
 		u8g2.setForegroundColor(ZDUNKELGRUEN);
 	}
-	uint8_t zeilenAbstand = 35;
+	uint16_t zeilenAbstand = 35;
 	uint16_t cursX = 385;
 	uint16_t cursY = 180 + ((whatLine - 1) * zeilenAbstand);
 	u8g2.setBackgroundColor(ZBRAUN);
@@ -516,8 +516,8 @@ void zDisplay::showAllUserData() {
 }
 
 void zDisplay::showBalken(uint16_t istwert, uint16_t zielwert) {
-	uint16_t aktuelleBreite = 0;
-	map(aktuelleBreite, 0, zielwert, 0, 480);
+	long int aktuelleBreite = 0;
+	aktuelleBreite = map((long int)istwert, 0, (long int)user.bierMenge, 0, 480);
 	if (aktuelleBreite > 0){
 		_tft.fillRect(0, 292, aktuelleBreite, 4, ZDUNKELGRUEN);
 	}
