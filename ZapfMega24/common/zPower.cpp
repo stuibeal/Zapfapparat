@@ -12,8 +12,7 @@
 #include "PCA9685.h"
 #include "Wire.h"
 
-zPower::zPower()
-{
+zPower::zPower() {
 	inVoltage = 120;
 	helligkeit = 0;
 	bkPowerState = BATT_NORMAL;
@@ -34,7 +33,6 @@ void zPower::beginPower() {
 	Wire.begin(); // Master of the universe
 	Wire.setClock(400000); // I2C in FastMode 400kHz
 
-
 	wsLed.begin();
 	wsLed.setFrequency(200, 0);
 
@@ -52,26 +50,29 @@ void zPower::beginPower() {
 }
 
 void zPower::check() {
-	uint16_t oldHelligkeit = helligkeit;
-	switch (temp.getBatterieStatus()) {
-	case 0x00:
-		bkPowerState = BATT_ULTRAHIGH;
-		break;
-	case 0x01:
-		bkPowerState = BATT_HIGH;
-		break;
-	case 0x02:
-		bkPowerState = BATT_NORMAL;
-		break;
-	case 0x03:
-		bkPowerState = BATT_LOW;
-		break;
-	case 0x04:
-		bkPowerState = BATT_ULTRALOW;
-		break;
+	if (millis() - millisSeitLetztemCheck > 1000) {
+		millisSeitLetztemCheck = millis();
+		uint16_t oldHelligkeit = helligkeit;
+		switch (temp.getBatterieStatus()) {
+		case 0x00:
+			bkPowerState = BATT_ULTRAHIGH;
+			break;
+		case 0x01:
+			bkPowerState = BATT_HIGH;
+			break;
+		case 0x02:
+			bkPowerState = BATT_NORMAL;
+			break;
+		case 0x03:
+			bkPowerState = BATT_LOW;
+			break;
+		case 0x04:
+			bkPowerState = BATT_ULTRALOW;
+			break;
+		}
+		uint16_t newHelligkeit = analogRead(LICHT_SENSOR_PIN);
+		helligkeit = (oldHelligkeit + newHelligkeit) / 8;
 	}
-	uint16_t newHelligkeit = analogRead(LICHT_SENSOR_PIN);
-	helligkeit = (oldHelligkeit + newHelligkeit) / 8;
 }
 
 void zPower::tastenLed(uint8_t taste, uint8_t helligkeit) {
@@ -110,7 +111,7 @@ void zPower::ledGrundbeleuchtung() {
 	tastenLed(0, TASTEN_LED_NORMAL);
 }
 
-void zPower::wsLedGrundbeleuchtung(){
+void zPower::wsLedGrundbeleuchtung() {
 	//grün
 	for (uint8_t channel = 1; channel < 11; channel++) {
 		wsLed.setPWM(channel, GRUEN_LED_ABGEDUNKELT);
@@ -121,14 +122,23 @@ void zPower::wsLedGrundbeleuchtung(){
 }
 
 void zPower::schLampeControl(uint8_t offon) {
-
+	if (bkPowerState >= powerState::BATT_NORMAL) {
+		digitalWrite(Z_SCH_LAMPE_PIN, offon);
+	} else {
+		digitalWrite(Z_SCH_LAMPE_PIN, 0);
+	}
 }
 
 void zPower::zapfLichtControl(uint8_t pwmValue) {
-
+	if (bkPowerState >= powerState::BATT_NORMAL) {
+		flowmeter.flowDataSend(LED_FUN_4, 0b11111111, pwmValue);
+	} else {
+		flowmeter.flowDataSend(LED_FUN_4, 0b11111111, 0);
+	}
 }
-void zPower::autoLight(uint8_t offon) {
 
+void zPower::autoLight(uint8_t offon) {
+	autoLightBool = offon;
 }
 
 void zPower::goSleep(void) {

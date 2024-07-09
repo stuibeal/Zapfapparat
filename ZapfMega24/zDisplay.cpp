@@ -294,9 +294,17 @@ void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsrout
 	u8g2.setForegroundColor(WHITE);      // apply Adafruit GFX color
 	u8g2.setBackgroundColor(ZDUNKELGRUEN);
 	u8g2.setFontMode(0);
-	u8g2.setFont(u8g2_font_profont29_tn);
-	u8g2.setCursor(x, y);
-	printValue(val, komma);
+	u8g2.setFont(FONT_NORMAL19);
+	char buf[10];
+	if (komma == 1) {
+		sprintf(buf, " %d,%02d ", val / 100, val % 100);
+	} else {
+		sprintf(buf, " %d ", val);
+	}
+	//u8g2.print(buf);
+	u8g2.drawStr(x, y, buf);
+
+
 }
 
 /**
@@ -449,6 +457,19 @@ void zDisplay::backgroundPicture() {
 	showBMP("/bmp/bg_leer.bmp", 102, 0); /* Bier leer, w:132 h:291 */
 	showBMP("/bmp/bg_rahm.bmp", 271, 8); /* Userbildrahmen, w:199 h:136 */
 	/* Userbild 160x100 geht nach x290 y26 */
+	u8g2.setFont(FONT_NORMAL10);
+	u8g2.setForegroundColor(WHITE);
+	u8g2.setBackgroundColor(ZDUNKELGRUEN);
+	u8g2.setFontMode(0);
+	u8g2.drawStr(19, 40, "KÜHLBLOCK");
+	u8g2.drawStr(19, 55, "TEMPERATUR");
+	u8g2.drawStr(70, 110, "°C");
+	u8g2.drawStr(19, 140, "ZAPFMENGE");
+	u8g2.drawStr(70, 205, "ml");
+	u8g2.drawStr(19, 225, "DRUCK");
+	u8g2.drawStr(70, 290, "atü");
+
+
 }
 
 void zDisplay::showUserPic(const char *bmp) {

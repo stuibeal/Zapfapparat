@@ -640,9 +640,22 @@ void userShow(void) {
 }
 
 void anzeigeAmHauptScreen(void) {
-	ZD.print_val3(temp.getBlockAussenTemp(), 20, 125, KOMMA);
-	ZD.print_val3((int) flowmeter.getMilliliter(), 20, 150, GANZZAHL);
-	ZD.print_val3((int) ventil.getPressure(), 20, 175, KOMMA);
+	ZD.print_val3(temp.getBlockAussenTemp(), 19, 95, KOMMA);
+	ZD.print_val3((int) flowmeter.getMilliliter(), 19, 190, GANZZAHL);
+	ZD.print_val3((int) ventil.getPressure(), 19, 275, KOMMA);
+
+/*
+ *
+ * 	u8g2.drawStr(19, 40, "KÜHLBLOCK");
+	u8g2.drawStr(19, 55, "TEMPERATUR");
+	u8g2.drawStr(70, 110, "°C");
+	u8g2.drawStr(19, 140, "ZAPFMENGE");
+	u8g2.drawStr(70, 205, "ml");
+	u8g2.drawStr(19, 225, "DRUCK");
+	u8g2.drawStr(70, 290, "atü");
+ *
+ */
+
 }
 
 void drehgeber() {

@@ -55,6 +55,15 @@ public:
 	inline void setPowerState(zPower::powerState state) {
 		bkPowerState = state;
 	}
+	inline uint8_t getHelligkeit() {
+		return helligkeit;
+	}
+	inline uint8_t getAutoLightBool() {
+		return autoLightBool;
+	}
+	inline uint8_t getInVoltage() {
+		return inVoltage;
+	}
 
 	void beginPower();
 	void check();
