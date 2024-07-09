@@ -279,14 +279,14 @@ void zDisplay::print_val(int val, int16_t x, int16_t y, int c, bool komma) //Hil
 	_tft.print(buf);
 }
 
-void zDisplay::printValue(int val, bool komma) {
+void zDisplay::printValue(uint8_t x, uint8_t y, int val, bool komma) {
 	char buf[10];
 	if (komma == 1) {
-		sprintf(buf, " %d,%02d ", val / 100, val % 100);
+		sprintf(buf, "%2d,%02d ", val / 100, val % 100);
 	} else {
-		sprintf(buf, " %d ", val);
+		sprintf(buf, "%4d", val);
 	}
-	u8g2.print(buf);
+	u8g2.drawStr(x, y, buf);
 }
 
 void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsroutine zum Daten anzeigen
@@ -294,7 +294,7 @@ void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsrout
 	u8g2.setForegroundColor(WHITE);      // apply Adafruit GFX color
 	u8g2.setBackgroundColor(ZDUNKELGRUEN);
 	u8g2.setFontMode(0);
-	u8g2.setFont(u8g2_font_t0_22b_mn);
+	u8g2.setFont(FONT_ZAHLEN);
 	char buf[10];
 	if (komma == 1) {
 		sprintf(buf, "%d,%02d" , val / 100, val % 100);
@@ -377,23 +377,20 @@ void zDisplay::userShow(benutzer *user) {
 	u8g2.setFont(FONT_NORMAL10); /*10er font is 16 hoch*/
 	u8g2.setForegroundColor(BLACK);
 	u8g2.setBackgroundColor(ZBRAUN);
-	u8g2.setCursor(271, 161); /* In Linie mit dem Rahmen */
-	u8g2.println("TEMPERATUR");
-	u8g2.setCursor(271, u8g2.getCursorY());
-	u8g2.print("in °C");
-	u8g2.setCursor(271, 195);
-	u8g2.println("ZAPFMENGE");
-	u8g2.setCursor(271, u8g2.getCursorY());
-	u8g2.print("in ml");
-	u8g2.setCursor(271, 229);
-	u8g2.println("HOIWE");
-	u8g2.setCursor(271, u8g2.getCursorY());
-	u8g2.print("BIS JETZT");
-	u8g2.setCursor(271, 263);
-	u8g2.println("REST IM FASS");
-	u8g2.setCursor(271, u8g2.getCursorY());
-	u8g2.print("in Liter");
+	uint8_t x = 271; /*da fängt der Rahmen an*/
+	uint8_t y = 180; /*erste Zeile*/
 
+	u8g2.drawUTF8(x, y-15, "TEMPERATUR");
+	u8g2.drawUTF8(x, y, "SOLL IN °C");
+	y= 215;
+	u8g2.drawUTF8(x, y-15, "ZAPFMENGE");
+	u8g2.drawUTF8(x, y, "IN ML");
+	y= 250;
+	u8g2.drawUTF8(x, y-15, "HOIWE AM");
+	u8g2.drawUTF8(x, y, "HEUTIGEN TAG");
+	y= 285;
+	u8g2.drawUTF8(x, y-15, "REST IM");
+	u8g2.drawUTF8(x, y, "FASS IN L");
 	showAllUserData();
 }
 
@@ -444,8 +441,7 @@ void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 
 void zDisplay::printlnTempC(const char *text, int16_t tempInC) {
 	u8g2.print(text);
-	u8g2.setCursor(160, u8g2.getCursorY());
-	printValue(tempInC, KOMMA);
+	printValue(155, u8g2.getCursorY(), tempInC, KOMMA);
 	u8g2.println("°C");
 }
 
@@ -485,32 +481,31 @@ void zDisplay::showUserGod2Pic(void) {
 
 void zDisplay::showSingleUserData(uint8_t whatLine) {
 	if (einsteller == whatLine) {
-		u8g2.setFont(FONT_BOLD19);
+		u8g2.setFont(FONT_ZAHLEN);
 		u8g2.setForegroundColor(BLACK);
 	} else {
-		u8g2.setFont(FONT_NORMAL19);
+		u8g2.setFont(FONT_ZAHLEN);
 		u8g2.setForegroundColor(ZDUNKELGRUEN);
 	}
-	uint8_t zeilenAbstand = 34;
+	uint8_t zeilenAbstand = 35;
 	uint16_t cursX = 385;
-	uint16_t cursY = 161 + 16 + (whatLine - 1) * zeilenAbstand;
-	u8g2.setCursor(cursX, cursY);
+	uint16_t cursY = 180 + ((whatLine - 1) * zeilenAbstand);
 	u8g2.setBackgroundColor(ZBRAUN);
 
 	switch (whatLine) {
 	case 0:
 		break;
 	case 1:
-		printValue(user.bierTemp[user.aktuell], KOMMA);
+		printValue(cursX, cursY, user.bierTemp[user.aktuell], KOMMA);
 		break;
 	case 2:
-		printValue(user.bierMenge[user.aktuell], GANZZAHL);
+		printValue(cursX, cursY, user.bierMenge[user.aktuell], GANZZAHL);
 		break;
 	case 3:
-		printValue(user.bierTag[user.aktuell] / 500, KOMMA);
+		printValue(cursX, cursY, user.bierTag[user.aktuell] / 500, KOMMA);
 		break;
 	case 4:
-		printValue(user.restMengeFass / 1000, KOMMA);
+		printValue(cursX, cursY, user.restMengeFass / 1000, KOMMA);
 		break;
 	}
 }

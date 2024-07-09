@@ -51,12 +51,16 @@ void zValve::begin() {
  * @return Druck in ATÜ * 100
  */
 int zValve::getPressure() {
-	uint32_t druckWert = (analogRead(PRESSURE_SENS_PIN) - PRESSURE_ZERO)*100;
-	int druck = (int) (druckWert / 146); //dann hat man das ergebnis in atü * 100
-	if (druck < 0) {
-		druck=0;
-	}
-	return druck;
+//	uint32_t druckWert = (analogRead(PRESSURE_SENS_PIN) - PRESSURE_ZERO)*100;
+//	int druck = (int) (druckWert / 146); //dann hat man das ergebnis in atü * 100
+//	if (druck < 0) {
+//		druck=0;
+//	}
+
+	int16_t druckWert = analogRead(PRESSURE_SENS_PIN);
+	long int druck = 0;
+	map(druck, 120, 730, 0, 500);
+	return (int)druck;
 }
 
 /* @brief  Hinterer Ausgang wird mit 12V versorgt für Reinigungspumpe
