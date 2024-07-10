@@ -399,6 +399,9 @@ void checkWhileZapfing() {
 
 void checkImmer() {
 	if (((millis() - oldTime) > 500)) {
+		sprintf(buf, "Helligkeit %d, powerstate %d", power.getHelligkeit(), power.getPowerState());
+		power.check();
+		ZD.infoText(buf);
 		temp.holeDaten();
 		flowmeter.flowDataSend(GET_ML, 0, 0);
 		oldTime = millis();
