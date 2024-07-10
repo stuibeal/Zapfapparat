@@ -55,6 +55,9 @@ public:
 	inline void setPowerState(zPower::powerState state) {
 		bkPowerState = state;
 	}
+	inline void setAutoLight(bool offon) {
+		autoLightBool = offon;
+	}
 	inline uint8_t getHelligkeit() {
 		return helligkeit;
 	}
@@ -65,6 +68,7 @@ public:
 		return inVoltage;
 	}
 
+
 	void beginPower();
 	void check();
 	void tastenLed(uint8_t taste, uint8_t helligkeit);
@@ -74,7 +78,7 @@ public:
 	void wsLedGrundbeleuchtung(void);
 	void schLampeControl(uint8_t offon);
 	void zapfLichtControl(uint8_t pwmValue);
-	void autoLight(uint8_t offon);
+	void autoLight(void);
 	void goSleep(void);
 
 

@@ -22,29 +22,21 @@ benutzer::benutzer() {
 
 	}
 	zapfStatus = zapfStandby;
+	oldZapfStatus = zapfStandby;
 	restMengeFass = 30000;
+	zapfMenge = 0;
 
 }
 
 benutzer::~benutzer() {
-	// TODO Auto-generated destructor stub
+
 }
 
-uint16_t benutzer::menge() {
-	return bierMenge[aktuell];
-}
-
-uint16_t benutzer::temp() {
-	return bierTemp[aktuell];
-}
 
 uint16_t benutzer::gesamt() {
 	return bierGesamt[aktuell];
 }
 
-uint16_t benutzer::tag() {
-	return bierTag[aktuell];
-}
 
 void benutzer::addBier(uint16_t zapfmenge) {
 	bierTag[aktuell] += zapfmenge;
@@ -78,14 +70,6 @@ void benutzer::setTemp(uint16_t tempvar) {
 		tempvar = MIN_TEMP;
 	}
 	bierTemp[aktuell] = tempvar;
-}
-
-void benutzer::setGodMode(uint8_t godmodetype) {
-	godMode[aktuell] = godmodetype;
-}
-
-uint8_t benutzer::getGodMode() {
-	return godMode[aktuell];
 }
 
 uint8_t benutzer::checkNullUser() {

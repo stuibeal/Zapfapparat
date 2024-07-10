@@ -59,7 +59,7 @@
 		<link>
 			<name>libraries/DS18B20_RT</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/DS18B20_RT/0.2.2</locationURI>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/DS18B20_RT/0.2.3</locationURI>
 		</link>
 		<link>
 			<name>libraries/Encoder</name>

@@ -15,12 +15,6 @@
 #define USE_SDFAT
 #endif
 
-/*
- Für Display folgendes abändern in der Library:
- in mcufriend_shield.h: #define USE_SPECIAL
- in mcufriend_special.h: #define USE_MEGA_8BIT_PROTOSHIELD
- */
-
 #include <Arduino.h>
 #include "SdFat.h"
 #include "gemein.h"
@@ -32,12 +26,6 @@
 #include "tempControl.h"
 #include "benutzer.h"
 
-//Fonts
-#include <Fonts/FreeSans9pt7b.h>
-#include <Fonts/FreeSans12pt7b.h>
-#include <Fonts/FreeSansBold12pt7b.h>
-#include "./zLibraries/MCUFRIEND_kbv/FreeDefaultFonts.h"
-
 //#include "Adafruit_GFX.h" // Hardware-specific library
 #define FONT_SMALL u8g2_font_t0_11_te
 #define FONT_NORMAL10 u8g2_font_luRS10_tf
@@ -46,7 +34,6 @@
 #define FONT_BOLD12 u8g2_font_luBS12_tf
 #define FONT_NORMAL19 u8g2_font_luRS19_tf
 #define FONT_BOLD19 u8g2_font_luBS19_tf
-//#define FONT_ZAHLEN u8g2_font_t0_22b_mn
 #define FONT_ZAHLEN u8g2_font_inb19_mn
 
 
@@ -94,23 +81,16 @@
 #define BMPIMAGEOFFSET 54
 #define BUFFPIXEL      20
 
-class zDisplay: public MCUFRIEND_kbv, U8G2_FOR_ADAFRUIT_GFX {
+class zDisplay: private MCUFRIEND_kbv, U8G2_FOR_ADAFRUIT_GFX {
 public:
 	zDisplay(); //Constructor
 	virtual ~zDisplay(); //Destructor
 	void beginn(SdFat *psd);
-	void printText(void);  //Zeigt Text an
 	void printInitText(const char *text);
 	void infoText(const char* text);
 	uint8_t showBMP(char const *nm, int16_t x, int16_t y);
 	void print_val(int val, int16_t x, int16_t y, int c, bool komma);
-	//void fillScreen(unsigned short int color);
-
 	void print_val3(int val, int16_t x, int16_t y, bool komma);
-
-	void printVal(int val, int16_t x, int16_t y, uint16_t textColor,
-			uint16_t backColor, const GFXfont *_pfont, bool komma);
-	void printInt(uint16_t zahl);
 	void userShow(benutzer *user);
 	void infoscreen(tempControl *temp, benutzer *user);
 	void printValue(uint16_t x, uint16_t y, int val, bool komma);
@@ -123,12 +103,9 @@ public:
 	void showBalken(uint16_t istwert, uint16_t zielwert);
 	void showTastenFunktion(const char* textTaste1, const char* textTaste2);
 
+private:
 	MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
 	U8G2_FOR_ADAFRUIT_GFX u8g2;
-
-
-private:
-	//friend class GFXcanvas1;
 	uint16_t read16(File &f);
 	uint32_t read32(File &f);
 	char namebuf[32];   //BMP files in PIC Verzeichnis

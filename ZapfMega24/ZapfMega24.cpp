@@ -36,7 +36,7 @@
 
 #define DEBUGTO 3  //0 Nothing, 1 Serial, 2 Printer, 3 Display, 4 SD File
 #if DEBUGTO == 3
-#define DEBUGMSG(s) { ZD.printText(); ZD._tft.println(s); }
+#define DEBUGMSG(s) { ZD.infoText(s); }
 #endif
 #ifndef DEBUG_A
 #define DEBUG_A 1 //Debug Audio
@@ -53,11 +53,6 @@ unsigned long nachSchauZeit = 0;
 unsigned long kienmuehle = 0;  //Sondereingabe bei drücken der Taste2
 volatile uint8_t einsteller = 2;
 uint8_t oldeinsteller = 2;
-
-bool ebiModeBool = false; //#define ebiMode               0xF9      //    1 an, 0 aus       Temperatur auf 2°C, Hahn auf, Zapfmusik
-bool beginZapfBool = false; // #define beginZapf             0xFA      //    Beginn das Zapfprogramm -> PID auf aggressiv
-bool endZapfBool = false; //#define endZapf               0xFB      //    Data send : milliliter
-bool kurzBevorZapfEndeBool = false; //#define kurzBevorZapfEnde     0xFC      //    sagt das wir kurz vor Ende sind → Valve schließen -> PID auf konservativ
 
 // DREHENCODER
 #define ENCODER_OPTIMIZE_INTERRUPTS
@@ -84,7 +79,6 @@ MD_MIDIFile SMF;
 MD_YX5300 mp3 = MD_YX5300(MP3Stream);
 PCA9685 wsLed(WS_LED_ADDRESS);
 zPower power;
-bool debugflowBool = 0;
 
 void setup(void) {
 	power.beginPower(); /* STROM AN */
@@ -167,12 +161,9 @@ void anfang(void) {
 void loop() {
 	oldeinsteller = einsteller;
 	sound.midiNextEvent();
-	temp.holeDaten();
 	drehgeber();
-
 	ventil.check();
 
-	//sprintf(buf, "Valvestate: %d old %d ist %d soll %d rt %lu vm %lu ", ventil.getValveState(),ventil.getOldState(), ventil.getValveProzent(), ventil.getValveProzentSoll(),ventil.getRunTime(), ventil.getValveMillis());
 	switch (user.zapfStatus) {
 	case user.zapfModus::zapfStandby:
 		zapfStandbyProg();
@@ -196,8 +187,6 @@ void loop() {
 		zapfEndeProg();
 		break;
 	}
-	//debugFlow();
-
 } /*LOOP*/
 
 void zapfStandbyProg(void) {
@@ -212,20 +201,6 @@ void zapfStandbyProg(void) {
 			user.zapfStatus = user.zapfModus::zapfError;
 		}
 	}
-
-}
-
-void debugFlow() {
-	static uint16_t wieoft = 0;
-	wieoft++;
-	uint32_t t = 0;
-	while (debugflowBool && t < 100) {
-		t++;
-		sprintf(buf, "wieoft %u state: %d ventil %d window %d t %lu", wieoft,
-				user.zapfStatus, ventil.getValveProzent(),
-				digitalRead(FLOW_WINDOW), t);
-		ZD.infoText(buf);
-	}
 }
 
 void zapfErrorProg() {
@@ -237,10 +212,7 @@ void zapfErrorProg() {
 			ventil.check();
 		}
 		user.zapfStatus = user.zapfModus::zapfStandby;
-		debugflowBool = 1;
-
 	}
-
 }
 
 void zapfBeginnProg(void) {
@@ -257,7 +229,7 @@ void zapfBeginnProg(void) {
 
 		ventil.openValve();
 		temp.sendeBefehl(BEGIN_ZAPF, 0x0);
-		flowmeter.flowDataSend(SET_USER_ML, user.menge());
+		flowmeter.flowDataSend(SET_USER_ML, user.getMenge());
 		sound.godModeSound(user.getGodMode());
 		userShow();  // Zeigt die Userdaten an
 		auswahlZeit = millis();
@@ -275,6 +247,8 @@ void zapfBeginnProg(void) {
 		ventil.check();
 		power.ledGrundbeleuchtung();
 	}
+
+	/*Hier wird dann gekuckt ob der zum zapfen beginnt. gott lobe den flowmeter!*/
 	if (digitalRead(FLOW_WINDOW)) {
 		user.zapfStatus = user.zapfModus::amZapfen;
 		auswahlZeit = millis();
@@ -292,19 +266,19 @@ void amZapfenProg(void) {
 		}
 
 	}
-	flowmeter.flowDataSend(GET_ML, 0, 0);
+	checkWhileZapfing();
 	// Nachkucken ob er im kurz vor Zapfende ist
-	if (millis()-auswahlZeit > 999) {
+	if (millis() - auswahlZeit > 999) {
 		auswahlZeit = millis();
 		static uint16_t lastFlow = flowmeter.getMilliliter();
 
-		if (flowmeter.getMilliliter()+ lastFlow*2 > user.getMenge()){
+		if (flowmeter.getMilliliter() + lastFlow * 2 > user.getMenge()) {
 			user.zapfStatus = user.zapfModus::kurzVorZapfEnde;
 		}
 	}
 
 // Nachschaun ob er eventuell zu lang braucht und nix zapft
-	if ((user.menge() - flowmeter.getMilliliter()) < 30) {
+	if ((user.getMenge() - flowmeter.getMilliliter()) < 30) {
 		user.zapfStatus = user.zapfModus::zapfEnde;
 	}
 
@@ -312,11 +286,17 @@ void amZapfenProg(void) {
 	if (readTaste(1)) {
 		user.zapfStatus = user.zapfModus::zapfEnde;
 	}
-
+	if (readTaste(2)) {
+		user.zapfStatus = user.zapfModus::zapfEnde;
+		user.setMenge(flowmeter.getMilliliter());
+	}
 }
+
+
 void godZapfenProg(void) {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
+		sound.on();
 	}
 
 	/*MIDI nach Zapfhahn*/
@@ -340,10 +320,9 @@ void godZapfenProg(void) {
 	ZD.showBalken(flowmeter.getFreshZapfMillis(), user.getMenge());
 
 	// Nachschaun ob er fertig ist und dann bingen und zamschreim
-	if (flowmeter.getMilliliter() >= user.menge()) {
-		user.zapfStatus=user.zapfModus::zapfEnde;
+	if (flowmeter.getMilliliter() >= user.getMenge()) {
+		user.zapfStatus = user.zapfModus::zapfEnde;
 	}
-
 
 }
 
@@ -356,9 +335,9 @@ void kurzVorZapfEndeProg(void) {
 		power.tastenLed(0, 255);
 
 	}
-	// Nachschaun ob er fertig ist und dann bingen und zamschreim
-	if (flowmeter.getMilliliter() >= user.menge()) {
-		user.zapfStatus=user.zapfModus::zapfEnde;
+	checkWhileZapfing();
+	if (flowmeter.getMilliliter() >= user.getMenge()) {
+		user.zapfStatus = user.zapfModus::zapfEnde;
 	}
 
 }
@@ -374,14 +353,14 @@ void zapfEndeProg(void) {
 		sound.midiSilence();
 		ventil.check();
 
-		while (digitalRead(FLOW_WINDOW)){
+		while (digitalRead(FLOW_WINDOW)) {
 			/* do not much */
 			delay(1);
 		}
 		user.addBier(flowmeter.getFreshZapfMillis());
 		flowmeter.flowDataSend(END_ZAPF, 0); //damit die Zapfmillis wieder auf null sind
 		ZD.showAllUserData();
-		sound.setStandby(beginZapfBool);
+		sound.setStandby(0);
 		logbuch.logAfterZapf();
 		belohnungsMusik();
 
@@ -396,7 +375,44 @@ void zapfEndeProg(void) {
 	warteZeitCheck();
 }
 
+void checkWhileZapfing() {
+	if (((millis() - oldTime) > 100)) {
+		static uint8_t counter = 0;
+		counter++;
+		oldTime = millis();
+		flowmeter.flowDataSend(GET_ML, 0, 0);
+		if (counter > 4) {
+			counter = 0;
+			temp.holeDaten();
+			sound.pruefe();
+			showZapfapparatData();
+			if (DEBUG_A) {
+				DEBUGMSG(sound.debugmessage);
+			}
+		}
+		else {
+			ZD.print_val3((int) flowmeter.getMilliliter(), 17, 170, GANZZAHL);
+		}
+	}
+
+}
+
+void checkImmer() {
+	if (((millis() - oldTime) > 500)) {
+		temp.holeDaten();
+		flowmeter.flowDataSend(GET_ML, 0, 0);
+		oldTime = millis();
+		showZapfapparatData();
+		sound.pruefe();
+		if (DEBUG_A) {
+			DEBUGMSG(sound.debugmessage);
+		}
+	}
+}
+
 void dauerCheck(void) {
+	checkImmer();
+
 	if (digitalRead(WSready)) {
 		waehlscheibe();
 	}
@@ -408,18 +424,11 @@ void dauerCheck(void) {
 	if (digitalRead(TASTE1_PIN)) {
 		infoseite();
 	}
-	// alle 200ms anzeige aktualisieren
-	if (((millis() - oldTime) > 200)) { // && user.getGodMode() == 0) {
-		oldTime = millis();
-		anzeigeAmHauptScreen();
-		sound.pruefe();
-		if (DEBUG_A) {
-			DEBUGMSG(sound.debugmessage);
-		}
-	}
 
 	//alle 10s mal alles nachkucken
-	if ((millis() - nachSchauZeit) > 10000 && !beginZapfBool && !sound.isOn()) {
+	if ((millis() - nachSchauZeit) > 10000
+			&& user.zapfStatus == user.zapfModus::zapfStandby
+			&& !sound.isOn()) {
 		seltencheck();
 		nachSchauZeit = millis();
 	}
@@ -435,6 +444,10 @@ void dauerCheck(void) {
 
 void warteZeitCheck() {
 	if (millis() - auswahlZeit > WARTE_ZEIT) {
+		/* Sollte der Sakra in der Wartezeit noch was gezapft haben*/
+		if (flowmeter.getFreshZapfMillis() > 0) {
+			user.addBier(flowmeter.getMilliliter());
+		}
 		user.aktuell = 0;
 		power.ledGrundbeleuchtung();
 		user.zapfStatus = user.zapfModus::zapfStandby;
@@ -471,19 +484,25 @@ void waehlscheibe() {
 	flowmeter.flowDataSend(GET_ML, 0, 0);  //LEDFun ausschalten
 	sound.pruefe();
 
+	/* bei leichtem Antippen der Wählscheibe, keine Wählung */
 	if (zahlemann == 0) {
 		user.aktuell = 0;
 		ZD.userShow(&user);
+		power.ledGrundbeleuchtung();
 	}
 
 	if (zahlemann > 0) {
 		switch (digitalRead(TASTE2_PIN)) {
 		case 0: /* Wenn nicht, Zapfprogramm starten */
 			kienmuehle = 0; /*wenn man sich verwählt hat bei der Nummerneingabe wirds gelöscht*/
-			user.aktuell = zahlemann;
-			user.zapfStatus = user.zapfModus::zapfBeginn;
-			beginZapfBool = true;
+			/* sollten da noch Bierreste sein gehören die dem Vorgänger*/
+			if (flowmeter.getFreshZapfMillis() > 0) {
+				user.addBier(flowmeter.getMilliliter());
+			}
 
+			user.aktuell = zahlemann;
+			user.oldZapfStatus = user.zapfModus::zapfStandby;
+			user.zapfStatus = user.zapfModus::zapfBeginn;
 			break;
 		case 1: /* Wenn doch, Nummerneingabe starten */
 			power.tastenLed(2, 255);
@@ -505,8 +524,7 @@ void waehlFunktionen() {
 	switch (kienmuehle) {
 	case 847: // UHRZEIT
 		logbuch.getClockString();
-		ZD.printText();
-		ZD._tft.println(buf);
+		ZD.infoText(buf);
 		break;
 	case 463633: //GODOFF
 		user.setGodMode(0);
@@ -587,27 +605,24 @@ void waehlFunktionen() {
 }
 
 void seltencheck(void) {
-//sprintf(buf, "hell: %d dunkelcount %d", hell, dunkelCount);
-//DEBUGMSG(buf);
 	temp.requestSensors();
-
+	power.check();
 }
-//ZD.print_val(zulauf.getTempC() * 100, 200, 170, 1, 1);
 
 void belohnungsMusik() {
-	if (user.tag() > 2000 && user.getMusik() == 0) {
+	if (user.getBierTag() > 2000 && user.getMusik() == 0) {
 		user.setMusik(1);
 		sound.mp3Play(user.aktuell, 1);
 	}
-	if (user.tag() > 2500 && user.getMusik() == 1) {
+	if (user.getBierTag() > 2500 && user.getMusik() == 1) {
 		user.setMusik(2);
 		sound.mp3Play(user.aktuell, 2);
 	}
-	if (user.tag() > 3000 && user.getMusik() == 2) {
+	if (user.getBierTag() > 3000 && user.getMusik() == 2) {
 		user.setMusik(3);
 		sound.mp3Play(user.aktuell, 3);
 	}
-	if (user.tag() > 3500 && user.getMusik() == 3) {
+	if (user.getBierTag() > 3500 && user.getMusik() == 3) {
 		user.setMusik(0);
 		sound.mp3Play(user.aktuell, 4);
 	}
@@ -662,23 +677,10 @@ void userShow(void) {
 	ZD.userShow(&user);
 }
 
-void anzeigeAmHauptScreen(void) {
+void showZapfapparatData(void) {
 	ZD.print_val3(temp.getBlockAussenTemp(), 17, 82, KOMMA);
 	ZD.print_val3((int) flowmeter.getMilliliter(), 17, 170, GANZZAHL);
 	ZD.print_val3((int) ventil.getPressure(), 17, 260, KOMMA);
-
-	/*
-	 *
-	 * 	u8g2.drawStr(19, 40, "KÜHLBLOCK");
-	 u8g2.drawStr(19, 55, "TEMPERATUR");
-	 u8g2.drawStr(70, 110, "°C");
-	 u8g2.drawStr(19, 140, "ZAPFMENGE");
-	 u8g2.drawStr(70, 205, "ml");
-	 u8g2.drawStr(19, 225, "DRUCK");
-	 u8g2.drawStr(70, 290, "atü");
-	 *
-	 */
-
 }
 
 void drehgeber() {
@@ -687,11 +689,12 @@ void drehgeber() {
 	if (newPosition != oldPosition) {
 		switch (einsteller) {
 		case 1:
-			user.setTemp(user.temp() + (newPosition - oldPosition));
+			user.setTemp(
+					user.getSollTemperatur() + (newPosition - oldPosition));
 			ZD.showSingleUserData(1);
 			break;
 		case 2:
-			user.setMenge(user.menge() + (newPosition - oldPosition));
+			user.setMenge(user.getMenge() + (newPosition - oldPosition));
 			ZD.showSingleUserData(2);
 			break;
 		}

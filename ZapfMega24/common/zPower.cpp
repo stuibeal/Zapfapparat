@@ -72,7 +72,9 @@ void zPower::check() {
 		}
 		uint16_t newHelligkeit = analogRead(LICHT_SENSOR_PIN);
 		helligkeit = (oldHelligkeit + newHelligkeit) / 8;
+		autoLight();
 	}
+
 }
 
 void zPower::tastenLed(uint8_t taste, uint8_t helligkeit) {
@@ -137,8 +139,17 @@ void zPower::zapfLichtControl(uint8_t pwmValue) {
 	}
 }
 
-void zPower::autoLight(uint8_t offon) {
-	autoLightBool = offon;
+void zPower::autoLight(void) {
+	if (autoLightBool) {
+		if (helligkeit < 20) {
+			schLampeControl(1);
+			zapfLichtControl(255-helligkeit);
+		}
+		else {
+			schLampeControl(0);
+			zapfLichtControl(0);
+		}
+	}
 }
 
 void zPower::goSleep(void) {

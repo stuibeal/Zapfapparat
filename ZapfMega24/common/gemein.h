@@ -138,6 +138,10 @@
 #define DOTT 9
 #define INDY 10
 #define JUBI 11
+//TODO: noch einbauen
+#define GIANNA 12
+#define LIGABUE 13
+
 
 
 

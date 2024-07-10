@@ -20,9 +20,6 @@ zDisplay::zDisplay() :
 	strcpy(namebuf, "/");
 	MCUFRIEND_kbv _tft;  //tft objekt
 	U8G2_FOR_ADAFRUIT_GFX u8g2;
-	//myCanvas = new
-	//_infoCanvas = new GFXcanvas1(200, 160);
-
 }
 
 zDisplay::~zDisplay() {
@@ -51,20 +48,23 @@ void zDisplay::beginn(SdFat *psd) {
 	pathlen = strlen(namebuf);
 
 }
+/**
+ * @fn void printInitText(const char*)
+ * @brief Schreibt beim "booten" Dinge ins Display
+ *
+ * @param text
+ */
 void zDisplay::printInitText(const char *text) {
 	u8g2.setCursor(230, u8g2.getCursorY());
 	u8g2.println(text);
 }
 
-void zDisplay::printText(void) {
-	_tft.setFont(0);
-	_tft.setTextSize(2);
-	_tft.setCursor(10, 305);
-	_tft.setTextColor(TFT_BLACK, TFT_WHITE);
-	_tft.println("                                ");
-	_tft.setCursor(10, 305);
-}
-
+/**
+ * @fn void infoText(const char*)
+ * @brief Schreibt am unteren Displayrand eine Mitteilung linksbündig
+ *
+ * @param text
+ */
 void zDisplay::infoText(const char *text) {
 	_tft.fillRect(0, 292, 480, 28, BLACK);
 	u8g2.setCursor(10, 318);
@@ -74,12 +74,26 @@ void zDisplay::infoText(const char *text) {
 	u8g2.print(text);
 }
 
+/**
+ * @fn uint16_t read16(File&)
+ * @brief Hilfsroutine für showBMP
+ *
+ * @param f
+ * @return
+ */
 uint16_t zDisplay::read16(File &f) {
 	uint16_t result;         // read little-endian
 	f.read(&result, sizeof(result));
 	return result;
 }
 
+/**
+ * @fn uint32_t read32(File&)
+ * @brief Hilfsroutine für showBMP
+ *
+ * @param f
+ * @return
+ */
 uint32_t zDisplay::read32(File &f) {
 	uint32_t result;
 	f.read(&result, sizeof(result));
@@ -244,41 +258,15 @@ uint8_t zDisplay::showBMP(char const *nm, int16_t x, int16_t y) {
 	return (ret);
 }
 
-void zDisplay::print_val(int val, int16_t x, int16_t y, int c, bool komma) //Hilfsroutine zum Daten anzeigen
-		{
-	char buf[10];
-	int16_t x1, y1;
-	uint16_t w, h;
-	_tft.setTextSize(1);
-	_tft.setFont(&FreeSans12pt7b);
-
-	_tft.getTextBounds("00,00", x, y, &x1, &y1, &w, &h);
-	float val2;
-	if (komma == 1) {
-		val2 = val % 100;
-		val2 = val2 / 100;
-		val2 = val2 + (val / 100);
-		dtostrf(val2, 5, 2, buf);   //e.g. 12.34
-	} else {
-		val2 = val;
-		dtostrf(val2, 4, 0, buf);   //e.g. 1234
-	}
-
-	_tft.fillRect(x1, y1 - 2, w + 3, h, ZGRUEN);
-
-	if (c == 1) {
-		_tft.setTextColor(BLACK);
-		_tft.setFont(&FreeSansBold12pt7b);
-	} else {
-		_tft.setTextColor(WHITE);
-	}
-	if (c == 2) {
-		_tft.setTextColor(RED);
-	}
-	_tft.setCursor(x, y);
-	_tft.print(buf);
-}
-
+/**
+ * @fn void printValue(uint16_t, uint16_t, int, bool)
+ * @brief schreibt ans Display, bei bool komma mit zwei
+ * 		  Stellen nach dem Komma. Wert solle mal 100 sein
+ * @param x
+ * @param y
+ * @param val
+ * @param komma
+ */
 void zDisplay::printValue(uint16_t x, uint16_t y, int val, bool komma) {
 	char buf[10];
 	if (komma == 1) {
@@ -289,6 +277,15 @@ void zDisplay::printValue(uint16_t x, uint16_t y, int val, bool komma) {
 	u8g2.drawStr(x, y, buf);
 }
 
+/**
+ * @fn void print_val3(int, int16_t, int16_t, bool)
+ * @brief Für das Anzeigen von Zahlen auf der Zapfsäule.
+ *
+ * @param val
+ * @param x
+ * @param y
+ * @param komma
+ */
 void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsroutine zum Daten anzeigen
 		{
 	u8g2.setForegroundColor(WHITE);      // apply Adafruit GFX color
@@ -297,68 +294,25 @@ void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsrout
 	u8g2.setFont(FONT_ZAHLEN);
 	char buf[10];
 	if (komma == 1) {
-		sprintf(buf, "%2d,%02d" , val / 100, val % 100);
+		sprintf(buf, "%2d,%02d", val / 100, val % 100);
 	} else {
 		sprintf(buf, "%4d", val);
 	}
-	//u8g2.print(buf);
 	u8g2.drawStr(x, y, buf);
-
 }
 
-/**
- * Schreibt einen INT in einen Canvas und Zeigt ihn an
- * @param val 	der anzuzeigende Wert
- * @param x	X Position des Canvas am Screen
- * @param y	Y Position des Canvas am Screen
- * @param textColor	Textfarbe
- * @param backColor	Hintergrundfarbe
- * @param _pfont	Pointer zur Schriftart
- * @param komma		Darstellung mit oder ohne Komma (def KOMMA/GANZZAHL)
- */
-//void zDisplay::printVal(int val, int16_t x, int16_t y, uint16_t textColor,
-//		uint16_t backColor, const GFXfont *_pfont, bool komma) //Hilfsroutine zum Daten anzeigen
-//		{
-//	char buf[10];
-//	_canvas->setTextSize(1);
-//	_canvas->fillScreen(0);
-//	_canvas->setCursor(0, 20);  //Text Cursor bei Fonts ist unten
-//
-//	if (komma) {
-//		sprintf(buf, "%d,%02d", val / 100, val % 100);
-//	} else {
-//		sprintf(buf, "%d", val);
-//	}
-//
-//	_canvas->setFont(_pfont);
-//	_canvas->print(buf);
-//	_tft.drawBitmap(x, y, _canvas->getBuffer(), _canvas->width(),
-//			_canvas->height(), textColor, backColor);
-//}
-
-void zDisplay::printInt(uint16_t wertInt) {
-	int x = 300;
-	int y = 200;
-
-	_tft.setCursor(x, y);
-
-	char wert[80] = "0000";
-	sprintf(wert, "Honk: %4u %x", wertInt, wertInt);
-	_tft.println(wert);
-
-}
 /**
  * Hilfsroutine um die Userdaten anzuzeigen. Sinnvoll nachdem
  * der User gewählt hat
  * @param user 	Pointer zum Benutzerobjekt
  */
 void zDisplay::userShow(benutzer *user) {
+	static bool lastUserVoll = 0;
 	char namebuf[32] = "/usr/x.bmp";
 
 	if (user->getGodMode() > 0) {
 		sprintf(namebuf, "/god/%d0.bmp", user->getGodMode());
-	}
-	else{
+	} else {
 		sprintf(namebuf, "/usr/%d.bmp", user->aktuell);
 	}
 	showUserPic(namebuf);
@@ -380,23 +334,39 @@ void zDisplay::userShow(benutzer *user) {
 	uint16_t x = 271; /*da fängt der Rahmen an*/
 	uint16_t y = 180; /*erste Zeile*/
 
-	u8g2.drawUTF8(x, y-15, "TEMPERATUR");
+	u8g2.drawUTF8(x, y - 15, "TEMPERATUR");
 	u8g2.drawUTF8(x, y, "SOLL IN °C");
-	y= 215;
-	u8g2.drawUTF8(x, y-15, "ZAPFMENGE");
+	y = 215;
+	u8g2.drawUTF8(x, y - 15, "ZAPFMENGE");
 	u8g2.drawUTF8(x, y, "IN ML");
-	y= 250;
-	u8g2.drawUTF8(x, y-15, "HOIWE AM");
+	y = 250;
+	u8g2.drawUTF8(x, y - 15, "HOIWE AM");
 	u8g2.drawUTF8(x, y, "HEUTIGEN TAG");
-	y= 285;
-	u8g2.drawUTF8(x, y-15, "REST IM");
+	y = 285;
+	u8g2.drawUTF8(x, y - 15, "REST IM");
 	u8g2.drawUTF8(x, y, "FASS IN L");
 	showAllUserData();
+
+	/*Wenn über 8 Halbe soll der das volle Bild zeigen*/
+ 	if (user->getBierTag() > 3999 && !lastUserVoll) {
+		showBMP("/bmp/bg_voll.bmp", 102, 0);
+		lastUserVoll = 1;
+	} else if (user->getBierTag() < 4000 && lastUserVoll) {
+		showBMP("/bmp/bg_leer.bmp", 102, 0); /* Bier leer, w:132 h:291 */
+		lastUserVoll = 0;
+	}
+
 }
 
+/**
+ * @fn void infoscreen(tempControl*, benutzer*)
+ * @brief Zeigt alle möglichen Daten an.
+ *
+ * @param temp
+ * @param user
+ */
 void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 	temp->requestSensors();
-	temp->holeDaten();
 	_tft.fillScreen(BLACK);
 	_tft.fillRect(0, 0, 480, 27, ZDUNKELGRUEN);
 	u8g2.setFontMode(0);                 // use u8g2 none transparent mode
@@ -422,9 +392,11 @@ void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 		u8g2.print(user->bierTag[x]);
 		u8g2.println(" ml");
 	}
+
+	temp->holeDaten();
 	u8g2.setCursor(5, 60);
 	u8g2.setFont(FONT_BOLD12);
-	u8g2.println("ZAPFZYSTEM");
+	u8g2.println(_NAME_);
 	u8g2.setFont(FONT_NORMAL12);
 	u8g2.println(_VERSION_);
 	u8g2.println();
@@ -439,12 +411,24 @@ void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 	temp->requestSensors();
 }
 
+/**
+ * @fn void printlnTempC(const char*, int16_t)
+ * @brief Hilfsroutine für die Infoseite
+ *
+ * @param text
+ * @param tempInC
+ */
 void zDisplay::printlnTempC(const char *text, int16_t tempInC) {
 	u8g2.print(text);
 	printValue(155, u8g2.getCursorY(), tempInC, KOMMA);
 	u8g2.println("°C");
 }
 
+/**
+ * @fn void backgroundPicture()
+ * @brief Grundlegendes Hintergrundbild mit Beschriftung
+ *
+ */
 void zDisplay::backgroundPicture() {
 	_tft.fillScreen(ZBRAUN);
 	_tft.fillRect(0, 293, 480, 28, BLACK);
@@ -458,19 +442,29 @@ void zDisplay::backgroundPicture() {
 	u8g2.setFontMode(0);
 	u8g2.drawUTF8(17, 40, "KÜHLBLOCK");
 	u8g2.drawUTF8(17, 52, "TEMPERATUR");
-	u8g2.drawUTF8(75, 92, "°C");
+	u8g2.drawUTF8(75, 97, "°C");
 	u8g2.drawUTF8(17, 140, "ZAPFMENGE");
-	u8g2.drawUTF8(75, 180, "ml");
+	u8g2.drawUTF8(75, 185, "ml");
 	u8g2.drawUTF8(17, 230, "DRUCK");
-	u8g2.drawUTF8(75, 270, "atü");
-
-
+	u8g2.drawUTF8(75, 275, "atü");
 }
 
+/**
+ * @fn void showUserPic(const char*)
+ * @brief Zeigt das Userbild an. Krass.
+ *
+ * @param bmp
+ */
 void zDisplay::showUserPic(const char *bmp) {
 	showBMP(bmp, 290, 26);
 }
 
+/**
+ * @fn void showUserGod2Pic(void)
+ * @brief Sollte der User im Godmode sein wird nach dem Zapfen
+ * 		  ein anderes Bild angezeigt. Auch krass.
+ *
+ */
 void zDisplay::showUserGod2Pic(void) {
 	if (user.getGodMode() > 0) {
 		char namebuf[30] = "/god/10.bmp";
@@ -479,6 +473,12 @@ void zDisplay::showUserGod2Pic(void) {
 	}
 }
 
+/**
+ * @fn void showSingleUserData(uint8_t)
+ * @brief Zeigt eine einzelne Zeile der Userdaten an der richtigen stelle an.
+ *
+ * @param whatLine
+ */
 void zDisplay::showSingleUserData(uint8_t whatLine) {
 	u8g2.setFont(FONT_ZAHLEN);
 	if (einsteller == whatLine) {
@@ -495,35 +495,56 @@ void zDisplay::showSingleUserData(uint8_t whatLine) {
 	case 0:
 		break;
 	case 1:
-		printValue(cursX, cursY, user.bierTemp[user.aktuell], KOMMA);
+		printValue(cursX, cursY, user.getSollTemperatur(), KOMMA);
 		break;
 	case 2:
-		printValue(cursX, cursY, user.bierMenge[user.aktuell], GANZZAHL);
+		printValue(cursX, cursY, user.getMenge(), GANZZAHL);
 		break;
 	case 3:
-		printValue(cursX, cursY, user.bierTag[user.aktuell] / 500, KOMMA);
+		printValue(cursX, cursY, user.getBierTag() / 5, KOMMA);
 		break;
 	case 4:
-		printValue(cursX, cursY, user.restMengeFass / 1000, KOMMA);
+		printValue(cursX, cursY, user.getRestMengeFass() / 10, KOMMA);
 		break;
 	}
 }
 
+/**
+ * @fn void showAllUserData()
+ * @brief Zeigt alle Userdaten an
+ *
+ */
 void zDisplay::showAllUserData() {
 	for (uint8_t i = 1; i < 5; i++) {
 		showSingleUserData(i);
 	}
 }
 
+/**
+ * @fn void showBalken(uint16_t, uint16_t)
+ * @brief für den Godmode eine Balkenanzeige zum Zapfvorgang
+ *
+ * @param istwert
+ * @param zielwert
+ */
 void zDisplay::showBalken(uint16_t istwert, uint16_t zielwert) {
 	long int aktuelleBreite = 0;
-	aktuelleBreite = map((long int)istwert, 0, (long int)user.bierMenge, 0, 480);
-	if (aktuelleBreite > 0){
+	aktuelleBreite = map((long int) istwert, 0, (long int) user.getMenge(), 0,
+			480);
+	if (aktuelleBreite > 0) {
 		_tft.fillRect(0, 292, aktuelleBreite, 4, ZDUNKELGRUEN);
 	}
 }
 
-void zDisplay::showTastenFunktion(const char* textTaste1, const char* textTaste2) {
+/**
+ * @fn void showTastenFunktion(const char*, const char*)
+ * @brief Zeigt die aktuellen Tastenfunktionen an, links und rechtsbündig
+ *
+ * @param textTaste1
+ * @param textTaste2
+ */
+void zDisplay::showTastenFunktion(const char *textTaste1,
+		const char *textTaste2) {
 	_tft.fillRect(0, 292, 480, 28, BLACK);
 	u8g2.setCursor(10, 318);
 	u8g2.setForegroundColor(WHITE);
@@ -531,6 +552,6 @@ void zDisplay::showTastenFunktion(const char* textTaste1, const char* textTaste2
 	u8g2.setFont(FONT_NORMAL12);
 	u8g2.print(textTaste1);
 	uint16_t stringWeite = u8g2.getUTF8Width(textTaste2);
-	u8g2.setCursor(470-stringWeite, 318);
+	u8g2.setCursor(470 - stringWeite, 318);
 	u8g2.print(textTaste2);
 }
