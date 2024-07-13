@@ -78,7 +78,7 @@ void zPower::check() {
 }
 
 void zPower::tastenLed(uint8_t taste, uint8_t helligkeit) {
-	if (bkPowerState >= powerState::BATT_NORMAL) {
+	if (bkPowerState <= powerState::BATT_NORMAL) {
 		switch (taste) {
 		case 0:
 			analogWrite(TASTE1_LED, helligkeit);
@@ -124,7 +124,7 @@ void zPower::wsLedGrundbeleuchtung() {
 }
 
 void zPower::schLampeControl(uint8_t offon) {
-	if (bkPowerState >= powerState::BATT_NORMAL) {
+	if (bkPowerState <= powerState::BATT_NORMAL) {
 		digitalWrite(Z_SCH_LAMPE_PIN, offon);
 	} else {
 		digitalWrite(Z_SCH_LAMPE_PIN, 0);
@@ -132,7 +132,7 @@ void zPower::schLampeControl(uint8_t offon) {
 }
 
 void zPower::zapfLichtControl(uint8_t pwmValue) {
-	if (bkPowerState >= powerState::BATT_NORMAL) {
+	if (bkPowerState <= powerState::BATT_NORMAL) {
 		flowmeter.flowDataSend(LED_FUN_4, 0b11111111, pwmValue);
 	} else {
 		flowmeter.flowDataSend(LED_FUN_4, 0b11111111, 0);
