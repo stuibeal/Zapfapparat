@@ -869,6 +869,7 @@ void spezialprogramm(uint32_t input) {
 		sound.mp3Play(11, varContent);
 		break;
 	default:
+		ZD.infoText("Auswahl nicht möglich");
 		break;
 	}
 }
