@@ -408,7 +408,8 @@ void checkWhileZapfing() {
 
 void checkImmer() {
 	if (((millis() - oldTime) > 500)) {
-		sprintf(buf, "Helligkeit %d, powerstate %d", power.getHelligkeit(), power.getPowerState());
+		sprintf(buf, "Helligkeit %d, powerstate %d", power.getHelligkeit(),
+				power.getPowerState());
 		power.check();
 		ZD.infoText(buf);
 		temp.holeDaten();
@@ -583,9 +584,6 @@ void waehlFunktionen() {
 		break;
 	case 9413: //Telefonnummer
 		reinigungsprogramm();
-		break;
-	case 75337: //sleep
-		// do power.goSleep();
 		break;
 	default:
 		spezialprogramm(kienmuehle);
@@ -849,6 +847,12 @@ void spezialprogramm(uint32_t input) {
 			break;
 		case 7: // SchLampe aus
 			power.schLampeControl(0);
+			break;
+		}
+		break;
+	case 7: //sleep
+		switch (varContent) {
+		case 5337: //LEEP
 			break;
 		}
 		break;
