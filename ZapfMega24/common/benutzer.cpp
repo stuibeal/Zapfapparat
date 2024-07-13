@@ -11,7 +11,10 @@
 benutzer::benutzer() {
 	gesamtMengeTotal = 0;
 	gesamtMengeTag = 0;
-
+	zapfStatus = zapfStandby;
+	oldZapfStatus = zapfStandby;
+	restMengeFass = 30000;
+	zapfMenge = 0;
 	for (uint8_t x = 0; x < 19; x++) {
 		bierTemp[x] = STANDARD_TEMP;
 		bierMenge[x] = STANDARD_MENGE;
@@ -19,24 +22,15 @@ benutzer::benutzer() {
 		bierGesamt[x] = 0;
 		godMode[x] = false;
 		musik[x] = 0;
-
 	}
-	zapfStatus = zapfStandby;
-	oldZapfStatus = zapfStandby;
-	restMengeFass = 30000;
-	zapfMenge = 0;
-
 }
 
 benutzer::~benutzer() {
-
 }
-
 
 uint16_t benutzer::gesamt() {
 	return bierGesamt[aktuell];
 }
-
 
 void benutzer::addBier(uint16_t zapfmenge) {
 	bierTag[aktuell] += zapfmenge;
