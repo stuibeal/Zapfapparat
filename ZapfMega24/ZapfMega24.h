@@ -20,6 +20,7 @@ void anfang(void) ;
 void loop() ;
 void zapfStandbyProg(void);
 void zapfErrorProg(void);
+void preZapf(uint8_t nummer);
 void zapfBeginnProg(void);
 void amZapfenProg(void);
 void godZapfenProg(void);
@@ -42,6 +43,7 @@ void dataLogger(void) ;
 void drehgeber() ;
 void einstellerUmsteller_ISR() ;
 void reinigungsprogramm(void);
+void showSpezialProgrammInfo(uint8_t programmNummer);
 void spezialprogramm(uint32_t input);
 
 

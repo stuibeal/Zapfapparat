@@ -12,7 +12,7 @@ benutzer::benutzer() {
 	gesamtMengeTotal = 0;
 	gesamtMengeTag = 0;
 
-	for (uint8_t x = 0; x < 11; x++) {
+	for (uint8_t x = 0; x < 19; x++) {
 		bierTemp[x] = STANDARD_TEMP;
 		bierMenge[x] = STANDARD_MENGE;
 		bierTag[x] = 0;

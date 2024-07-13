@@ -115,10 +115,11 @@ uint8_t zDisplay::showBMP(char const *nm, int16_t x, int16_t y) {
 	uint32_t rowSize;           // Not always = bmpWidth; may have padding
 	uint8_t sdbuffer[3 * BUFFPIXEL];    // pixel in buffer (R+G+B per pixel)
 	uint16_t lcdbuffer[(1 << PALETTEDEPTH) + BUFFPIXEL], *palette = NULL;
-	uint8_t bitmask, bitshift;
+	uint8_t bitmask = 0xFF;
+	uint8_t bitshift = 0;
 	boolean flip = true;        // BMP is stored bottom-to-top
-	int16_t w, h, row, col, lcdbufsiz = (1 << PALETTEDEPTH) + BUFFPIXEL,
-			buffidx; //war int
+	int16_t w, h, row, col, lcdbufsiz = (1 << PALETTEDEPTH) + BUFFPIXEL;
+	int16_t buffidx= 0; //war int
 	uint32_t pos;               // seek position
 	boolean is565 = false;      //
 
@@ -191,9 +192,9 @@ uint8_t zDisplay::showBMP(char const *nm, int16_t x, int16_t y) {
 										// and scanline padding.  Also, the seek only takes
 										// place if the file position actually needs to change
 										// (avoids a lot of cluster math in SD library).
-			uint8_t r;
-			uint8_t g;
-			uint8_t b;
+			uint8_t r=0;
+			uint8_t g=0;
+			uint8_t b=0;
 			int lcdidx, lcdleft;
 			if (flip)   // Bitmap is stored bottom-to-top order (normal BMP)
 				pos = bmpImageoffset + (bmpHeight - 1 - row) * rowSize;
@@ -210,7 +211,7 @@ uint8_t zDisplay::showBMP(char const *nm, int16_t x, int16_t y) {
 				if (lcdleft > lcdbufsiz)
 					lcdleft = lcdbufsiz;
 				for (lcdidx = 0; lcdidx < lcdleft; lcdidx++) { // buffer at a time
-					uint16_t color;
+					uint16_t color=0;
 					// Time to read more pixel data?
 					if (buffidx >= sizeof(sdbuffer)) { // Indeed
 						bmpFile.read(sdbuffer, sizeof(sdbuffer));
@@ -554,4 +555,33 @@ void zDisplay::showTastenFunktion(const char *textTaste1,
 	uint16_t stringWeite = u8g2.getUTF8Width(textTaste2);
 	u8g2.setCursor(470 - stringWeite, 318);
 	u8g2.print(textTaste2);
+}
+
+void zDisplay::printProgrammInfo(const char* textUeberschrift){
+	_tft.fillRect(271, 146, 209, 140, ZBRAUN);
+	u8g2.setFont(FONT_BOLD19);
+	u8g2.setFontDirection(0); /* 0 grad */
+	u8g2.setBackgroundColor(ZBRAUN);
+	u8g2.setForegroundColor(ZDUNKELGRUEN);
+	u8g2.setFontDirection(0);
+	uint16_t x = 271; /*da fängt der Rahmen an*/
+	uint16_t y = 185; /*erste Zeile*/
+	_tft.drawFastHLine(x, y+3, 136, WHITE);
+	u8g2.drawUTF8(x, y, textUeberschrift);
+}
+
+void zDisplay::printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const char* textZeile) {
+	u8g2.setFont(FONT_NORMAL12); /*10er font is 16 hoch*/
+	uint16_t zA = 16; /*Zeilenabstand*/
+	uint16_t x = 271; /*da fängt der Rahmen an*/
+	uint16_t y = 190+(zeile*zA);
+	switch (spalte) {
+	case 1:
+		break;
+	case 2:
+		x= 339;
+	}
+	u8g2.setForegroundColor(BLACK);
+	u8g2.setBackgroundColor(ZBRAUN);
+	u8g2.drawUTF8(x, y, textZeile);
 }

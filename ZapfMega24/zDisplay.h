@@ -102,6 +102,9 @@ public:
 	void showAllUserData(void);
 	void showBalken(uint16_t istwert, uint16_t zielwert);
 	void showTastenFunktion(const char* textTaste1, const char* textTaste2);
+	void printProgrammInfo(const char* textUeberschrift);
+	void printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const char* textZeile);
+
 
 private:
 	MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen

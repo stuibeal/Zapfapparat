@@ -211,8 +211,19 @@ void zapfErrorProg() {
 		while (ventil.getValveProzent() > 0) {
 			ventil.check();
 		}
+		ZD.infoText("Zapfhahn gesperrt mein Herr!");
 		user.zapfStatus = user.zapfModus::zapfStandby;
 	}
+}
+void preZapf(uint8_t nummer) {
+	kienmuehle = 0; /*wenn man sich verwählt hat bei der Nummerneingabe wirds gelöscht*/
+	/* sollten da noch Bierreste sein gehören die dem Vorgänger*/
+	if (flowmeter.getFreshZapfMillis() > 0) {
+		user.addBier(flowmeter.getMilliliter());
+	}
+	user.aktuell = nummer;
+	user.oldZapfStatus = user.zapfModus::zapfStandby;
+	user.zapfStatus = user.zapfModus::zapfBeginn;
 }
 
 void zapfBeginnProg(void) {
@@ -291,7 +302,6 @@ void amZapfenProg(void) {
 		user.setMenge(flowmeter.getMilliliter());
 	}
 }
-
 
 void godZapfenProg(void) {
 	if (user.oldZapfStatus != user.zapfStatus) {
@@ -389,8 +399,7 @@ void checkWhileZapfing() {
 			if (DEBUG_A) {
 				DEBUGMSG(sound.debugmessage);
 			}
-		}
-		else {
+		} else {
 			ZD.print_val3((int) flowmeter.getMilliliter(), 17, 170, GANZZAHL);
 		}
 	}
@@ -494,15 +503,7 @@ void waehlscheibe() {
 	if (zahlemann > 0) {
 		switch (digitalRead(TASTE2_PIN)) {
 		case 0: /* Wenn nicht, Zapfprogramm starten */
-			kienmuehle = 0; /*wenn man sich verwählt hat bei der Nummerneingabe wirds gelöscht*/
-			/* sollten da noch Bierreste sein gehören die dem Vorgänger*/
-			if (flowmeter.getFreshZapfMillis() > 0) {
-				user.addBier(flowmeter.getMilliliter());
-			}
-
-			user.aktuell = zahlemann;
-			user.oldZapfStatus = user.zapfModus::zapfStandby;
-			user.zapfStatus = user.zapfModus::zapfBeginn;
+			preZapf(zahlemann);
 			break;
 		case 1: /* Wenn doch, Nummerneingabe starten */
 			power.tastenLed(2, 255);
@@ -574,24 +575,10 @@ void waehlFunktionen() {
 		user.setGodMode(JUBI);
 		ZD.userShow(&user);
 		break;
-	case 8100:
-		ventil.openValve();
-		break;
-	case 80:
-		ventil.closeValve();
-		break;
 	case 1275: //Die Telefonnummer der Kienmühle
 		oldWaehlscheibeFun();
 		break;
-	case 54248: /* LICHT*/
-		flowmeter.flowDataSend(LED_FUN_4, 0b11111111, 128);
-		digitalWrite(Z_SCH_LAMPE_PIN, 1);
-		break;
-
 	case 9413: //Telefonnummer
-		reinigungsprogramm();
-		break;
-	case 25326: //clean
 		reinigungsprogramm();
 		break;
 	case 75337: //sleep
@@ -720,44 +707,117 @@ void reinigungsprogramm(void) {
 	unsigned long waitingTime = millis();
 	int sekunden = 0;
 	power.tastenLed(1, 255);
-	while (!digitalRead(TASTE1_PIN)) {
+	while (!digitalRead(TASTE2_PIN)) {
 		if (millis() - waitingTime >= 1000) {
 			waitingTime = millis();
 			sekunden++;
 			sprintf(buf, "Reinigt seit %d Sekunden", sekunden);
-			ZD.infoText(buf);
+			ZD.showTastenFunktion(buf, "Ende");
 		}
-
 	}
 	ventil.cleanPumpOff();
 	ZD.infoText("Ender Geländer");
+}
 
+void showSpezialProgrammInfo(uint8_t programmNummer) {
+	static uint8_t oldProgrammNummer;
+	if (programmNummer != oldProgrammNummer) {
+		oldProgrammNummer = programmNummer;
+		switch (programmNummer) {
+		case 255: //infoscreen anfang
+			ZD.printProgrammInfo("Spezialauswahl");
+			ZD.printProgrammInfoZeilen(1, 1, "1 Benutzer");
+			ZD.printProgrammInfoZeilen(2, 1, "2 Apparat");
+			ZD.printProgrammInfoZeilen(3, 1, "3 Fass");
+			ZD.printProgrammInfoZeilen(4, 1, "4 Info");
+			ZD.printProgrammInfoZeilen(5, 1, "5 Licht");
+			ZD.printProgrammInfoZeilen(1, 2, "6 MIDI");
+			ZD.printProgrammInfoZeilen(2, 2, "7 Schlafen");
+			ZD.printProgrammInfoZeilen(3, 2, "8 Ventil");
+			ZD.printProgrammInfoZeilen(4, 2, "9 MP3");
+		case 1: //USER 11-19
+			ZD.printProgrammInfo("Benutzer 11-19");
+			ZD.printProgrammInfoZeilen(1, 1, "Jetzt bitte zweite");
+			ZD.printProgrammInfoZeilen(2, 1, "Zahl für die Benutzer");
+			ZD.printProgrammInfoZeilen(3, 1, "11-19 wählen.");
+			ZD.printProgrammInfoZeilen(4, 1, "Beispielhaft die 8");
+			ZD.printProgrammInfoZeilen(5, 1, "für Nutzer 18");
+			break;
+		case 2: // ABC APPARAT
+			ZD.printProgrammInfo("Apparat");
+			ZD.printProgrammInfoZeilen(1, 1, "LEAN: Reinigung");
+			break;
+		case 3: // DEF FASS
+			ZD.printProgrammInfo("Fasswechsel");
+			ZD.printProgrammInfoZeilen(1, 1, "Jetzt zweistellig");
+			ZD.printProgrammInfoZeilen(2, 1, "die Faßgröße wählen");
+			ZD.printProgrammInfoZeilen(3, 1, "MIN: 01, MAX: 65");
+			ZD.printProgrammInfoZeilen(4, 1, "Dann wird der");
+			ZD.printProgrammInfoZeilen(5, 1, "Restbierzähler rückgesetzt.");
+			break;
+		case 4: // GHI  INFO
+			break;
+		case 5: //LKJ LICHT
+			ZD.printProgrammInfo("Lichtprogramm");
+			ZD.printProgrammInfoZeilen(1, 1, "ICHT: An"); //4248
+			ZD.printProgrammInfoZeilen(2, 1, "2 Auto aus");
+			ZD.printProgrammInfoZeilen(3, 1, "3 Auto an");
+			ZD.printProgrammInfoZeilen(4, 1, "4 Licht aus");
+			ZD.printProgrammInfoZeilen(1, 2, "6 SchLampe an");
+			ZD.printProgrammInfoZeilen(2, 2, "7 SchLampe aus");
+
+			break;
+		case 6: //MNO MIDI
+			ZD.printProgrammInfo("MIDI Steuerung");
+			break;
+		case 7: //PQRS Schlafen
+			ZD.printProgrammInfo("Schlafprogramm");
+			ZD.printProgrammInfoZeilen(1, 1, "LEEP: Zapfenstreich"); //5337
+			ZD.printProgrammInfoZeilen(2, 1, "");
+			break;
+		case 8: //TUV VENTIL
+			ZD.printProgrammInfo("Ventilsteuerung");
+			ZD.printProgrammInfoZeilen(1, 1, "");
+			ZD.printProgrammInfoZeilen(2, 1, "");
+			break;
+		case 9: //WXY
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 void spezialprogramm(uint32_t input) {
 	uint16_t varSet = 0;
 	uint16_t varContent = 0;
-	if (input > 999999 && input < 10000000) {
-		varSet = input / 100000; //2 x Zahl VarSet
-		varContent = input % 100000;  //5x varContent
-	} else if (input > 99999 && input < 1000000) {
-		varSet = input / 10000; //zwei Zahl Varset
-		varContent = input % 10000;  //4x Content (00-9999)
-	} else if (input > 9999 && input < 100000) {
-		varSet = input / 1000;  //2x zahl Varset
-		varContent = input % 1000;  //drei Zahlen Content
+	if (input > 9999 && input < 100000) {
+		varSet = input / 10000;  //1x Varset
+		varContent = input % 10000;  //4x Content
 	} else if (input > 999 && input < 10000) {
-		varSet = input / 100;  //2x zahl Varset
-		varContent = input % 100;  //zwei  Zahlen Content
+		varSet = input / 1000;  //1x Varset
+		varContent = input % 1000;  //1x Content
 	} else if (input > 99 && input < 1000) {
-		varSet = input / 100;  //1x zahl Varset
-		varContent = input % 100;  //zwei  Zahlen Content
+		varSet = input / 100;  //1x Varset
+		varContent = input % 100;  //1x Content
+	} else if (input > 19 && input < 100) {
+		varSet = input / 10; //1x zahl Varset
+		varContent = input % 10; // 1x Content
+	} else if (input > 10 && input < 20) {
+		preZapf(input);
 	}
+
 	switch (varSet) {
-	case 0:
-		//play dööh dööh dööh
+	case 2: //Apparat
+		switch (varContent) {
+		case 5326: // lean
+			reinigungsprogramm();
+			break;
+		}
 		break;
-	case 3: // F für Fass
+
+	case 3:
+		// F für Fass
 		if (varContent < 65) {
 			user.restMengeFass = varContent * 1000;
 			ZD.showAllUserData();
@@ -765,18 +825,43 @@ void spezialprogramm(uint32_t input) {
 			ZD.infoText("Fassgröße über 65l nicht möglich!");
 		}
 		break;
-	case 8: //Ventil
+
+	case 5:
+		// LICHT
+		switch (varContent) {
+		case 4248: /* LICHT*/
+			flowmeter.flowDataSend(LED_FUN_4, 0b11111111, 0xFF);
+			digitalWrite(Z_SCH_LAMPE_PIN, 1);
+			break;
+		case 2: //auto aus
+			power.setAutoLight(0);
+			break;
+		case 3: //auto an
+			power.setAutoLight(1);
+			break;
+		case 4: // Licht aus
+			break;
+		case 6: // SchLampe an
+			power.schLampeControl(1);
+			break;
+		case 7: // SchLampe aus
+			power.schLampeControl(0);
+			break;
+		}
+		break;
+
+	case 8:
+		//Ventil
 		if (varContent > 100) {
 			varContent = 100;
 		}
 		ventil.setValveProzent(varContent);
-
 		break;
-	case 9: //Mediaplayer
+	case 9:
+		//Mediaplayer
 		sound.mp3Play(11, varContent);
 		break;
-	case 99: // auch Mediaplayer
-		sound.mp3Play(11, varContent);
+	default:
 		break;
 	}
 }

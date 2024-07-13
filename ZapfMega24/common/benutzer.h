@@ -11,16 +11,27 @@
 #include <stdint.h>
 #include <string.h>
 
-const uint8_t arrayGroesse = 12;
+const uint8_t arrayGroesse = 19;
 
 class benutzer {
 public:
 	benutzer();
 	virtual ~benutzer();
 	uint8_t aktuell = 0;
-	String username[arrayGroesse] = { "Bitte wählen", "Christoph", "NO-Y",
-			"DJ R. Kentn", "Ebi", "Maex", "Didi", "Beda", "Basi", "Al",
-			"Piene" };
+	String username[arrayGroesse] = {
+	/*0*/"Bitte wählen",
+	/*1*/"Christoph",
+	/*2*/"Gast, weiblich",
+	/*3*/"DJ R. Kentn",
+	/*4*/"Ebi",
+	/*5*/"Maex",
+	/*6*/"Didi",
+	/*7*/"Beda",
+	/*8*/"Basi",
+	/*9*/"Al",
+	/*10*/"Gast, herrlich",
+	/*11*/"Alois",
+	/*12*/"Piene", };
 	uint16_t bierTemp[arrayGroesse];
 	uint16_t bierMenge[arrayGroesse];
 	uint16_t bierTag[arrayGroesse];
