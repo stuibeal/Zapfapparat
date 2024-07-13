@@ -408,10 +408,7 @@ void checkWhileZapfing() {
 
 void checkImmer() {
 	if (((millis() - oldTime) > 500)) {
-		sprintf(buf, "Helligkeit %d, powerstate %d", power.getHelligkeit(),
-				power.getPowerState());
 		power.check();
-		ZD.infoText(buf);
 		temp.holeDaten();
 		flowmeter.flowDataSend(GET_ML, 0, 0);
 		oldTime = millis();
@@ -428,6 +425,17 @@ void dauerCheck(void) {
 
 	if (digitalRead(WSready)) {
 		waehlscheibe();
+	}
+
+	if (digitalRead(TASTE2_PIN)) {
+		power.setLed(2, 255);
+		if (kienmuehle <10) {
+			uint8_t zahl=kienmuehle;
+			if (kienmuehle==0){
+				zahl=255;
+			}
+			showSpezialProgrammInfo(zahl);
+		}
 	}
 	//Wenn was rumgestellt wird
 	if (oldeinsteller != einsteller) {
@@ -620,8 +628,8 @@ void belohnungsMusik() {
 //Infoknopf
 void infoseite(void) {
 	analogWrite(TASTE1_LED, 10);
-	sound.loadSingleMidi("SKYFALL.MID");
-	sound._SMF->pause(false);
+//	sound.loadSingleMidi("SKYFALL.MID");
+//	sound._SMF->pause(false);
 	ZD.infoscreen(&temp, &user);
 
 //ZD.setFont(&FreeSans9pt7b);
