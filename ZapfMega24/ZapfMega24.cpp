@@ -885,13 +885,21 @@ void spezialprogramm(uint32_t input) {
 			sound._mp3->playNext();
 			break;
 		case 2: // RANDOM SONG
-			sound._mp3->playFolderRepeat(6);
+			sound._mp3->playStop();
 			break;
 		case 3: // PLAYLIST
+			sound._mp3->playSpecific(31, 16);
+			break;
+		case 4:
+			sound._mp3->queryFolderFiles(31);
 			break;
 		}
-		if (input > 900) {
-			sound.mp3Play(11, varContent);
+		if (input > 99) {
+			uint16_t folder = 0;
+			uint16_t file = 0;
+			folder = 30+(varContent / 100);
+			file = varContent % 100;
+			sound.mp3Play(folder, file);
 		}
 
 		break;
