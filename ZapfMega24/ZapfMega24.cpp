@@ -427,16 +427,6 @@ void dauerCheck(void) {
 		waehlscheibe();
 	}
 
-	if (digitalRead(TASTE2_PIN)) {
-		power.setLed(2, 255);
-		if (kienmuehle <10) {
-			uint8_t zahl=kienmuehle;
-			if (kienmuehle==0){
-				zahl=255;
-			}
-			showSpezialProgrammInfo(zahl);
-		}
-	}
 	//Wenn was rumgestellt wird
 	if (oldeinsteller != einsteller) {
 		ZD.showAllUserData();
@@ -453,6 +443,14 @@ void dauerCheck(void) {
 		seltencheck();
 		nachSchauZeit = millis();
 	}
+	// Sonderfunktionsinfoanzeige
+	if (digitalRead(TASTE2_PIN)) {
+		power.tastenLed(2, 255);
+		if (kienmuehle < 10) {
+			showSpezialProgrammInfo(kienmuehle);
+		}
+	}
+
 	// Wenn Nummer Fertig und Taste losgelassen
 	if (!digitalRead(TASTE2_PIN) && kienmuehle > 0) {
 		power.tastenLed(2, TASTEN_LED_NORMAL);
@@ -729,11 +727,11 @@ void reinigungsprogramm(void) {
 }
 
 void showSpezialProgrammInfo(uint8_t programmNummer) {
-	static uint8_t oldProgrammNummer;
+	static uint8_t oldProgrammNummer = 255;
 	if (programmNummer != oldProgrammNummer) {
 		oldProgrammNummer = programmNummer;
 		switch (programmNummer) {
-		case 255: //infoscreen anfang
+		case 0: //infoscreen anfang
 			ZD.printProgrammInfo("Spezialauswahl");
 			ZD.printProgrammInfoZeilen(1, 1, "1 Benutzer");
 			ZD.printProgrammInfoZeilen(2, 1, "2 Apparat");
@@ -744,6 +742,7 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 			ZD.printProgrammInfoZeilen(2, 2, "7 Schlafen");
 			ZD.printProgrammInfoZeilen(3, 2, "8 Ventil");
 			ZD.printProgrammInfoZeilen(4, 2, "9 MP3");
+			break;
 		case 1: //USER 11-19
 			ZD.printProgrammInfo("Benutzer 11-19");
 			ZD.printProgrammInfoZeilen(1, 1, "Jetzt bitte zweite");
@@ -786,10 +785,17 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 			break;
 		case 8: //TUV VENTIL
 			ZD.printProgrammInfo("Ventilsteuerung");
-			ZD.printProgrammInfoZeilen(1, 1, "");
-			ZD.printProgrammInfoZeilen(2, 1, "");
+			ZD.printProgrammInfoZeilen(1, 1, "Wert 0 - 100");
+			ZD.printProgrammInfoZeilen(2, 1, "wählen um Ventil");
+			ZD.printProgrammInfoZeilen(3, 1, "einzustellen.");
+			ZD.printProgrammInfoZeilen(4, 1, "NICHT HERUMSPIELEN!");
+
 			break;
 		case 9: //WXY
+			ZD.printProgrammInfo("MP3 Player");
+			ZD.printProgrammInfoZeilen(1, 1, "");
+			ZD.printProgrammInfoZeilen(2, 1, "2 shuffle 11");
+
 			break;
 		default:
 			break;
@@ -874,10 +880,25 @@ void spezialprogramm(uint32_t input) {
 		break;
 	case 9:
 		//Mediaplayer
-		sound.mp3Play(11, varContent);
+		switch (varContent) {
+		case 1: //Next
+			sound._mp3->playNext();
+			break;
+		case 2: // RANDOM SONG
+			sound._mp3->playFolderRepeat(6);
+			break;
+		case 3: // PLAYLIST
+			break;
+		}
+		if (input > 900) {
+			sound.mp3Play(11, varContent);
+		}
+
 		break;
+
 	default:
 		ZD.infoText("Auswahl nicht möglich");
+		kienmuehle = 0;
 		break;
 	}
 }

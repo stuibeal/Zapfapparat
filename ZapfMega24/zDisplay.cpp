@@ -67,7 +67,7 @@ void zDisplay::printInitText(const char *text) {
  */
 void zDisplay::infoText(const char *text) {
 	_tft.fillRect(0, 292, 480, 28, BLACK);
-	u8g2.setCursor(10, 318);
+	u8g2.setCursor(10, 316);
 	u8g2.setForegroundColor(WHITE);
 	u8g2.setBackgroundColor(BLACK);
 	u8g2.setFont(FONT_NORMAL12);
@@ -489,7 +489,7 @@ void zDisplay::showSingleUserData(uint8_t whatLine) {
 	}
 	uint16_t zeilenAbstand = 35;
 	uint16_t cursX = 385;
-	uint16_t cursY = 180 + ((whatLine - 1) * zeilenAbstand);
+	uint16_t cursY = 177 + ((whatLine - 1) * zeilenAbstand);
 	u8g2.setBackgroundColor(ZBRAUN);
 
 	switch (whatLine) {
@@ -547,7 +547,7 @@ void zDisplay::showBalken(uint16_t istwert, uint16_t zielwert) {
 void zDisplay::showTastenFunktion(const char *textTaste1,
 		const char *textTaste2) {
 	_tft.fillRect(0, 292, 480, 28, BLACK);
-	u8g2.setCursor(10, 318);
+	u8g2.setCursor(10, 316);
 	u8g2.setForegroundColor(WHITE);
 	u8g2.setBackgroundColor(BLACK);
 	u8g2.setFont(FONT_NORMAL12);
@@ -559,27 +559,31 @@ void zDisplay::showTastenFunktion(const char *textTaste1,
 
 void zDisplay::printProgrammInfo(const char* textUeberschrift){
 	_tft.fillRect(271, 146, 209, 140, ZBRAUN);
-	u8g2.setFont(FONT_BOLD19);
-	u8g2.setFontDirection(0); /* 0 grad */
-	u8g2.setBackgroundColor(ZBRAUN);
-	u8g2.setForegroundColor(ZDUNKELGRUEN);
+	u8g2.setFont(FONT_BOLD12);
+	u8g2.setFontMode(1); //transparent
+	u8g2.setForegroundColor(BLACK);
 	u8g2.setFontDirection(0);
 	uint16_t x = 271; /*da fängt der Rahmen an*/
-	uint16_t y = 185; /*erste Zeile*/
-	_tft.drawFastHLine(x, y+3, 136, WHITE);
+	uint16_t y = 163; /*erste Zeile*/
+	_tft.drawFastHLine(x+1, y+4, 199, BLACK);
+	_tft.drawFastHLine(x, y+3, 199, WHITE);
+	u8g2.drawUTF8(x+1, y+1, textUeberschrift);
+	u8g2.setForegroundColor(ZDUNKELGRUEN);
 	u8g2.drawUTF8(x, y, textUeberschrift);
+	u8g2.setFontMode(0);
+
 }
 
 void zDisplay::printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const char* textZeile) {
 	u8g2.setFont(FONT_NORMAL12); /*10er font is 16 hoch*/
 	uint16_t zA = 16; /*Zeilenabstand*/
 	uint16_t x = 271; /*da fängt der Rahmen an*/
-	uint16_t y = 190+(zeile*zA);
+	uint16_t y = 170+(zeile*zA);
 	switch (spalte) {
 	case 1:
 		break;
 	case 2:
-		x= 339;
+		x= 370;
 	}
 	u8g2.setForegroundColor(BLACK);
 	u8g2.setBackgroundColor(ZBRAUN);
