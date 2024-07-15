@@ -10,6 +10,15 @@
 
 //#include "gemein.h"
 
+/* Merke:
+ * static Variablen müssen einmalig außerhalb der Klasse initialisiert werden,
+ * weil sie wie extern variablen behandelt werden.
+ * Static meint, werden nicht in alle Instanzen der Klasse eingebaut.
+ * ist hier egal, gibt die klasse nur einmal als objekt.
+ */
+uint8_t audio::state = AUDIO_RESTART;
+audio::mp3Dinge audio::mp3D;
+
 //Class c_audio
 audio::audio() :
 		MD_YX5300(MP3Stream), MD_MIDIFile() {
@@ -18,8 +27,17 @@ audio::audio() :
 	_mp3 = nullptr;
 	_SMF = nullptr;
 	state = AUDIO_RESTART;
-	standby = 0;
-	statuscode = 0;
+	for (uint8_t i = 0; i < MAX_PLAYLIST_SONGS; i++) {
+		P[i].song = 0;
+		P[i].folder = 0;
+	}
+	mp3D.songsInPlayList = 0;
+	mp3D.actualPlayListSong = 0;
+	mp3D.standby = 0;
+	mp3D.lastMp3Status = 0;
+	mp3D.currentTrack = 0;
+	mp3D.folderFiles = 0;
+	mp3D.waiting = false;
 }
 
 audio::~audio() {
@@ -36,7 +54,6 @@ void audio::starte(SdFat *pSD, MD_MIDIFile *pSMF, MD_YX5300 *pMp3) {
 
 	_SMF->begin(_sd);
 	_SMF->setMidiHandler(midiCallback);
-	_SMF->setSysexHandler(sysexCallback);
 	_SMF->setFileFolder("/midi/");
 	_SMF->looping(true);
 
@@ -55,6 +72,7 @@ void audio::starte(SdFat *pSD, MD_MIDIFile *pSMF, MD_YX5300 *pMp3) {
 	MP3Stream.begin(MD_YX5300::SERIAL_BPS);
 	_mp3->begin();
 	_mp3->setSynchronous(true);
+	_mp3->setCallback(cbResponse);
 	delay(500); //warten auf init
 	//ZD.println ("MP3 Player ready...");
 
@@ -83,14 +101,12 @@ void audio::pruefe() {
 	case AUDIO_ON: //Audio ist an
 		if (wartezeit >= 12000) {
 			_mp3->check();  //MP3 Player abfragen
-			const MD_YX5300::cbData *status = _mp3->getStatus(); //statuspointer holen
-			statuscode = status->code;
 			/**
 			 * Wenn MP3 File End = true
 			 * UND
 			 * MIDI End of File (ausgespielt) ODER Trackcount == 0
 			 */
-			if ((status->code == MD_YX5300::STS_FILE_END)
+			if ((mp3D.lastMp3Status == MD_YX5300::STS_FILE_END)
 					&& (_SMF->isEOF() || (_SMF->getTrackCount() == 0))) {
 				digitalWrite(AUDIO_AMP, LOW); //AMP aus
 				audioMillis = millis();
@@ -133,7 +149,7 @@ void audio::pruefe() {
 			_mp3->check();
 			digitalWrite(AUDIO_AMP, HIGH);
 			audioMillis = millis();
-			if (standby) {
+			if (mp3D.standby) {
 				state = AUDIO_STANDBY;
 			} else {
 				state = AUDIO_ON;
@@ -141,22 +157,31 @@ void audio::pruefe() {
 		}
 		break;
 	case AUDIO_STANDBY:
-		if (!standby) {
+		if (!mp3D.standby) {
 			_mp3->check();
 			audioMillis = millis();
 			state = AUDIO_ON;
 		}
-	}
+		break;
+	case AUDIO_PLAYLISTPLAY:
+		_mp3->check();
+		audioMillis = millis();
+		if (mp3D.playStatus == S_STOPPED) {
+			mp3D.actualPlayListSong++;
+			if (mp3D.actualPlayListSong < mp3D.songsInPlayList) {
+				mp3NextSongOnPlaylist();
+			} else {
+				mp3ClearPlaylist();
+				state = AUDIO_ON;
+			}
+
+		}
+		break;
+	} /*switch*/
 
 	if (DEBUG_A) {
-		/*
-		 const MD_YX5300::cbData *status = _mp3->getStatus(); //statuspointer holen
-		 sprintf(debugmessage, "EOF:%u TC:%u SC:%u WZ:%1u S:%u  ", _SMF->isEOF(),
-		 (_SMF->getTrackCount() == 0),
-		 status->code, wartezeit,state);
-		 */
 		sprintf(debugmessage, "WZ: %lu S: %d c: %u", wartezeit, state,
-				statuscode);
+				mp3D.lastMp3Status);
 	}
 
 }
@@ -183,7 +208,7 @@ void audio::midiReset() {
 }
 
 void audio::setStandby(bool stby) {
-	standby = stby;
+	mp3D.standby = stby;
 }
 
 void audio::mp3Play(uint8_t folder, uint8_t song) {
@@ -191,8 +216,87 @@ void audio::mp3Play(uint8_t folder, uint8_t song) {
 	_mp3->playSpecific(folder, song);
 }
 
+void audio::mp3AddToPlaylist(uint8_t folder, uint8_t song) {
+	on();
+	P[mp3D.songsInPlayList].folder = folder;
+	P[mp3D.songsInPlayList].song = song;
+	if (mp3D.songsInPlayList == 0) {
+		mp3D.actualPlayListSong = 0;
+		mp3PlaySongOnPlaylist(P[mp3D.actualPlayListSong].folder,
+				P[mp3D.actualPlayListSong].song);
+	}
+	mp3D.songsInPlayList++;
+
+}
+
+void audio::mp3ClearPlaylist(void) {
+	for (uint8_t i = 0; i < MAX_PLAYLIST_SONGS; i++) {
+		P[i].song = 0;
+		P[i].folder = 0;
+	}
+	mp3D.songsInPlayList = 0;
+}
+
+void audio::mp3Pause() {
+	_mp3->playPause();
+	mp3D.standby = 1;
+
+}
+void audio::mp3Resume() {
+	on();
+	_mp3->playPause();
+}
+
+void audio::mp3Stop() {
+	_mp3->playStop();
+}
+
+void audio::mp3NextSongOnPlaylist() {
+	if (mp3D.actualPlayListSong < mp3D.songsInPlayList + 1) {
+		mp3D.actualPlayListSong++;
+	} else {
+		mp3D.actualPlayListSong = 0;
+	}
+	mp3Play(P[mp3D.actualPlayListSong].folder, P[mp3D.actualPlayListSong].song);
+}
+
+void audio::mp3PreviousSongOnPlaylist(void) {
+	if (mp3D.actualPlayListSong > 0) {
+		mp3D.actualPlayListSong--;
+	} else {
+		mp3D.actualPlayListSong = mp3D.songsInPlayList;
+	}
+	mp3Play(P[mp3D.actualPlayListSong].folder, P[mp3D.actualPlayListSong].song);
+}
+
+void audio::mp3FillShufflePlaylist(uint8_t folder) {
+	mp3ClearPlaylist();
+	_mp3->playSpecific(folder, 1);
+	_mp3->playPause();
+	_mp3->queryFolderFiles(folder);
+	_mp3->check();
+	mp3D.songsInPlayList = mp3D.folderFiles;
+	if (mp3D.songsInPlayList > 0) {
+		for (uint8_t i = 0; i < mp3D.songsInPlayList; i++) {
+			P[i].folder = folder;
+			P[i].song = i;
+		}
+		shuffleArray(P, mp3D.songsInPlayList);
+	}
+	state = AUDIO_PLAYLISTPLAY;
+	mp3D.actualPlayListSong = 0;
+	mp3Play(P[mp3D.actualPlayListSong].folder, P[mp3D.actualPlayListSong].song);
+}
+
+void audio::mp3PlaySongOnPlaylist(uint8_t folder, uint8_t song) {
+	if (mp3D.actualPlayListSong < mp3D.songsInPlayList) {
+		mp3Play(folder, song);
+	}
+}
+
 void audio::bing() {
 	on();
+
 	_mp3->playTrack(DING); //BING!
 }
 
@@ -206,18 +310,6 @@ void audio::midiCallback(midi_event *pev)
 		MIDI.write(&pev->data[1], pev->size - 1);
 	} else
 		MIDI.write(pev->data, pev->size);
-}
-
-void audio::sysexCallback(sysex_event *pev)
-// Called by the MIDIFile library when a system Exclusive (sysex) file event needs
-// to be processed through the midi communications interface. Most sysex events cannot
-// really be processed, so we just ignore it here.
-// This callback is set up in the setup() function.
-		{
-	//DEBUG("\nS T", pev->track);
-	//DEBUGS(": Data");
-	//for (uint8_t i=0; i<pev->size; i++)
-	//  DEBUGX(" ", pev->data[i]);
 }
 
 void audio::midiSilence(void)
@@ -342,3 +434,41 @@ void audio::godModeSound(uint8_t godMode) {
 
 	}
 }
+
+void audio::shuffleArray(mp3playList *array, uint8_t size) {
+	randomSeed(analogRead(LICHT_SENSOR_PIN));
+	uint8_t last = 0;
+	mp3playList temp = array[last];
+	for (uint8_t i = 0; i < size; i++) {
+		uint8_t index = random(size);
+		array[last] = array[index];
+		last = index;
+	}
+	array[last] = temp;
+}
+
+void audio::cbResponse(const MD_YX5300::cbData *status)
+// Callback function used to process device unsolicited messages
+// or responses to data requests
+		{
+	switch (status->code) {
+	case MD_YX5300::STS_FILE_END:   // track has ended
+		mp3D.lastMp3Status = status->code;
+		mp3D.playStatus = S_STOPPED;
+		break;
+
+	case MD_YX5300::STS_PLAYING:   // current track index
+		mp3D.currentTrack = status->data;
+		break;
+
+	case MD_YX5300::STS_FLDR_FILES:   // number of files in the folder
+		mp3D.folderFiles = status->data;
+		break;
+
+	default:
+		mp3D.lastMp3Status = status->code;
+		break;
+	}
+	mp3D.waiting = false;
+}
+

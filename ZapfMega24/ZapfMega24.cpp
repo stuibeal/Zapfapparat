@@ -764,6 +764,14 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 			ZD.printProgrammInfoZeilen(5, 1, "Restbierzähler rückgesetzt.");
 			break;
 		case 4: // GHI  INFO
+			ZD.printProgrammInfo("Information");
+			sprintf(buf, "Playlist: %2d/%2d", sound.getPlaylistPlace(),
+					sound.getPlaylistSize());
+			ZD.printProgrammInfoZeilen(1, 1, buf);
+			sprintf(buf, "Playing: F:%2d S:%2d", sound.getPlFolder(),
+					sound.getPlSong());
+			ZD.printProgrammInfoZeilen(2, 1, buf);
+
 			break;
 		case 5: //LKJ LICHT
 			ZD.printProgrammInfo("Lichtprogramm");
@@ -793,8 +801,14 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 			break;
 		case 9: //WXY
 			ZD.printProgrammInfo("MP3 Player");
-			ZD.printProgrammInfoZeilen(1, 1, "");
-			ZD.printProgrammInfoZeilen(2, 1, "2 shuffle 11");
+			ZD.printProgrammInfoZeilen(1, 1, "1 Vor");
+			ZD.printProgrammInfoZeilen(1, 2, "3 Zurück");
+			ZD.printProgrammInfoZeilen(2, 1, "2 Pause");
+			ZD.printProgrammInfoZeilen(2, 2, "9 Reset PL");
+			ZD.printProgrammInfoZeilen(3, 1, "Zur Playlist hinzufügen:");
+			ZD.printProgrammInfoZeilen(4, 1, "1 Zahl Ordner, 2 Song");
+			ZD.printProgrammInfoZeilen(5, 1, "Zufallsplaylist erstellen");
+			ZD.printProgrammInfoZeilen(6, 1, "1 Zahl Ordner");
 
 			break;
 		default:
@@ -881,25 +895,36 @@ void spezialprogramm(uint32_t input) {
 	case 9:
 		//Mediaplayer
 		switch (varContent) {
-		case 1: //Next
-			sound._mp3->playNext();
+		case 1:
+			sound.mp3NextSongOnPlaylist();
 			break;
-		case 2: // RANDOM SONG
-			sound._mp3->playStop();
+		case 2:
+			sound.mp3Pause();
 			break;
-		case 3: // PLAYLIST
-			sound._mp3->playSpecific(31, 16);
+		case 3:
+			sound.mp3PreviousSongOnPlaylist();
 			break;
-		case 4:
-			sound._mp3->queryFolderFiles(31);
+		case 9:
+			sound.mp3ClearPlaylist();
 			break;
-		}
-		if (input > 99) {
-			uint16_t folder = 0;
-			uint16_t file = 0;
-			folder = 30+(varContent / 100);
-			file = varContent % 100;
-			sound.mp3Play(folder, file);
+		default:
+			if (varContent > 100) {
+				uint8_t folder = 1;
+				uint8_t song = 1;
+				folder = 30 + (varContent / 100);
+				song = varContent % 100;
+				sound.mp3AddToPlaylist(folder, song);
+			} else if (varContent > 0 && varContent < 10){
+				sound.mp3FillShufflePlaylist(30+varContent);
+				sprintf(buf, "Folderfiles: %d", sound.mp3D.songsInPlayList);
+				ZD.infoText(buf);
+				delay(2000);
+			} else {
+				ZD.infoText("Kannst Du irgendwas?");
+			}
+
+			delay(1);
+			break;
 		}
 
 		break;

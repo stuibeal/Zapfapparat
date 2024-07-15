@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 
-const uint8_t arrayGroesse = 19;
+const uint8_t arrayGroesse = 20;
 
 class benutzer {
 public:
@@ -21,7 +21,7 @@ public:
 	String username[arrayGroesse] = {
 	/*0*/"Bitte wählen",
 	/*1*/"Christoph",
-	/*2*/"Gast, weiblich",
+	/*2*/"Maja",
 	/*3*/"DJ R. Kentn",
 	/*4*/"Ebi",
 	/*5*/"Maex",
@@ -29,9 +29,17 @@ public:
 	/*7*/"Beda",
 	/*8*/"Basi",
 	/*9*/"Al",
-	/*10*/"Gast, herrlich",
+	/*10*/"Piene",
 	/*11*/"Alois",
-	/*12*/"Piene", };
+	/*12*/"Stefan M.L.",
+	/*13*/"Framo",
+	/*14*/"Marina",
+	/*15*/"Anne",
+	/*16*/"Pia",
+	/*17*/"Italia",
+	/*18*/"Maria",
+	/*19*/"Burschen"
+	};
 	uint16_t bierTemp[arrayGroesse];
 	uint16_t bierMenge[arrayGroesse];
 	uint16_t bierTag[arrayGroesse];

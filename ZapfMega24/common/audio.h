@@ -30,6 +30,7 @@
 #define MIDI_TX           1  // Serial: Midi Out
 #define BEEP_OUT          11  // beeper out -> not really used?
 #define MIDI_RESET        A14 // Reset Knopf vom SCB-7 (high: reset)
+#define MAX_PLAYLIST_SONGS 100
 
 class audio: public MD_YX5300, MD_MIDIFile {
 public:
@@ -44,6 +45,7 @@ public:
 	static const int AUDIO_MIDI_RESET = 4;
 	static const int AUDIO_AMP_ON = 5;
 	static const int AUDIO_STANDBY = 6;
+	static const int AUDIO_PLAYLISTPLAY = 7;
 	static const int DING = 1;  //MICROWAVE DING
 	static const int BRANTL = 3; //Brantl Edel Pils
 
@@ -57,12 +59,20 @@ public:
 	void midiReset(void);
 	void setStandby(bool stby);
 	void mp3Play(uint8_t folder, uint8_t song);
+	void mp3AddToPlaylist(uint8_t folder, uint8_t song);
+	void mp3ClearPlaylist(void);
+	void mp3Pause();
+	void mp3Resume();
+	void mp3Stop();
+	void mp3NextSongOnPlaylist(void);
+	void mp3PreviousSongOnPlaylist(void);
+	void mp3FillShufflePlaylist(uint8_t folder);
+	void mp3PlaySongOnPlaylist(uint8_t folder, uint8_t song);
 	void bing();
 	inline bool isOn() {
 		return (state == AUDIO_ON || state == AUDIO_STANDBY);
 	}
 	static void midiCallback(midi_event *pev);
-	static void sysexCallback(sysex_event *pev);
 	void midiSilence(void);
 	void midiNextEvent(void);
 	void loadLoopMidi(const char*);
@@ -70,15 +80,50 @@ public:
 	void tickMetronome(void);
 	void godModeSound(uint8_t godMode);
 
+	inline uint8_t getPlaylistPlace(void) {
+		return mp3D.actualPlayListSong;
+	}
+	inline uint8_t getPlaylistSize(void) {
+		return mp3D.songsInPlayList;
+	}
+	inline uint8_t getPlFolder(void) {
+		return P[mp3D.actualPlayListSong].folder;
+	}
+	inline uint8_t getPlSong(void) {
+		return P[mp3D.actualPlayListSong].song;
+	}
+
 	char debugmessage[80];
-	int state;
+	static uint8_t state;
 	MD_YX5300 *_mp3;  //pointer MP3
 	MD_MIDIFile *_SMF; // pointer SMF Player
 
+	struct mp3playList{
+		uint8_t folder;
+		uint8_t song;
+	};
+
+	mp3playList P[MAX_PLAYLIST_SONGS];
+
+	enum playStatus_t { S_PAUSED, S_PLAYING, S_STOPPED };
+
+	struct mp3Dinge {
+		bool standby;
+		bool waiting;
+		playStatus_t playStatus;
+		uint16_t currentTrack;
+		uint16_t folderFiles;
+		uint16_t lastMp3Status;
+		uint8_t songsInPlayList;
+		uint8_t actualPlayListSong;
+	};
+	static mp3Dinge mp3D;
+
+
 private:
 	unsigned long audioMillis;
-	bool standby;
-	int statuscode;
+	void shuffleArray(mp3playList * array, uint8_t size);
+	static void cbResponse(const MD_YX5300::cbData *status);
 
 protected:
 	SdFat *_sd;
