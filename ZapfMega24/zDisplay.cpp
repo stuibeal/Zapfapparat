@@ -307,14 +307,14 @@ void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsrout
  * der User gewählt hat
  * @param user 	Pointer zum Benutzerobjekt
  */
-void zDisplay::userShow(benutzer *user) {
+void zDisplay::userShow() {
 	static bool lastUserVoll = 0;
 	char namebuf[32] = "/usr/x.bmp";
 
-	if (user->getGodMode() > 0) {
-		sprintf(namebuf, "/god/%d0.bmp", user->getGodMode());
+	if (user.getGodMode() > 0) {
+		sprintf(namebuf, "/god/%d0.bmp", user.getGodMode());
 	} else {
-		sprintf(namebuf, "/usr/%d.bmp", user->aktuell);
+		sprintf(namebuf, "/usr/%d.bmp", user.aktuell);
 	}
 	showUserPic(namebuf);
 	/*USERNAME*/
@@ -324,7 +324,7 @@ void zDisplay::userShow(benutzer *user) {
 	u8g2.setBackgroundColor(ZBRAUN);
 	u8g2.setForegroundColor(ZDUNKELGRUEN);
 	u8g2.setCursor(260, 280);
-	u8g2.print(user->getName()); //konvertiert den Pointer von userName in c-String
+	u8g2.print(user.userN[user.aktuell]); //konvertiert den Pointer von userName in c-String
 	u8g2.setFontDirection(0);
 	/*VOREINSTELLUNG INFOANZEIGE*/
 	u8g2.setFont(FONT_NORMAL19);
@@ -349,10 +349,10 @@ void zDisplay::userShow(benutzer *user) {
 	showAllUserData();
 
 	/*Wenn über 8 Halbe soll der das volle Bild zeigen*/
- 	if (user->getBierTag() > 3999 && !lastUserVoll) {
+ 	if (user.getBierTag() > 3999 && !lastUserVoll) {
 		showBMP("/bmp/bg_voll.bmp", 102, 0);
 		lastUserVoll = 1;
-	} else if (user->getBierTag() < 4000 && lastUserVoll) {
+	} else if (user.getBierTag() < 4000 && lastUserVoll) {
 		showBMP("/bmp/bg_leer.bmp", 102, 0); /* Bier leer, w:132 h:291 */
 		lastUserVoll = 0;
 	}
@@ -366,8 +366,8 @@ void zDisplay::userShow(benutzer *user) {
  * @param temp
  * @param user
  */
-void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
-	temp->requestSensors();
+void zDisplay::infoscreen() {
+	temp.requestSensors();
 	_tft.fillScreen(BLACK);
 	_tft.fillRect(0, 0, 480, 27, ZDUNKELGRUEN);
 	u8g2.setFontMode(0);                 // use u8g2 none transparent mode
@@ -388,28 +388,28 @@ void zDisplay::infoscreen(tempControl *temp, benutzer *user) {
 		u8g2.setCursor(240, u8g2.getCursorY());
 		u8g2.print(x);
 		u8g2.setCursor(260, u8g2.getCursorY());
-		u8g2.print(user->username[x]);
+		u8g2.print(user.userN[x]);
 		u8g2.setCursor(380, u8g2.getCursorY());
-		u8g2.print(user->bierTag[x]);
+		u8g2.print(user.bierTag[x]);
 		u8g2.println(" ml");
 	}
 
-	temp->holeDaten();
+	temp.holeDaten();
 	u8g2.setCursor(5, 60);
 	u8g2.setFont(FONT_BOLD12);
 	u8g2.println(_NAME_);
 	u8g2.setFont(FONT_NORMAL12);
 	u8g2.println(_VERSION_);
 	u8g2.println();
-	printlnTempC("Block DS18B20:", temp->getDSblockTemp());
-	printlnTempC("Block außen:", temp->getBlockAussenTemp());
-	printlnTempC("Block innen:", temp->getBlockInnenTemp());
-	printlnTempC("Zapfhahn:", temp->getHahnTemp());
-	printlnTempC("Gehäuse:", temp->getHausTemp());
-	printlnTempC("Zulauf:", temp->getZulaufTemp());
-	printlnTempC("Kühlwasser:", temp->getKuehlWasserTemp());
+	printlnTempC("Block DS18B20:", temp.getDSblockTemp());
+	printlnTempC("Block außen:", temp.getBlockAussenTemp());
+	printlnTempC("Block innen:", temp.getBlockInnenTemp());
+	printlnTempC("Zapfhahn:", temp.getHahnTemp());
+	printlnTempC("Gehäuse:", temp.getHausTemp());
+	printlnTempC("Zulauf:", temp.getZulaufTemp());
+	printlnTempC("Kühlwasser:", temp.getKuehlWasserTemp());
 
-	temp->requestSensors();
+	temp.requestSensors();
 }
 
 /**

@@ -13,7 +13,7 @@
 #include "string.h"
 
 #ifndef DEBUG_A
-#define DEBUG_A 0
+#define DEBUG_A 1
 #endif
 //#define AUDIO_WARTEZEIT 1500
 
@@ -45,7 +45,6 @@ public:
 	static const int AUDIO_MIDI_RESET = 4;
 	static const int AUDIO_AMP_ON = 5;
 	static const int AUDIO_STANDBY = 6;
-	static const int AUDIO_PLAYLISTPLAY = 7;
 	static const int DING = 1;  //MICROWAVE DING
 	static const int BRANTL = 3; //Brantl Edel Pils
 
@@ -62,7 +61,6 @@ public:
 	void mp3AddToPlaylist(uint8_t folder, uint8_t song);
 	void mp3ClearPlaylist(void);
 	void mp3Pause();
-	void mp3Resume();
 	void mp3Stop();
 	void mp3NextSongOnPlaylist(void);
 	void mp3PreviousSongOnPlaylist(void);
@@ -87,29 +85,25 @@ public:
 		return mp3D.songsInPlayList;
 	}
 	inline uint8_t getPlFolder(void) {
-		return P[mp3D.actualPlayListSong].folder;
+		return playlistFolder[mp3D.actualPlayListSong];
 	}
 	inline uint8_t getPlSong(void) {
-		return P[mp3D.actualPlayListSong].song;
+		return playlistSong[mp3D.actualPlayListSong];
 	}
 
-	char debugmessage[80];
 	static uint8_t state;
 	MD_YX5300 *_mp3;  //pointer MP3
 	MD_MIDIFile *_SMF; // pointer SMF Player
 
-	struct mp3playList{
-		uint8_t folder;
-		uint8_t song;
-	};
-
-	mp3playList P[MAX_PLAYLIST_SONGS];
+	uint8_t playlistFolder[MAX_PLAYLIST_SONGS];
+	uint8_t playlistSong[MAX_PLAYLIST_SONGS];
 
 	enum playStatus_t { S_PAUSED, S_PLAYING, S_STOPPED };
 
 	struct mp3Dinge {
 		bool standby;
 		bool waiting;
+		bool playTheList;
 		playStatus_t playStatus;
 		uint16_t currentTrack;
 		uint16_t folderFiles;
@@ -122,7 +116,7 @@ public:
 
 private:
 	unsigned long audioMillis;
-	void shuffleArray(mp3playList * array, uint8_t size);
+	void shuffleArray();
 	static void cbResponse(const MD_YX5300::cbData *status);
 
 protected:

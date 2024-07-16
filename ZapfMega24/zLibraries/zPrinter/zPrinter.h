@@ -10,8 +10,6 @@
 
 #include "Arduino.h"
 #include "gemein.h"
-#include <Adafruit_Thermal.h> //Thermal Printer
-#include "benutzer.h"
 #include "stdint.h"
 
 #define PRINTER_ON_PIN    38 // Schaltet Printer ein, Printer ist an Serial2 (RX17, TX16)
@@ -19,7 +17,7 @@
 #define PRINTER_BAUDRATE  9600
 #define PRINTER_DTR 	  A10
 
-class zPrinter : public Adafruit_Thermal, benutzer {
+class zPrinter {
 public:
 	zPrinter();
 	virtual
@@ -41,7 +39,7 @@ public:
 	inline void setPrinterOff() {
 		printerOn = false;
 	}
-	Adafruit_Thermal printer;// = Adafruit_Thermal(Serial2, PRINTER_DTR);//(HardwareSerial *serial, uint8_t dtr); //PRINTERm, Hardware Serial2 DTR pin
+//	Adafruit_Thermal printer;// = Adafruit_Thermal(Serial2, PRINTER_DTR);//(HardwareSerial *serial, uint8_t dtr); //PRINTERm, Hardware Serial2 DTR pin
 
 private:
 	//Adafruit_Thermal *_printer;

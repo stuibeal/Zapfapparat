@@ -10,23 +10,18 @@
 #include "gemein.h"
 #include <Arduino.h>
 
-zWireHelper::zWireHelper ()
-{
-  aRxBuffer[3] = {0};
-  aTxBuffer[3] = {0};
-  zapfMillis = 0;
-  // TODO Auto-generated constructor stub
-
+zWireHelper::zWireHelper() {
+	aRxBuffer[0] = 0;
+	aRxBuffer[1] = 0;
+	aTxBuffer[0] = 0;
+	aTxBuffer[1] = 0;
+	zapfMillis = 0;
 }
 
-zWireHelper::~zWireHelper ()
-{
-  // TODO Auto-generated destructor stub
+zWireHelper::~zWireHelper() {
 }
 
-void
-zWireHelper::initialise()
-{
+void zWireHelper::initialise() {
 //nothing to do?
 }
 
@@ -38,24 +33,22 @@ zWireHelper::initialise()
  * @param wert		integer
  * @return		milliliter
  */
-void zWireHelper::flowDataSend (uint8_t befehl, uint16_t wert)
-{
-  aTxBuffer[0] = highByte(wert);
-  aTxBuffer[1] = lowByte(wert);
+void zWireHelper::flowDataSend(uint8_t befehl, uint16_t wert) {
+	aTxBuffer[0] = highByte(wert);
+	aTxBuffer[1] = lowByte(wert);
 
-  Wire.beginTransmission (FLOW_I2C_ADDR); // schicke Daten an den Flow
-  Wire.write (befehl);        // mach Das du stück
-  Wire.write (aTxBuffer[0]); // optionen siehe communication.h
-  Wire.write (aTxBuffer[1]); //
-  Wire.endTransmission ();    // stop transmitting
+	Wire.beginTransmission(FLOW_I2C_ADDR); // schicke Daten an den Flow
+	Wire.write(befehl);        // mach Das du stück
+	Wire.write(aTxBuffer[0]); // optionen siehe communication.h
+	Wire.write(aTxBuffer[1]); //
+	Wire.endTransmission();    // stop transmitting
 
-  Wire.requestFrom (FLOW_I2C_ADDR, FLOW_I2C_ANTWORTBYTES); // Daten vom Flow müssen immer geholt werden
-  while (Wire.available ())
-    { // wenn Daten vorhanden, hol die Dinger
-      aRxBuffer[0] = Wire.read (); // ein Byte als char holen
-      aRxBuffer[1] = Wire.read (); // zweites Byte als char holen
-    }
-  zapfMillis = (aRxBuffer[0] << 8) + aRxBuffer[1]; // da der Flow immer die aktuellen ml ausgibt kann man die gleich in die Variable schreiben
+	Wire.requestFrom(FLOW_I2C_ADDR, FLOW_I2C_ANTWORTBYTES); // Daten vom Flow müssen immer geholt werden
+	while (Wire.available()) { // wenn Daten vorhanden, hol die Dinger
+		aRxBuffer[0] = Wire.read(); // ein Byte als char holen
+		aRxBuffer[1] = Wire.read(); // zweites Byte als char holen
+	}
+	zapfMillis = (aRxBuffer[0] << 8) + aRxBuffer[1]; // da der Flow immer die aktuellen ml ausgibt kann man die gleich in die Variable schreiben
 }
 
 /**
@@ -66,26 +59,24 @@ void zWireHelper::flowDataSend (uint8_t befehl, uint16_t wert)
  * @param option2	Siehe Liste
  * @return		milliliter
  */
-void zWireHelper::flowDataSend (uint8_t befehl, uint8_t option1, uint8_t option2)
-{
-  Wire.beginTransmission (FLOW_I2C_ADDR); // schicke Daten an den Flow
-  Wire.write (befehl);        // mach Das du stück
-  Wire.write (option1); // optionen siehe communication.h
-  Wire.write (option2); //
-  Wire.endTransmission ();    // stop transmitting
+void zWireHelper::flowDataSend(uint8_t befehl, uint8_t option1,
+		uint8_t option2) {
+	Wire.beginTransmission(FLOW_I2C_ADDR); // schicke Daten an den Flow
+	Wire.write(befehl);        // mach Das du stück
+	Wire.write(option1); // optionen siehe communication.h
+	Wire.write(option2); //
+	Wire.endTransmission();    // stop transmitting
 
-  Wire.requestFrom (FLOW_I2C_ADDR, FLOW_I2C_ANTWORTBYTES); // Daten vom Flow müssen immer geholt werden
-  while (Wire.available ())
-    { // wenn Daten vorhanden, hol die Dinger
-      aRxBuffer[0] = Wire.read (); // ein Byte als char holen
-      aRxBuffer[1] = Wire.read (); // zweites Byte als char holen
-    }
-  zapfMillis = (aRxBuffer[0] << 8) + aRxBuffer[1]; // da der Flow immer die aktuellen ml ausgibt kann man die gleich in die Variable schreiben
+	Wire.requestFrom(FLOW_I2C_ADDR, FLOW_I2C_ANTWORTBYTES); // Daten vom Flow müssen immer geholt werden
+	while (Wire.available()) { // wenn Daten vorhanden, hol die Dinger
+		aRxBuffer[0] = Wire.read(); // ein Byte als char holen
+		aRxBuffer[1] = Wire.read(); // zweites Byte als char holen
+	}
+	zapfMillis = (aRxBuffer[0] << 8) + aRxBuffer[1]; // da der Flow immer die aktuellen ml ausgibt kann man die gleich in die Variable schreiben
 }
 
 uint16_t zWireHelper::getFreshZapfMillis() {
 	flowDataSend(GET_ML, 0, 0);
 	return zapfMillis;
 }
-
 

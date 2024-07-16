@@ -11,6 +11,8 @@
 #include "tempControl.h"
 #include "benutzer.h"
 #include "zPower.h"
+#include "string.h"
+
 
 //globale Variablen
 extern zWireHelper flowmeter;

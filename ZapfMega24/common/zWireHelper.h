@@ -31,8 +31,8 @@ public:
 	uint16_t getFreshZapfMillis();
 
 private:
-	uint8_t aRxBuffer[14];
-	uint8_t aTxBuffer[14];
+	uint8_t aRxBuffer[2];
+	uint8_t aTxBuffer[2];
 	uint16_t zapfMillis;
 };
 

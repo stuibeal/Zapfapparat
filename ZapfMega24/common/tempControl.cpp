@@ -6,19 +6,25 @@
  */
 
 #include "tempControl.h"
+#include "Arduino.h"
+
+
+	OneWire oneWire30(ONE_WIRE_BUS30);
+	OneWire oneWire32(ONE_WIRE_BUS32);
+	OneWire oneWire34(ONE_WIRE_BUS34);
+	OneWire oneWire35(ONE_WIRE_BUS35);
+	OneWire oneWire36(ONE_WIRE_BUS36);
+
+	DS18B20 tempControl::auslauf(&oneWire30,8);
+	DS18B20 tempControl::kuehlwasser(&oneWire32,8);
+	DS18B20 tempControl::gehaeuse(&oneWire34,8);
+	DS18B20 tempControl::zulauf(&oneWire35,8);
+	DS18B20 tempControl::block(&oneWire36,8);
+
 
 tempControl::tempControl() {
-	auslauf = nullptr;
-	block = nullptr;
-	gehaeuse = nullptr;
-	zulauf = nullptr;
-	kuehlwasser = nullptr;
-
-	oneWire30 = nullptr;
-	oneWire32 = nullptr;
-	oneWire34 = nullptr;
-	oneWire35 = nullptr;
-	oneWire36 = nullptr;
+//	oneWire30= OneWire(ONE_WIRE_BUS30);
+//	auslauf = DS18B20(&oneWire30, 9);
 
 	blockTemp = 0;
 	hausTemp = 0;
@@ -42,63 +48,50 @@ tempControl::~tempControl() {
 }
 
 void tempControl::begin() {
-	oneWire30 = new OneWire(ONE_WIRE_BUS30);
-	oneWire32 = new OneWire(ONE_WIRE_BUS32);
-	oneWire34 = new OneWire(ONE_WIRE_BUS34);
-	oneWire35 = new OneWire(ONE_WIRE_BUS35);
-	oneWire36 = new OneWire(ONE_WIRE_BUS36);
-
-	auslauf = new DS18B20(oneWire30);
-	kuehlwasser = new DS18B20(oneWire32);
-	gehaeuse = new DS18B20(oneWire34);
-	zulauf = new DS18B20(oneWire35);
-	block = new DS18B20(oneWire36);
-
-	//Temperaturfuehler hochfahren
-	auslauf->begin();
-	gehaeuse->begin();
-	block->begin();
-	zulauf->begin();
-	kuehlwasser->begin();
+	auslauf.begin();
+	gehaeuse.begin();
+	block.begin();
+	zulauf.begin();
+	kuehlwasser.begin();
 
 	// Fühlerauflösung einstellen
-	auslauf->setResolution(11);
-	gehaeuse->setResolution(8);
-	block->setResolution(10);
-	zulauf->setResolution(10);
-	kuehlwasser->setResolution(8);
+	auslauf.setResolution(11);
+	gehaeuse.setResolution(8);
+	block.setResolution(10);
+	zulauf.setResolution(10);
+	kuehlwasser.setResolution(8);
 	//Schonmal Temperatur anfordern
-	auslauf->requestTemperatures();
-	gehaeuse->requestTemperatures();
-	block->requestTemperatures();
-	zulauf->requestTemperatures();
-	kuehlwasser->requestTemperatures();
+//	auslauf.requestTemperatures();
+//	gehaeuse.requestTemperatures();
+//	block.requestTemperatures();
+//	zulauf.requestTemperatures();
+//	kuehlwasser.requestTemperatures();
 
 }
 
 //DS18B20
 void tempControl::requestSensors(void) {
-	if (auslauf->isConversionComplete()) {
-		hahnTemp = static_cast<int16_t>(auslauf->getTempC() * 100);
-		auslauf->requestTemperatures();
-	}
-
-	if (gehaeuse->isConversionComplete()) {
-		hausTemp = static_cast<int16_t>(gehaeuse->getTempC() * 100);
-		gehaeuse->requestTemperatures();
-	}
-	if (zulauf->isConversionComplete()) {
-		zulaufTemp = static_cast<int16_t>(zulauf->getTempC() * 100);
-		zulauf->requestTemperatures();
-	}
-	if (block->isConversionComplete()) {
-		blockTemp = static_cast<int16_t>(block->getTempC() * 100);
-		block->requestTemperatures();
-	}
-	if (kuehlwasser->isConversionComplete()) {
-		kuehlwasserTemp = static_cast<int16_t>(kuehlwasser->getTempC() * 100);
-		kuehlwasser->requestTemperatures();
-	}
+//	if (auslauf.isConversionComplete()) {
+//		hahnTemp = static_cast<int16_t>(auslauf.getTempC() * 100);
+//		auslauf.requestTemperatures();
+//	}
+//
+//	if (gehaeuse.isConversionComplete()) {
+//		hausTemp = static_cast<int16_t>(gehaeuse.getTempC() * 100);
+//		gehaeuse.requestTemperatures();
+//	}
+//	if (zulauf.isConversionComplete()) {
+//		zulaufTemp = static_cast<int16_t>(zulauf.getTempC() * 100);
+//		zulauf.requestTemperatures();
+//	}
+//	if (block.isConversionComplete()) {
+//		blockTemp = static_cast<int16_t>(block.getTempC() * 100);
+//		block.requestTemperatures();
+//	}
+//	if (kuehlwasser.isConversionComplete()) {
+//		kuehlwasserTemp = static_cast<int16_t>(kuehlwasser.getTempC() * 100);
+//		kuehlwasser.requestTemperatures();
+//	}
 
 }
 

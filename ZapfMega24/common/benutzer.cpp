@@ -7,6 +7,7 @@
 
 #include "benutzer.h"
 #include "gemein.h"
+#include "globalVariables.h"
 
 benutzer::benutzer() {
 	gesamtMengeTotal = 0;
@@ -15,7 +16,7 @@ benutzer::benutzer() {
 	oldZapfStatus = zapfStandby;
 	restMengeFass = 30000;
 	zapfMenge = 0;
-	for (uint8_t x = 0; x < 19; x++) {
+	for (uint8_t x = 0; x < arrayGroesse; x++) {
 		bierTemp[x] = STANDARD_TEMP;
 		bierMenge[x] = STANDARD_MENGE;
 		bierTag[x] = 0;
@@ -41,8 +42,10 @@ void benutzer::addBier(uint16_t zapfmenge) {
 }
 
 String benutzer::getName() {
-	return username[aktuell];
+	return userN[aktuell];
 }
+
+
 
 uint8_t benutzer::getMusik() {
 	return musik[aktuell];

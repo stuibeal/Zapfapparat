@@ -50,7 +50,7 @@ unsigned long oldTime = millis();
 unsigned long nachSchauZeit = 0;
 
 //Waehlscheibe
-unsigned long kienmuehle = 0;  //Sondereingabe bei drücken der Taste2
+uint16_t kienmuehle = 0;  //Sondereingabe bei drücken der Taste2
 volatile uint8_t einsteller = 2;
 uint8_t oldeinsteller = 2;
 
@@ -107,10 +107,6 @@ void setup(void) {
 	}
 	ZD.showBMP("/bmp/z-logo.bmp", 20, 20);
 
-	drucker.initialise(); /* Thermodrucker */
-	ZD.printInitText("Talondrucker bereit");
-	temp.begin(); /* Temperaturcontrol uC - Wire sollte gestartet sein! */
-	ZD.printInitText("Temperaturfühler bereit");
 
 	//Rotary Encoder
 	pinMode(ROTARY_SW_PIN, INPUT); // Drehgeberknopf auf Input
@@ -135,6 +131,9 @@ void setup(void) {
 	logbuch.initialise(&SD, &user, &temp, buf);
 	ZD.printInitText("RTC DCF77 Uhrensohn");
 
+	temp.begin(); /* Temperaturcontrol uC - Wire sollte gestartet sein! */
+	ZD.printInitText("Temperaturfühler bereit");
+
 	//FLOWMETER
 	pinMode(FLOW_WINDOW, INPUT);    //Wenn durchfluss, dann true
 	while (digitalRead(FLOW_WINDOW))	//Warten bis das Hochgefahren ist
@@ -143,7 +142,8 @@ void setup(void) {
 	}
 	ZD.printInitText("Flowmeter ifm SM6020 ready");
 
-	//Make Windows 95 great again
+	drucker.initialise(); /* Thermodrucker */
+	ZD.printInitText("Talondrucker bereit");
 
 	anfang();
 	oldTime = millis();
@@ -154,6 +154,8 @@ void setup(void) {
 void anfang(void) {
 	ZD.backgroundPicture();
 	power.ledGrundbeleuchtung();
+    ZD.infoText("fast da");
+	delay(1000);
 	userShow();
 	ZD.showTastenFunktion("INFOSEITE", "SONDERFUNKTION");
 }
@@ -252,7 +254,7 @@ void zapfBeginnProg(void) {
 	if (millis() - auswahlZeit > WARTE_ZEIT) {
 		user.zapfStatus = user.zapfModus::zapfStandby;
 		user.aktuell = 0;
-		ZD.userShow(&user);
+		ZD.userShow();
 		sound.setStandby(0);
 		temp.sendeBefehl(END_ZAPF, 0x0);
 		ventil.check();
@@ -397,7 +399,7 @@ void checkWhileZapfing() {
 			sound.pruefe();
 			showZapfapparatData();
 			if (DEBUG_A) {
-				DEBUGMSG(sound.debugmessage);
+				ZD.infoText(buf);
 			}
 		} else {
 			ZD.print_val3((int) flowmeter.getMilliliter(), 17, 170, GANZZAHL);
@@ -415,7 +417,7 @@ void checkImmer() {
 		showZapfapparatData();
 		sound.pruefe();
 		if (DEBUG_A) {
-			DEBUGMSG(sound.debugmessage);
+			ZD.infoText(buf);
 		}
 	}
 }
@@ -470,7 +472,7 @@ void warteZeitCheck() {
 		user.aktuell = 0;
 		power.ledGrundbeleuchtung();
 		user.zapfStatus = user.zapfModus::zapfStandby;
-		ZD.userShow(&user);
+		ZD.userShow();
 	}
 
 }
@@ -506,7 +508,7 @@ void waehlscheibe() {
 	/* bei leichtem Antippen der Wählscheibe, keine Wählung */
 	if (zahlemann == 0) {
 		user.aktuell = 0;
-		ZD.userShow(&user);
+		ZD.userShow();
 		power.ledGrundbeleuchtung();
 	}
 
@@ -539,51 +541,51 @@ void waehlFunktionen() {
 		break;
 	case 463633: //GODOFF
 		user.setGodMode(0);
-		ZD.userShow(&user);
+		ZD.userShow();
 		break;
 	case 43373:
 		user.setGodMode(IDDQD);
-		ZD.userShow(&user);
+		ZD.userShow();
 		break;
 	case 5336:
 		user.setGodMode(KEEN);
-		ZD.userShow(&user);
+		ZD.userShow();
 		break;
 	case 624686:
 		user.setGodMode(MAGNUM);
-		ZD.userShow(&user);
+		ZD.userShow();
 		break;
 	case 62249837:
 		user.setGodMode(MACGYVER);
-		ZD.userShow(&user);
+		ZD.userShow();
 		break;
 	case 64264:
 		user.setGodMode(MIAMI);
-		ZD.userShow(&user);
+		ZD.userShow();
 		break;
 	case 73463353:
 		user.setGodMode(SEINFELD);
-		ZD.userShow(&user);
+		ZD.userShow();
 		break;
 	case 253:
 		user.setGodMode(ALF);
-		ZD.userShow(&user);
+		ZD.userShow();
 		break;
 	case 2658:
 		user.setGodMode(COLT);
-		ZD.userShow(&user);
+		ZD.userShow();
 		break;
 	case 3688:
 		user.setGodMode(DOTT);
-		ZD.userShow(&user);
+		ZD.userShow();
 		break;
 	case 4639:
 		user.setGodMode(INDY);
-		ZD.userShow(&user);
+		ZD.userShow();
 		break;
 	case 5824:
 		user.setGodMode(JUBI);
-		ZD.userShow(&user);
+		ZD.userShow();
 		break;
 	case 1275: //Die Telefonnummer der Kienmühle
 		oldWaehlscheibeFun();
@@ -628,7 +630,7 @@ void infoseite(void) {
 	analogWrite(TASTE1_LED, 10);
 //	sound.loadSingleMidi("SKYFALL.MID");
 //	sound._SMF->pause(false);
-	ZD.infoscreen(&temp, &user);
+	ZD.infoscreen();
 
 //ZD.setFont(&FreeSans9pt7b);
 
@@ -668,7 +670,7 @@ uint8_t errorLed() {
 
 void userShow(void) {
 	einsteller = 2; //Wieder bei mL beginnen beim Drehknebel
-	ZD.userShow(&user);
+	ZD.userShow();
 }
 
 void showZapfapparatData(void) {
@@ -808,7 +810,7 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 			ZD.printProgrammInfoZeilen(3, 1, "Zur Playlist hinzufügen:");
 			ZD.printProgrammInfoZeilen(4, 1, "1 Zahl Ordner, 2 Song");
 			ZD.printProgrammInfoZeilen(5, 1, "Zufallsplaylist erstellen");
-			ZD.printProgrammInfoZeilen(6, 1, "1 Zahl Ordner");
+			ZD.printProgrammInfoZeilen(6, 1, "1 wählen + 1 Zahl Ordner");
 
 			break;
 		default:
@@ -891,6 +893,7 @@ void spezialprogramm(uint32_t input) {
 			varContent = 100;
 		}
 		ventil.setValveProzent(varContent);
+		ventil.check();
 		break;
 	case 9:
 		//Mediaplayer
@@ -900,6 +903,8 @@ void spezialprogramm(uint32_t input) {
 			break;
 		case 2:
 			sound.mp3Pause();
+			sprintf(buf,"status %d", sound.mp3D.playStatus);
+			ZD.infoText(buf);
 			break;
 		case 3:
 			sound.mp3PreviousSongOnPlaylist();
@@ -914,8 +919,8 @@ void spezialprogramm(uint32_t input) {
 				folder = 30 + (varContent / 100);
 				song = varContent % 100;
 				sound.mp3AddToPlaylist(folder, song);
-			} else if (varContent > 0 && varContent < 10){
-				sound.mp3FillShufflePlaylist(30+varContent);
+			} else if (varContent > 10 && varContent < 20){
+				sound.mp3FillShufflePlaylist(20+varContent);
 				sprintf(buf, "Folderfiles: %d", sound.mp3D.songsInPlayList);
 				ZD.infoText(buf);
 				delay(2000);

@@ -7,13 +7,15 @@
 
 #include "zPrinter.h"
 #include "globalVariables.h"
+#include <Adafruit_Thermal.h> //Thermal Printer
+#include "benutzer.h"
 
-zPrinter::zPrinter() :
-		Adafruit_Thermal(0, 0), benutzer()
-//:Adafruit_Thermal(0, 0)
+Adafruit_Thermal printer(&Serial2, PRINTER_DTR);
+
+
+zPrinter::zPrinter()
 {
 	printerOn = 1;
-	printer = Adafruit_Thermal(&Serial2, PRINTER_DTR);
 }
 
 zPrinter::~zPrinter() {

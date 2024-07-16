@@ -13,12 +13,14 @@
 #define COMMON_TEMPCONTROL_H_
 
 #include "Arduino.h"
+#include "DS18B20.h"  //DS18B20_RT vom Rob Tilaart
+
 #include "string.h"
 #include "Wire.h"
 #include "gemein.h"
 #include "stdint.h"
-#include "DS18B20.h"  //DS18B20_RT vom Rob Tilaart
-#include <OneWire.h> //alte Version nehmen!!!!!!!
+
+//#include <OneWire.h> //alte Version nehmen!!!!!!!
 
 // One Wire Temperatursensoren Pins
 #define ONE_WIRE_BUS30  30
@@ -34,29 +36,23 @@
 #define JUST_COMMUNICATE 0x01
 #define SET_TEMPERATUR 0x02
 
-
 //#define BATT_ULTRAHIGH 0x0
 //#define BATT_HIGH 0x01
 //#define BATT_NORMAL 0x02
 //#define BATT_LOW 0x03
 //#define BATT_ULTRALOW 0x04
 
-
-
 class tempControl {
 public:
 	tempControl();
 	virtual ~tempControl();
-	void
-	begin();
+	void begin();
 
 	//DS18B20
-	void
-	requestSensors(void);
+	void requestSensors(void);
 
 	//zTempControl i2C
-	void
-	holeDaten(void);
+	void holeDaten(void);
 	/**
 	 * @brief 			Sendet Befehlt an den zTempControl STM32 uC
 	 * @param befehl	Was für ein Befehl uint8_t
@@ -129,18 +125,12 @@ private:
 	void
 	i2cTransfer(void);
 
-	//Daten von den DS18B20 Sensoren am Arduino
-	OneWire *oneWire30;
-	OneWire *oneWire32;
-	OneWire *oneWire34;
-	OneWire *oneWire35;
-	OneWire *oneWire36;
 
-	DS18B20 *auslauf;
-	DS18B20 *block;
-	DS18B20 *gehaeuse;
-	DS18B20 *zulauf;
-	DS18B20 *kuehlwasser;
+	static DS18B20 auslauf;
+	static DS18B20 block;
+	static DS18B20 gehaeuse;
+	static DS18B20 zulauf;
+	static DS18B20 kuehlwasser;
 
 	int16_t blockTemp;
 	int16_t hausTemp;

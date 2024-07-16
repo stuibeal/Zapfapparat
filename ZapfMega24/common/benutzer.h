@@ -11,35 +11,15 @@
 #include <stdint.h>
 #include <string.h>
 
-const uint8_t arrayGroesse = 20;
+//const uint8_t arrayGroesse = 20;
+#define arrayGroesse 20   //0+19!!!!
 
 class benutzer {
 public:
 	benutzer();
 	virtual ~benutzer();
 	uint8_t aktuell = 0;
-	String username[arrayGroesse] = {
-	/*0*/"Bitte wählen",
-	/*1*/"Christoph",
-	/*2*/"Maja",
-	/*3*/"DJ R. Kentn",
-	/*4*/"Ebi",
-	/*5*/"Maex",
-	/*6*/"Didi",
-	/*7*/"Beda",
-	/*8*/"Basi",
-	/*9*/"Al",
-	/*10*/"Piene",
-	/*11*/"Alois",
-	/*12*/"Stefan M.L.",
-	/*13*/"Framo",
-	/*14*/"Marina",
-	/*15*/"Anne",
-	/*16*/"Pia",
-	/*17*/"Italia",
-	/*18*/"Maria",
-	/*19*/"Burschen"
-	};
+	const char *userN[arrayGroesse] ={"Bitte wählen","Christoph","Mädels","Barracuda","Ebi","Maex","Didi","Beda","Basi","Al","Burschen","Alois","Stefan M.L.","Framo","Marina","Anne","Pia","Italia","Maria","Piene"};
 	uint16_t bierTemp[arrayGroesse];
 	uint16_t bierMenge[arrayGroesse];
 	uint16_t bierTag[arrayGroesse];

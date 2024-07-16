@@ -18,6 +18,7 @@
 #include <Arduino.h>
 #include "SdFat.h"
 #include "gemein.h"
+#include "globalVariables.h"
 #include "stdio.h"
 #include <string.h>
 #include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
@@ -91,8 +92,8 @@ public:
 	uint8_t showBMP(char const *nm, int16_t x, int16_t y);
 	void print_val(int val, int16_t x, int16_t y, int c, bool komma);
 	void print_val3(int val, int16_t x, int16_t y, bool komma);
-	void userShow(benutzer *user);
-	void infoscreen(tempControl *temp, benutzer *user);
+	void userShow();
+	void infoscreen();
 	void printValue(uint16_t x, uint16_t y, int val, bool komma);
 	void printlnTempC(const char *text, int16_t tempInC);
 	void backgroundPicture(void);
