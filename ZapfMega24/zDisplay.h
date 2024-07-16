@@ -88,7 +88,9 @@ public:
 	virtual ~zDisplay(); //Destructor
 	void beginn(SdFat *psd);
 	void printInitText(const char *text);
-	void infoText(const char* text);
+	void printInitText(const __FlashStringHelper* text);
+	void infoText(const char *text);
+	void infoText(const __FlashStringHelper* text);
 	uint8_t showBMP(char const *nm, int16_t x, int16_t y);
 	void print_val(int val, int16_t x, int16_t y, int c, bool komma);
 	void print_val3(int val, int16_t x, int16_t y, bool komma);
@@ -103,7 +105,9 @@ public:
 	void showAllUserData(void);
 	void showBalken(uint16_t istwert, uint16_t zielwert);
 	void showTastenFunktion(const char* textTaste1, const char* textTaste2);
+	void printProgrammInfo(const __FlashStringHelper *textUeberschrift);
 	void printProgrammInfo(const char* textUeberschrift);
+	void printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const __FlashStringHelper* textZeile);
 	void printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const char* textZeile);
 
 

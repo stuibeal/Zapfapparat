@@ -39,9 +39,9 @@ void zDisplay::beginn(SdFat *psd) {
 	u8g2.setBackgroundColor(WHITE);
 	u8g2.setCursor(230, 25);
 	u8g2.setFont(FONT_BOLD12);
-	u8g2.println(_NAME_);
+	u8g2.println(F(_NAME_));
 	u8g2.setFont(FONT_NORMAL10);
-	printInitText(_VERSION_);
+	printInitText(F(_VERSION_));
 
 	//BMP SHOW
 	root = _sd->open(namebuf);
@@ -54,7 +54,12 @@ void zDisplay::beginn(SdFat *psd) {
  *
  * @param text
  */
-void zDisplay::printInitText(const char *text) {
+void zDisplay::printInitText(const __FlashStringHelper* text) {
+	u8g2.setCursor(230, u8g2.getCursorY());
+	u8g2.println(text);
+}
+
+void zDisplay::printInitText(const char* text) {
 	u8g2.setCursor(230, u8g2.getCursorY());
 	u8g2.println(text);
 }
@@ -66,6 +71,14 @@ void zDisplay::printInitText(const char *text) {
  * @param text
  */
 void zDisplay::infoText(const char *text) {
+	_tft.fillRect(0, 292, 480, 28, BLACK);
+	u8g2.setCursor(10, 316);
+	u8g2.setForegroundColor(WHITE);
+	u8g2.setBackgroundColor(BLACK);
+	u8g2.setFont(FONT_NORMAL12);
+	u8g2.print(text);
+}
+void zDisplay::infoText(const __FlashStringHelper *text) {
 	_tft.fillRect(0, 292, 480, 28, BLACK);
 	u8g2.setCursor(10, 316);
 	u8g2.setForegroundColor(WHITE);
@@ -557,6 +570,24 @@ void zDisplay::showTastenFunktion(const char *textTaste1,
 	u8g2.print(textTaste2);
 }
 
+void zDisplay::printProgrammInfo(const __FlashStringHelper* textUeberschrift){
+	_tft.fillRect(271, 146, 209, 140, ZBRAUN);
+	u8g2.setFont(FONT_BOLD12);
+	u8g2.setFontMode(1); //transparent
+	u8g2.setForegroundColor(BLACK);
+	u8g2.setFontDirection(0);
+	uint16_t x = 271; /*da fängt der Rahmen an*/
+	uint16_t y = 163; /*erste Zeile*/
+	_tft.drawFastHLine(x+1, y+4, 199, BLACK);
+	_tft.drawFastHLine(x, y+3, 199, WHITE);
+	u8g2.setCursor(x+1, y+1);
+	u8g2.print(textUeberschrift);
+	u8g2.setForegroundColor(ZDUNKELGRUEN);
+	u8g2.setCursor(x,y);
+	u8g2.print(textUeberschrift);
+	u8g2.setFontMode(0);
+}
+
 void zDisplay::printProgrammInfo(const char* textUeberschrift){
 	_tft.fillRect(271, 146, 209, 140, ZBRAUN);
 	u8g2.setFont(FONT_BOLD12);
@@ -567,12 +598,14 @@ void zDisplay::printProgrammInfo(const char* textUeberschrift){
 	uint16_t y = 163; /*erste Zeile*/
 	_tft.drawFastHLine(x+1, y+4, 199, BLACK);
 	_tft.drawFastHLine(x, y+3, 199, WHITE);
-	u8g2.drawUTF8(x+1, y+1, textUeberschrift);
+	u8g2.setCursor(x+1, y+1);
+	u8g2.print(textUeberschrift);
 	u8g2.setForegroundColor(ZDUNKELGRUEN);
-	u8g2.drawUTF8(x, y, textUeberschrift);
+	u8g2.setCursor(x,y);
+	u8g2.print(textUeberschrift);
 	u8g2.setFontMode(0);
-
 }
+
 
 void zDisplay::printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const char* textZeile) {
 	u8g2.setFont(FONT_NORMAL12); /*10er font is 16 hoch*/
@@ -588,4 +621,21 @@ void zDisplay::printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const char
 	u8g2.setForegroundColor(BLACK);
 	u8g2.setBackgroundColor(ZBRAUN);
 	u8g2.drawUTF8(x, y, textZeile);
+}
+
+void zDisplay::printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const __FlashStringHelper* textZeile) {
+	u8g2.setFont(FONT_NORMAL12); /*10er font is 16 hoch*/
+	uint16_t zA = 16; /*Zeilenabstand*/
+	uint16_t x = 271; /*da fängt der Rahmen an*/
+	uint16_t y = 170+(zeile*zA);
+	switch (spalte) {
+	case 1:
+		break;
+	case 2:
+		x= 370;
+	}
+	u8g2.setForegroundColor(BLACK);
+	u8g2.setBackgroundColor(ZBRAUN);
+	u8g2.setCursor(x,y);
+	u8g2.print(textZeile);
 }

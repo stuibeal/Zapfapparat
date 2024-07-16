@@ -13,9 +13,8 @@
 #include "string.h"
 
 #ifndef DEBUG_A
-#define DEBUG_A 1
+#define DEBUG_A 0
 #endif
-//#define AUDIO_WARTEZEIT 1500
 
 #define USE_SOFTWARESERIAL 0   ///kein Softwareserial, native Port! - für MIDI
 #define MP3Stream Serial3  // Hängt am Serial Port 3 für MP3-Player
@@ -92,8 +91,8 @@ public:
 	}
 
 	static uint8_t state;
-	MD_YX5300 *_mp3;  //pointer MP3
-	MD_MIDIFile *_SMF; // pointer SMF Player
+	MD_YX5300* _mp3;  //pointer MP3
+	MD_MIDIFile* _SMF; // pointer SMF Player
 
 	uint8_t playlistFolder[MAX_PLAYLIST_SONGS];
 	uint8_t playlistSong[MAX_PLAYLIST_SONGS];

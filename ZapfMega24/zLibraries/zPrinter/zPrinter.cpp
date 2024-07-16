@@ -32,7 +32,7 @@ void zPrinter::initialise() {
 	delay(1000);
 	printer.begin();
 	delay(1000);
-	printer.println("Zapfapparat");
+	printer.println(_NAME_);
 	printer.println(_VERSION_);
 	printer.setLineHeight(24);
 	printer.feedRows(2);
@@ -80,17 +80,17 @@ void zPrinter::printerZapfEnde(uint16_t zahl) {
 		printer.justify('L');
 		printer.setSize('S');
 		printer.setLineHeight(24);
-		printer.print("Zapfkamerad ");
+		printer.print(F("Zapfkamerad "));
 		printer.print(user.getName());
-		printer.println(" hat gerade");
+		printer.println(F(" hat gerade"));
 		printer.print((int) zahl);
-		printer.println(" ml gezapft!");
-		printer.print("Gesamtmenge des Tages: ");
+		printer.println(F(" ml gezapft!"));
+		printer.print(F("Gesamtmenge des Tages: "));
 		printer.print(user.gesamt());
-		printer.println(" ml");
+		printer.println(F(" ml"));
 		if (user.aktuell == 3) {
 			printer.setSize('L');
-			printer.println("OPTIMAL!");
+			printer.println(F("OPTIMAL!"));
 		}
 		printer.feed(20);
 		printerSleep();
@@ -107,7 +107,7 @@ void zPrinter::printerErrorZapfEnde(unsigned int zahl) {
 		printer.println(buf);
 		printer.setSize('L');
 		printer.println(user.getName());
-		printer.println("Schämen Sie sich!");
+		printer.println(F("Schämen Sie sich!"));
 		printer.setSize('S');
 		printer.feed(20);
 		printerSleep();
@@ -196,10 +196,10 @@ void zPrinter::printerSetup() {
 }
 
 void zPrinter::printKaethe() {
-	printMessage("Z-Apfapparat Version 0.4");
-	printMessage("ready!");
-	printMessage("Prost!");
-	printMessage("Ich weis nichts");  //programmiert von Käthe 30.7.22
+	printMessage(F("Z-Apfapparat Version 0.4"));
+	printMessage(F("ready!"));
+	printMessage(F("Prost!"));
+	printMessage(F("Ich weis nichts"));  //programmiert von Käthe 30.7.22
 	printFeed(4);
 }
 

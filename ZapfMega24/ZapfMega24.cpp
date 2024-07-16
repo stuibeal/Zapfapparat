@@ -91,9 +91,9 @@ void setup(void) {
 
 	ZD.beginn(&SD); /* Display mit Pointer zur SD starten */
 	if (!SD.begin(SD_CS)) {  // nachschauen ob die SD-Karte drin und gut ist
-		ZD.printInitText("SD Karte Error!");
-		ZD.printInitText("Knopf 1: retry");
-		ZD.printInitText("Knopf 2: egal");
+		ZD.printInitText(F("SD Karte Error!"));
+		ZD.printInitText(F("Knopf 1: retry"));
+		ZD.printInitText(F("Knopf 2: egal"));
 		switch (errorLed()) {
 		case 1:
 			SD.begin(SD_CS);
@@ -118,21 +118,21 @@ void setup(void) {
 	 ABER: SDA/SCL ist parallel zu PIN 20/21, brauch den Interrupt also selber. So sind nur pins 2,3,18,19 am MEGA frei.
 	 */
 	sound.starte(&SD, &SMF, &mp3);
-	ZD.printInitText("Harte Musik ok");
+	ZD.printInitText(F("Harte Musik ok"));
 
 	//Altdaten auslesen (SD karte) nach Stromweg oder so...
 
 	//Valve
 	ventil.begin();
 	ventil.check();   //dann sollte das aufgehen
-	ZD.printInitText("Ventilsteuerung bereit");
+	ZD.printInitText(F("Ventilsteuerung bereit"));
 
 	//DCF RTC
 	logbuch.initialise(&SD, &user, &temp, buf);
-	ZD.printInitText("RTC DCF77 Uhrensohn");
+	ZD.printInitText(F("RTC DCF77 Uhrensohn"));
 
 	temp.begin(); /* Temperaturcontrol uC - Wire sollte gestartet sein! */
-	ZD.printInitText("Temperaturfühler bereit");
+	ZD.printInitText(F("Temperaturfühler bereit"));
 
 	//FLOWMETER
 	pinMode(FLOW_WINDOW, INPUT);    //Wenn durchfluss, dann true
@@ -140,10 +140,10 @@ void setup(void) {
 	{
 		delay(1);
 	}
-	ZD.printInitText("Flowmeter ifm SM6020 ready");
+	ZD.printInitText(F("Flowmeter ifm SM6020 ready"));
 
+	ZD.printInitText(F("Talondrucker starten..."));
 	drucker.initialise(); /* Thermodrucker */
-	ZD.printInitText("Talondrucker bereit");
 
 	anfang();
 	oldTime = millis();
@@ -208,12 +208,12 @@ void zapfStandbyProg(void) {
 void zapfErrorProg() {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
-		ZD.infoText("HEY DU HONK! ERST BENUTZER WÄHLEN!");
+		ZD.infoText(F("HEY DU HONK! ERST BENUTZER WÄHLEN!"));
 		ventil.closeValve();
 		while (ventil.getValveProzent() > 0) {
 			ventil.check();
 		}
-		ZD.infoText("Zapfhahn gesperrt mein Herr!");
+		ZD.infoText(F("Zapfhahn gesperrt mein Herr!"));
 		user.zapfStatus = user.zapfModus::zapfStandby;
 	}
 }
@@ -341,7 +341,7 @@ void godZapfenProg(void) {
 void kurzVorZapfEndeProg(void) {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
-		ZD.infoText("ZAPFVORGANG FAST FERTIG!");
+		ZD.infoText(F("ZAPFVORGANG FAST FERTIG!"));
 		power.setWhiteLed(0xFFF);
 		temp.sendeBefehl(KURZ_VOR_ZAPFENDE, 0x0);
 		power.tastenLed(0, 255);
@@ -734,39 +734,39 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 		oldProgrammNummer = programmNummer;
 		switch (programmNummer) {
 		case 0: //infoscreen anfang
-			ZD.printProgrammInfo("Spezialauswahl");
-			ZD.printProgrammInfoZeilen(1, 1, "1 Benutzer");
-			ZD.printProgrammInfoZeilen(2, 1, "2 Apparat");
-			ZD.printProgrammInfoZeilen(3, 1, "3 Fass");
-			ZD.printProgrammInfoZeilen(4, 1, "4 Info");
-			ZD.printProgrammInfoZeilen(5, 1, "5 Licht");
-			ZD.printProgrammInfoZeilen(1, 2, "6 MIDI");
-			ZD.printProgrammInfoZeilen(2, 2, "7 Schlafen");
-			ZD.printProgrammInfoZeilen(3, 2, "8 Ventil");
-			ZD.printProgrammInfoZeilen(4, 2, "9 MP3");
+			ZD.printProgrammInfo(F("Spezialauswahl"));
+			ZD.printProgrammInfoZeilen(1, 1, F("1 Benutzer"));
+			ZD.printProgrammInfoZeilen(2, 1, F("2 Apparat"));
+			ZD.printProgrammInfoZeilen(3, 1, F("3 Fass"));
+			ZD.printProgrammInfoZeilen(4, 1, F("4 Info"));
+			ZD.printProgrammInfoZeilen(5, 1, F("5 Licht"));
+			ZD.printProgrammInfoZeilen(1, 2, F("6 MIDI"));
+			ZD.printProgrammInfoZeilen(2, 2, F("7 Schlafen"));
+			ZD.printProgrammInfoZeilen(3, 2, F("8 Ventil"));
+			ZD.printProgrammInfoZeilen(4, 2, F("9 MP3"));
 			break;
 		case 1: //USER 11-19
-			ZD.printProgrammInfo("Benutzer 11-19");
-			ZD.printProgrammInfoZeilen(1, 1, "Jetzt bitte zweite");
-			ZD.printProgrammInfoZeilen(2, 1, "Zahl für die Benutzer");
-			ZD.printProgrammInfoZeilen(3, 1, "11-19 wählen.");
-			ZD.printProgrammInfoZeilen(4, 1, "Beispielhaft die 8");
-			ZD.printProgrammInfoZeilen(5, 1, "für Nutzer 18");
+			ZD.printProgrammInfo(F("Benutzer 11-19"));
+			ZD.printProgrammInfoZeilen(1, 1, F("Jetzt bitte zweite"));
+			ZD.printProgrammInfoZeilen(2, 1, F("Zahl für die Benutzer"));
+			ZD.printProgrammInfoZeilen(3, 1, F("11-19 wählen."));
+			ZD.printProgrammInfoZeilen(4, 1, F("Beispielhaft die 8"));
+			ZD.printProgrammInfoZeilen(5, 1, F("für Nutzer 18"));
 			break;
 		case 2: // ABC APPARAT
-			ZD.printProgrammInfo("Apparat");
-			ZD.printProgrammInfoZeilen(1, 1, "LEAN: Reinigung");
+			ZD.printProgrammInfo(F("Apparat"));
+			ZD.printProgrammInfoZeilen(1, 1, F("LEAN: Reinigung"));
 			break;
 		case 3: // DEF FASS
-			ZD.printProgrammInfo("Fasswechsel");
-			ZD.printProgrammInfoZeilen(1, 1, "Jetzt zweistellig");
-			ZD.printProgrammInfoZeilen(2, 1, "die Faßgröße wählen");
-			ZD.printProgrammInfoZeilen(3, 1, "MIN: 01, MAX: 65");
-			ZD.printProgrammInfoZeilen(4, 1, "Dann wird der");
-			ZD.printProgrammInfoZeilen(5, 1, "Restbierzähler rückgesetzt.");
+			ZD.printProgrammInfo(F("Fasswechsel"));
+			ZD.printProgrammInfoZeilen(1, 1, F("Jetzt zweistellig"));
+			ZD.printProgrammInfoZeilen(2, 1, F("die Faßgröße wählen"));
+			ZD.printProgrammInfoZeilen(3, 1, F("MIN: 01, MAX: 65"));
+			ZD.printProgrammInfoZeilen(4, 1, F("Dann wird der"));
+			ZD.printProgrammInfoZeilen(5, 1, F("Restbierzähler rückgesetzt."));
 			break;
 		case 4: // GHI  INFO
-			ZD.printProgrammInfo("Information");
+			ZD.printProgrammInfo(F("Information"));
 			sprintf(buf, "Playlist: %2d/%2d", sound.getPlaylistPlace(),
 					sound.getPlaylistSize());
 			ZD.printProgrammInfoZeilen(1, 1, buf);
@@ -776,41 +776,41 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 
 			break;
 		case 5: //LKJ LICHT
-			ZD.printProgrammInfo("Lichtprogramm");
-			ZD.printProgrammInfoZeilen(1, 1, "ICHT: An"); //4248
-			ZD.printProgrammInfoZeilen(2, 1, "2 Auto aus");
-			ZD.printProgrammInfoZeilen(3, 1, "3 Auto an");
-			ZD.printProgrammInfoZeilen(4, 1, "4 Licht aus");
-			ZD.printProgrammInfoZeilen(1, 2, "6 SchLampe an");
-			ZD.printProgrammInfoZeilen(2, 2, "7 SchLampe aus");
+			ZD.printProgrammInfo(F("Lichtprogramm"));
+			ZD.printProgrammInfoZeilen(1, 1, F("ICHT: An")); //4248
+			ZD.printProgrammInfoZeilen(2, 1, F("2 Auto aus"));
+			ZD.printProgrammInfoZeilen(3, 1, F("3 Auto an"));
+			ZD.printProgrammInfoZeilen(4, 1, F("4 Licht aus"));
+			ZD.printProgrammInfoZeilen(1, 2, F("6 SchLampe an"));
+			ZD.printProgrammInfoZeilen(2, 2, F("7 SchLampe aus"));
 
 			break;
 		case 6: //MNO MIDI
-			ZD.printProgrammInfo("MIDI Steuerung");
+			ZD.printProgrammInfo(F("MIDI Steuerung"));
 			break;
 		case 7: //PQRS Schlafen
-			ZD.printProgrammInfo("Schlafprogramm");
-			ZD.printProgrammInfoZeilen(1, 1, "LEEP: Zapfenstreich"); //5337
-			ZD.printProgrammInfoZeilen(2, 1, "");
+			ZD.printProgrammInfo(F("Schlafprogramm"));
+			ZD.printProgrammInfoZeilen(1, 1, F("LEEP: Zapfenstreich")); //5337
+			ZD.printProgrammInfoZeilen(2, 1, F(""));
 			break;
 		case 8: //TUV VENTIL
-			ZD.printProgrammInfo("Ventilsteuerung");
-			ZD.printProgrammInfoZeilen(1, 1, "Wert 0 - 100");
-			ZD.printProgrammInfoZeilen(2, 1, "wählen um Ventil");
-			ZD.printProgrammInfoZeilen(3, 1, "einzustellen.");
-			ZD.printProgrammInfoZeilen(4, 1, "NICHT HERUMSPIELEN!");
+			ZD.printProgrammInfo(F("Ventilsteuerung"));
+			ZD.printProgrammInfoZeilen(1, 1, F("Wert 0 - 100"));
+			ZD.printProgrammInfoZeilen(2, 1, F("wählen um Ventil"));
+			ZD.printProgrammInfoZeilen(3, 1, F("einzustellen."));
+			ZD.printProgrammInfoZeilen(4, 1, F("NICHT HERUMSPIELEN!"));
 
 			break;
 		case 9: //WXY
-			ZD.printProgrammInfo("MP3 Player");
-			ZD.printProgrammInfoZeilen(1, 1, "1 Vor");
-			ZD.printProgrammInfoZeilen(1, 2, "3 Zurück");
-			ZD.printProgrammInfoZeilen(2, 1, "2 Pause");
-			ZD.printProgrammInfoZeilen(2, 2, "9 Reset PL");
-			ZD.printProgrammInfoZeilen(3, 1, "Zur Playlist hinzufügen:");
-			ZD.printProgrammInfoZeilen(4, 1, "1 Zahl Ordner, 2 Song");
-			ZD.printProgrammInfoZeilen(5, 1, "Zufallsplaylist erstellen");
-			ZD.printProgrammInfoZeilen(6, 1, "1 wählen + 1 Zahl Ordner");
+			ZD.printProgrammInfo(F("MP3 Player"));
+			ZD.printProgrammInfoZeilen(1, 1, F("1 Vor"));
+			ZD.printProgrammInfoZeilen(1, 2, F("3 Zurück"));
+			ZD.printProgrammInfoZeilen(2, 1, F("2 Pause"));
+			ZD.printProgrammInfoZeilen(2, 2, F("9 Reset PL"));
+			ZD.printProgrammInfoZeilen(3, 1, F("Zur Playlist hinzufügen:"));
+			ZD.printProgrammInfoZeilen(4, 1, F("1 Zahl Ordner, 2 Song"));
+			ZD.printProgrammInfoZeilen(5, 1, F("Zufallsplaylist erstellen"));
+			ZD.printProgrammInfoZeilen(6, 1, F("1 wählen + 1 Zahl Ordner"));
 
 			break;
 		default:
