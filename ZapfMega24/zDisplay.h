@@ -110,7 +110,6 @@ public:
 	void printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const __FlashStringHelper* textZeile);
 	void printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const char* textZeile);
 
-
 private:
 	MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
 	U8G2_FOR_ADAFRUIT_GFX u8g2;
@@ -123,6 +122,8 @@ private:
 	uint8_t r;
 	uint8_t g;
 	uint8_t b;
+	const char *_oldText1;
+	const char *_oldText2;
 
 protected:
 	SdFat *_sd; 		// Pointer zum SD-Objekt vom Hauptprogramm

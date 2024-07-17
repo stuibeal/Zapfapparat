@@ -306,8 +306,20 @@ void audio::mp3PlaySongOnPlaylist(uint8_t folder, uint8_t song) {
 }
 
 void audio::bing() {
-	on();
-	_mp3->playSpecific(29, 2); //BING!
+	if (mp3D.playStatus==S_PLAYING) {
+		mp3Pause();
+		mp3D.pauseForMidi = true;
+		midi_event ev;
+		ev.size = 0;
+		ev.data[ev.size++] = 0xb0;
+		ev.data[ev.size++] = 120;
+		ev.data[ev.size++] = 0;
+		for (ev.channel = 0; ev.channel < 16; ev.channel++)
+			midiCallback(&ev);
+
+	} else {
+		mp3Play(20, 1);
+	}
 }
 
 void audio::midiCallback(midi_event *pev)

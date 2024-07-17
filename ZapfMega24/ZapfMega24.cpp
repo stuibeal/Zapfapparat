@@ -45,9 +45,17 @@
 
 //Hier Variablen definieren
 unsigned long auswahlZeit = 0;
-
 unsigned long oldTime = millis();
 unsigned long nachSchauZeit = 0;
+
+//Tastentexte
+const char tt_zapfabbruch = "ZAPFABBRUCH";
+const char tt_zapfabbruchUndSet = "ABBRUCH+SET ML";
+const char tt_talon = "TALON DRUCKEN";
+const char tt_sonder = "SONDERFUNKTION";
+const char tt_fertig = "BIN FERTIG";
+const char tt_info = "INFOSEITE";
+
 
 //Waehlscheibe
 uint16_t kienmuehle = 0;  //Sondereingabe bei drücken der Taste2
@@ -157,7 +165,7 @@ void anfang(void) {
     ZD.infoText("fast da");
 	delay(1000);
 	userShow();
-	ZD.showTastenFunktion("INFOSEITE", "SONDERFUNKTION");
+	ZD.showTastenFunktion(&tt_sonder, &tt_info);
 }
 
 void loop() {
@@ -194,7 +202,7 @@ void loop() {
 void zapfStandbyProg(void) {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
-		ZD.showTastenFunktion("INFOSEITE", "SONDERFUNKTION");
+		ZD.showTastenFunktion(&tt_sonder, &tt_info);
 		power.ledGrundbeleuchtung();
 	}
 	dauerCheck();
@@ -209,7 +217,9 @@ void zapfErrorProg() {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
 		ZD.infoText(F("HEY DU HONK! ERST BENUTZER WÄHLEN!"));
+		sound.on();
 		ventil.closeValve();
+		sound.mp3Play(29, 3);
 		while (ventil.getValveProzent() > 0) {
 			ventil.check();
 		}
@@ -271,7 +281,7 @@ void zapfBeginnProg(void) {
 void amZapfenProg(void) {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
-		ZD.showTastenFunktion("ZAPFABBRUCH", "ABBRUCH+SET ML");
+		ZD.showTastenFunktion(&tt_zapfabbruch, &tt_zapfabbruchUndSet);
 		sound.setStandby(1);
 		sound.pruefe();
 		if (user.getGodMode() > 0) {
@@ -358,7 +368,7 @@ void zapfEndeProg(void) {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
 		sound.bing();
-		ZD.showTastenFunktion("", "TALON DRUCKEN");
+		ZD.showTastenFunktion(&tt_fertig, &tt_talon);
 		auswahlZeit = millis();
 		ZD.showUserGod2Pic();
 		sound._SMF->close();
@@ -434,7 +444,7 @@ void dauerCheck(void) {
 		ZD.showAllUserData();
 	}
 	//Wenn jemand an den Tasten rumspielt
-	if (digitalRead(TASTE1_PIN)) {
+	if (digitalRead(TASTE2_PIN)) {
 		infoseite();
 	}
 
@@ -446,7 +456,7 @@ void dauerCheck(void) {
 		nachSchauZeit = millis();
 	}
 	// Sonderfunktionsinfoanzeige
-	if (digitalRead(TASTE2_PIN)) {
+	if (digitalRead(TASTE1_PIN)) {
 		power.tastenLed(2, 255);
 		if (kienmuehle < 10) {
 			showSpezialProgrammInfo(kienmuehle);
@@ -454,7 +464,7 @@ void dauerCheck(void) {
 	}
 
 	// Wenn Nummer Fertig und Taste losgelassen
-	if (!digitalRead(TASTE2_PIN) && kienmuehle > 0) {
+	if (!digitalRead(TASTE1_PIN) && kienmuehle > 0) {
 		power.tastenLed(2, TASTEN_LED_NORMAL);
 		waehlFunktionen();
 		power.ledGrundbeleuchtung();
@@ -627,7 +637,7 @@ void belohnungsMusik() {
 
 //Infoknopf
 void infoseite(void) {
-	analogWrite(TASTE1_LED, 10);
+	analogWrite(TASTE2_LED, 10);
 //	sound.loadSingleMidi("SKYFALL.MID");
 //	sound._SMF->pause(false);
 	ZD.infoscreen();
@@ -638,11 +648,11 @@ void infoseite(void) {
 		analogWrite(TASTE1_LED, x);
 		delay(10);
 	}
-	while (digitalRead(TASTE1_PIN)) {
+	while (digitalRead(TASTE2_PIN)) {
 	}
 	for (int x = 255; x > 11; x--) {
-		analogWrite(TASTE1_LED, x);
-		delay(10);
+		analogWrite(TASTE2_LED, x);
+		delay(2);
 	}
 	anfang();
 	userShow();
@@ -657,6 +667,7 @@ uint8_t errorLed() {
 		delay(200);
 		digitalWrite(TASTE1_LED, LOW);
 		digitalWrite(TASTE2_LED, HIGH);
+		delay(200);
 	}
 	if (digitalRead(TASTE1_PIN)) {
 		tasteGedrueckt = 1;
@@ -664,7 +675,8 @@ uint8_t errorLed() {
 	if (digitalRead(TASTE2_PIN)) {
 		tasteGedrueckt = 2;
 	}
-	power.ledGrundbeleuchtung();
+	digitalWrite(TASTE1_LED, TASTEN_LED_NORMAL);
+	digitalWrite(TASTE2_LED, TASTEN_LED_NORMAL);
 	return tasteGedrueckt;
 }
 
@@ -710,18 +722,14 @@ void reinigungsprogramm(void) {
 	ZD.infoText("Reinigungsprogramm");
 	temp.sendeBefehl(ZAPFEN_STREICH, 0x0);
 	ventil.cleanPumpOn();
-	while (digitalRead(TASTE1_PIN)) {
-	}
-	delay(20); //zum taste loslassen!
 	unsigned long waitingTime = millis();
 	int sekunden = 0;
-	power.tastenLed(1, 255);
 	while (!digitalRead(TASTE2_PIN)) {
 		if (millis() - waitingTime >= 1000) {
 			waitingTime = millis();
 			sekunden++;
 			sprintf(buf, "Reinigt seit %d Sekunden", sekunden);
-			ZD.showTastenFunktion(buf, "Ende");
+			ZD.showTastenFunktion(buf, &tt_fertig);
 		}
 	}
 	ventil.cleanPumpOff();

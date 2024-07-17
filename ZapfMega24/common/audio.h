@@ -103,6 +103,7 @@ public:
 		bool standby;
 		bool waiting;
 		bool playTheList;
+		bool pauseForMidi;
 		playStatus_t playStatus;
 		uint16_t currentTrack;
 		uint16_t folderFiles;

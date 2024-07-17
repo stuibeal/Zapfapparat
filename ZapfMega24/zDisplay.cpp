@@ -11,6 +11,8 @@
 #include "zDisplay.h"
 #include "globalVariables.h"
 
+
+
 zDisplay::zDisplay() :
 		MCUFRIEND_kbv(0, 0, 0, 0, 0), U8G2_FOR_ADAFRUIT_GFX() {
 	_sd = nullptr;
@@ -20,6 +22,9 @@ zDisplay::zDisplay() :
 	strcpy(namebuf, "/");
 	MCUFRIEND_kbv _tft;  //tft objekt
 	U8G2_FOR_ADAFRUIT_GFX u8g2;
+
+	_oldText1 = nullptr;
+	_oldText2 = nullptr;
 }
 
 zDisplay::~zDisplay() {
@@ -322,14 +327,13 @@ void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsrout
  */
 void zDisplay::userShow() {
 	static bool lastUserVoll = 0;
-	char namebuf[32] = "/usr/x.bmp";
 
 	if (user.getGodMode() > 0) {
-		sprintf(namebuf, "/god/%d0.bmp", user.getGodMode());
+		sprintf(buf, "/god/%d0.bmp", user.getGodMode());
 	} else {
-		sprintf(namebuf, "/usr/%d.bmp", user.aktuell);
+		sprintf(buf, "/usr/%d.bmp", user.aktuell);
 	}
-	showUserPic(namebuf);
+	showUserPic(buf);
 	/*USERNAME*/
 	_tft.fillRect(235, 10, 35, 271, ZBRAUN); /* vorsichtshalber ausbraunen */
 	u8g2.setFont(FONT_BOLD19);
@@ -369,7 +373,6 @@ void zDisplay::userShow() {
 		showBMP("/bmp/bg_leer.bmp", 102, 0); /* Bier leer, w:132 h:291 */
 		lastUserVoll = 0;
 	}
-
 }
 
 /**
@@ -454,13 +457,20 @@ void zDisplay::backgroundPicture() {
 	u8g2.setForegroundColor(WHITE);
 	u8g2.setBackgroundColor(ZDUNKELGRUEN);
 	u8g2.setFontMode(0);
-	u8g2.drawUTF8(17, 40, "KÜHLBLOCK");
-	u8g2.drawUTF8(17, 52, "TEMPERATUR");
-	u8g2.drawUTF8(75, 97, "°C");
-	u8g2.drawUTF8(17, 140, "ZAPFMENGE");
-	u8g2.drawUTF8(75, 185, "ml");
-	u8g2.drawUTF8(17, 230, "DRUCK");
-	u8g2.drawUTF8(75, 275, "atü");
+	u8g2.setCursor(17,40);
+	u8g2.print(F("KÜHLBLOCK"));
+	u8g2.setCursor(17,52);
+	u8g2.print(F("TEMPERATUR"));
+	u8g2.setCursor(75,97);
+	u8g2.print(F("°C"));
+	u8g2.setCursor(17,140);
+	u8g2.print(F("ZAPFMENGE"));
+	u8g2.setCursor(75,185);
+	u8g2.print(F("ml"));
+	u8g2.setCursor(17,230);
+	u8g2.print(F("DRUCK"));
+	u8g2.setCursor(75,275);
+	u8g2.print(F("atü"));
 }
 
 /**
@@ -481,9 +491,8 @@ void zDisplay::showUserPic(const char *bmp) {
  */
 void zDisplay::showUserGod2Pic(void) {
 	if (user.getGodMode() > 0) {
-		char namebuf[30] = "/god/10.bmp";
-		sprintf(namebuf, "/god/%d1.bmp", user.getGodMode());
-		showUserPic(namebuf);
+		sprintf(buf, "/god/%d1.bmp", user.getGodMode());
+		showUserPic(buf);
 	}
 }
 
@@ -559,6 +568,14 @@ void zDisplay::showBalken(uint16_t istwert, uint16_t zielwert) {
  */
 void zDisplay::showTastenFunktion(const char *textTaste1,
 		const char *textTaste2) {
+	if (textTaste1 == nullptr) {
+		textTaste1 = _oldText1;
+	}
+	if (textTaste2 == nullptr) {
+		textTaste2 = _oldText1;
+	}
+	_oldText1 = textTaste1;
+	_oldText2 = textTaste2;
 	_tft.fillRect(0, 292, 480, 28, BLACK);
 	u8g2.setCursor(10, 316);
 	u8g2.setForegroundColor(WHITE);
