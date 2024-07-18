@@ -71,27 +71,27 @@ void tempControl::begin() {
 
 //DS18B20
 void tempControl::requestSensors(void) {
-//	if (auslauf.isConversionComplete()) {
-//		hahnTemp = static_cast<int16_t>(auslauf.getTempC() * 100);
-//		auslauf.requestTemperatures();
-//	}
-//
-//	if (gehaeuse.isConversionComplete()) {
-//		hausTemp = static_cast<int16_t>(gehaeuse.getTempC() * 100);
-//		gehaeuse.requestTemperatures();
-//	}
-//	if (zulauf.isConversionComplete()) {
-//		zulaufTemp = static_cast<int16_t>(zulauf.getTempC() * 100);
-//		zulauf.requestTemperatures();
-//	}
-//	if (block.isConversionComplete()) {
-//		blockTemp = static_cast<int16_t>(block.getTempC() * 100);
-//		block.requestTemperatures();
-//	}
-//	if (kuehlwasser.isConversionComplete()) {
-//		kuehlwasserTemp = static_cast<int16_t>(kuehlwasser.getTempC() * 100);
-//		kuehlwasser.requestTemperatures();
-//	}
+	if (auslauf.isConversionComplete()) {
+		hahnTemp = static_cast<int16_t>(auslauf.getTempC() * 100);
+		auslauf.requestTemperatures();
+	}
+
+	if (gehaeuse.isConversionComplete()) {
+		hausTemp = static_cast<int16_t>(gehaeuse.getTempC() * 100);
+		gehaeuse.requestTemperatures();
+	}
+	if (zulauf.isConversionComplete()) {
+		zulaufTemp = static_cast<int16_t>(zulauf.getTempC() * 100);
+		zulauf.requestTemperatures();
+	}
+	if (block.isConversionComplete()) {
+		blockTemp = static_cast<int16_t>(block.getTempC() * 100);
+		block.requestTemperatures();
+	}
+	if (kuehlwasser.isConversionComplete()) {
+		kuehlwasserTemp = static_cast<int16_t>(kuehlwasser.getTempC() * 100);
+		kuehlwasser.requestTemperatures();
+	}
 
 }
 

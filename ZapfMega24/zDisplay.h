@@ -97,7 +97,7 @@ public:
 	void userShow();
 	void infoscreen();
 	void printValue(uint16_t x, uint16_t y, int val, bool komma);
-	void printlnTempC(const char *text, int16_t tempInC);
+	void printlnInfoTemp(uint16_t right_x, uint16_t left_x, const __FlashStringHelper* text, int16_t temp);
 	void backgroundPicture(void);
 	void showUserPic(const char *bmp);
 	void showUserGod2Pic(void);

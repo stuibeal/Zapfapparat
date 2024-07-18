@@ -11,8 +11,6 @@
 #include "zDisplay.h"
 #include "globalVariables.h"
 
-
-
 zDisplay::zDisplay() :
 		MCUFRIEND_kbv(0, 0, 0, 0, 0), U8G2_FOR_ADAFRUIT_GFX() {
 	_sd = nullptr;
@@ -64,7 +62,7 @@ void zDisplay::printInitText(const __FlashStringHelper* text) {
 	u8g2.println(text);
 }
 
-void zDisplay::printInitText(const char* text) {
+void zDisplay::printInitText(const char *text) {
 	u8g2.setCursor(230, u8g2.getCursorY());
 	u8g2.println(text);
 }
@@ -137,7 +135,7 @@ uint8_t zDisplay::showBMP(char const *nm, int16_t x, int16_t y) {
 	uint8_t bitshift = 0;
 	boolean flip = true;        // BMP is stored bottom-to-top
 	int16_t w, h, row, col, lcdbufsiz = (1 << PALETTEDEPTH) + BUFFPIXEL;
-	int16_t buffidx= 0; //war int
+	int16_t buffidx = 0; //war int
 	uint32_t pos;               // seek position
 	boolean is565 = false;      //
 
@@ -210,9 +208,9 @@ uint8_t zDisplay::showBMP(char const *nm, int16_t x, int16_t y) {
 										// and scanline padding.  Also, the seek only takes
 										// place if the file position actually needs to change
 										// (avoids a lot of cluster math in SD library).
-			uint8_t r=0;
-			uint8_t g=0;
-			uint8_t b=0;
+			uint8_t r = 0;
+			uint8_t g = 0;
+			uint8_t b = 0;
 			int lcdidx, lcdleft;
 			if (flip)   // Bitmap is stored bottom-to-top order (normal BMP)
 				pos = bmpImageoffset + (bmpHeight - 1 - row) * rowSize;
@@ -229,7 +227,7 @@ uint8_t zDisplay::showBMP(char const *nm, int16_t x, int16_t y) {
 				if (lcdleft > lcdbufsiz)
 					lcdleft = lcdbufsiz;
 				for (lcdidx = 0; lcdidx < lcdleft; lcdidx++) { // buffer at a time
-					uint16_t color=0;
+					uint16_t color = 0;
 					// Time to read more pixel data?
 					if (buffidx >= sizeof(sdbuffer)) { // Indeed
 						bmpFile.read(sdbuffer, sizeof(sdbuffer));
@@ -366,7 +364,7 @@ void zDisplay::userShow() {
 	showAllUserData();
 
 	/*Wenn über 8 Halbe soll der das volle Bild zeigen*/
- 	if (user.getBierTag() > 3999 && !lastUserVoll) {
+	if (user.getBierTag() > 3999 && !lastUserVoll) {
 		showBMP("/bmp/bg_voll.bmp", 102, 0);
 		lastUserVoll = 1;
 	} else if (user.getBierTag() < 4000 && lastUserVoll) {
@@ -392,55 +390,58 @@ void zDisplay::infoscreen() {
 	u8g2.setBackgroundColor(ZDUNKELGRUEN);
 	u8g2.setFont(FONT_BOLD19); // select u8g2 font from here: https://github.com/olikraus/u8g2/wiki/fntlistall
 	u8g2.setCursor(5, 20);                // start writing at this position
-	u8g2.print(_NAME_);
+	u8g2.print(F(_NAME_));
 	u8g2.setCursor(240, 20);                // start writing at this position
 	u8g2.setFontMode(0);                 // use u8g2 none transparent mode
-	u8g2.print("Information");          // UTF-8 string with german umlaut chars
+	u8g2.print(F("Information"));       // UTF-8 string with german umlaut chars
 	u8g2.setBackgroundColor(BLACK);
 	u8g2.setCursor(240, 60);
 	u8g2.setFont(FONT_NORMAL12);
-
-	for (int x = 0; x < 11; x++) {
-		u8g2.setCursor(240, u8g2.getCursorY());
+	uint16_t y = 5;
+	for (int x = 0; x < 20; x++) {
+		if (x > 9) {
+			y = 245;
+		}
+		if (x == 10) {
+			u8g2.setCursor(240, 60);
+		}
+		u8g2.setFont(FONT_BOLD12);
+		u8g2.setCursor(y, u8g2.getCursorY());
 		u8g2.print(x);
-		u8g2.setCursor(260, u8g2.getCursorY());
+		u8g2.setFont(FONT_NORMAL12);
+		u8g2.setCursor(y + 35, u8g2.getCursorY());
 		u8g2.print(user.userN[x]);
-		u8g2.setCursor(380, u8g2.getCursorY());
-		u8g2.print(user.bierTag[x]);
-		u8g2.println(" ml");
+		sprintf(buf, "%u ml", user.bierTag[x]);
+		u8g2.setCursor(y + 225 - u8g2.getUTF8Width(buf), u8g2.getCursorY());
+		u8g2.println(buf);
 	}
-
 	temp.holeDaten();
-	u8g2.setCursor(5, 60);
+	u8g2.setCursor(0, 230);
 	u8g2.setFont(FONT_BOLD12);
 	u8g2.println(_NAME_);
 	u8g2.setFont(FONT_NORMAL12);
 	u8g2.println(_VERSION_);
 	u8g2.println();
-	printlnTempC("Block DS18B20:", temp.getDSblockTemp());
-	printlnTempC("Block außen:", temp.getBlockAussenTemp());
-	printlnTempC("Block innen:", temp.getBlockInnenTemp());
-	printlnTempC("Zapfhahn:", temp.getHahnTemp());
-	printlnTempC("Gehäuse:", temp.getHausTemp());
-	printlnTempC("Zulauf:", temp.getZulaufTemp());
-	printlnTempC("Kühlwasser:", temp.getKuehlWasserTemp());
-
-	temp.requestSensors();
+	u8g2.setFont(FONT_NORMAL10);
+	u8g2.setCursor(0, 270);
+	printlnInfoTemp(230, 0, F("Block DS18B20: "),temp.getDSblockTemp());
+	printlnInfoTemp(230, 0, F("Block PT100 Innen: "),temp.getBlockInnenTemp());
+	printlnInfoTemp(230, 0, F("Zapfhahn: "),temp.getHahnTemp());
+	u8g2.setCursor(250, 270);
+	printlnInfoTemp(470, 250, F("Getränkezulauf: "),temp.getZulaufTemp());
+	printlnInfoTemp(470, 250, F("Kühlwasser: "),temp.getKuehlWasserTemp());
+	printlnInfoTemp(470, 250, F("Gehäuse: "),temp.getHausTemp());
+	u8g2.print(F("Helligkeit: "));
+	u8g2.println(power.getHelligkeit());
 }
 
-/**
- * @fn void printlnTempC(const char*, int16_t)
- * @brief Hilfsroutine für die Infoseite
- *
- * @param text
- * @param tempInC
- */
-void zDisplay::printlnTempC(const char *text, int16_t tempInC) {
+void zDisplay::printlnInfoTemp(uint16_t right_x, uint16_t left_x, const __FlashStringHelper* text, int16_t temp) {
+	u8g2.setCursor(left_x, u8g2.getCursorY());
 	u8g2.print(text);
-	printValue(155, u8g2.getCursorY(), tempInC, KOMMA);
-	u8g2.println("°C");
+	sprintf(buf, "%2d,%02d°C", temp / 100, temp % 100);
+	u8g2.setCursor(right_x-u8g2.getUTF8Width(buf), u8g2.getCursorY());
+	u8g2.println(buf);
 }
-
 /**
  * @fn void backgroundPicture()
  * @brief Grundlegendes Hintergrundbild mit Beschriftung
@@ -457,19 +458,19 @@ void zDisplay::backgroundPicture() {
 	u8g2.setForegroundColor(WHITE);
 	u8g2.setBackgroundColor(ZDUNKELGRUEN);
 	u8g2.setFontMode(0);
-	u8g2.setCursor(17,40);
+	u8g2.setCursor(17, 40);
 	u8g2.print(F("KÜHLBLOCK"));
-	u8g2.setCursor(17,52);
+	u8g2.setCursor(17, 52);
 	u8g2.print(F("TEMPERATUR"));
-	u8g2.setCursor(75,97);
+	u8g2.setCursor(75, 97);
 	u8g2.print(F("°C"));
-	u8g2.setCursor(17,140);
+	u8g2.setCursor(17, 140);
 	u8g2.print(F("ZAPFMENGE"));
-	u8g2.setCursor(75,185);
+	u8g2.setCursor(75, 185);
 	u8g2.print(F("ml"));
-	u8g2.setCursor(17,230);
+	u8g2.setCursor(17, 230);
 	u8g2.print(F("DRUCK"));
-	u8g2.setCursor(75,275);
+	u8g2.setCursor(75, 275);
 	u8g2.print(F("atü"));
 }
 
@@ -587,7 +588,7 @@ void zDisplay::showTastenFunktion(const char *textTaste1,
 	u8g2.print(textTaste2);
 }
 
-void zDisplay::printProgrammInfo(const __FlashStringHelper* textUeberschrift){
+void zDisplay::printProgrammInfo(const __FlashStringHelper* textUeberschrift) {
 	_tft.fillRect(271, 146, 209, 140, ZBRAUN);
 	u8g2.setFont(FONT_BOLD12);
 	u8g2.setFontMode(1); //transparent
@@ -595,17 +596,17 @@ void zDisplay::printProgrammInfo(const __FlashStringHelper* textUeberschrift){
 	u8g2.setFontDirection(0);
 	uint16_t x = 271; /*da fängt der Rahmen an*/
 	uint16_t y = 163; /*erste Zeile*/
-	_tft.drawFastHLine(x+1, y+4, 199, BLACK);
-	_tft.drawFastHLine(x, y+3, 199, WHITE);
-	u8g2.setCursor(x+1, y+1);
+	_tft.drawFastHLine(x + 1, y + 4, 199, BLACK);
+	_tft.drawFastHLine(x, y + 3, 199, WHITE);
+	u8g2.setCursor(x + 1, y + 1);
 	u8g2.print(textUeberschrift);
 	u8g2.setForegroundColor(ZDUNKELGRUEN);
-	u8g2.setCursor(x,y);
+	u8g2.setCursor(x, y);
 	u8g2.print(textUeberschrift);
 	u8g2.setFontMode(0);
 }
 
-void zDisplay::printProgrammInfo(const char* textUeberschrift){
+void zDisplay::printProgrammInfo(const char *textUeberschrift) {
 	_tft.fillRect(271, 146, 209, 140, ZBRAUN);
 	u8g2.setFont(FONT_BOLD12);
 	u8g2.setFontMode(1); //transparent
@@ -613,46 +614,47 @@ void zDisplay::printProgrammInfo(const char* textUeberschrift){
 	u8g2.setFontDirection(0);
 	uint16_t x = 271; /*da fängt der Rahmen an*/
 	uint16_t y = 163; /*erste Zeile*/
-	_tft.drawFastHLine(x+1, y+4, 199, BLACK);
-	_tft.drawFastHLine(x, y+3, 199, WHITE);
-	u8g2.setCursor(x+1, y+1);
+	_tft.drawFastHLine(x + 1, y + 4, 199, BLACK);
+	_tft.drawFastHLine(x, y + 3, 199, WHITE);
+	u8g2.setCursor(x + 1, y + 1);
 	u8g2.print(textUeberschrift);
 	u8g2.setForegroundColor(ZDUNKELGRUEN);
-	u8g2.setCursor(x,y);
+	u8g2.setCursor(x, y);
 	u8g2.print(textUeberschrift);
 	u8g2.setFontMode(0);
 }
 
-
-void zDisplay::printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const char* textZeile) {
+void zDisplay::printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte,
+		const char *textZeile) {
 	u8g2.setFont(FONT_NORMAL12); /*10er font is 16 hoch*/
 	uint16_t zA = 16; /*Zeilenabstand*/
 	uint16_t x = 271; /*da fängt der Rahmen an*/
-	uint16_t y = 170+(zeile*zA);
+	uint16_t y = 170 + (zeile * zA);
 	switch (spalte) {
 	case 1:
 		break;
 	case 2:
-		x= 370;
+		x = 370;
 	}
 	u8g2.setForegroundColor(BLACK);
 	u8g2.setBackgroundColor(ZBRAUN);
 	u8g2.drawUTF8(x, y, textZeile);
 }
 
-void zDisplay::printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const __FlashStringHelper* textZeile) {
+void zDisplay::printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte,
+		const __FlashStringHelper* textZeile) {
 	u8g2.setFont(FONT_NORMAL12); /*10er font is 16 hoch*/
 	uint16_t zA = 16; /*Zeilenabstand*/
 	uint16_t x = 271; /*da fängt der Rahmen an*/
-	uint16_t y = 170+(zeile*zA);
+	uint16_t y = 170 + (zeile * zA);
 	switch (spalte) {
 	case 1:
 		break;
 	case 2:
-		x= 370;
+		x = 370;
 	}
 	u8g2.setForegroundColor(BLACK);
 	u8g2.setBackgroundColor(ZBRAUN);
-	u8g2.setCursor(x,y);
+	u8g2.setCursor(x, y);
 	u8g2.print(textZeile);
 }
