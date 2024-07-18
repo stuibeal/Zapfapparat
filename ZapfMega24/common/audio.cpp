@@ -326,8 +326,10 @@ void audio::bing() {
 		ev.data[ev.size++] = 57;
 		ev.data[ev.size++] = 127;
 		midiCallback(&ev);
-		mp3Pause();
 		delay(500);
+		mp3Pause();
+		midiSilence();
+
 		mp3D.pauseForMidi = false;
 	} else {
 		mp3Play(20, 1);
