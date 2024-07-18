@@ -72,6 +72,7 @@ public:
 	static void midiCallback(midi_event *pev);
 	void midiSilence(void);
 	void midiNextEvent(void);
+	void loadLoopMidi(const __FlashStringHelper *midiFile);
 	void loadLoopMidi(const char*);
 	void loadSingleMidi(const char*);
 	void tickMetronome(void);

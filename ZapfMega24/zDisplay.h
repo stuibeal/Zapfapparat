@@ -91,12 +91,14 @@ public:
 	void printInitText(const __FlashStringHelper* text);
 	void infoText(const char *text);
 	void infoText(const __FlashStringHelper* text);
+	uint8_t showBMP(const __FlashStringHelper *filename, int16_t x, int16_t y);
 	uint8_t showBMP(char const *nm, int16_t x, int16_t y);
 	void print_val(int val, int16_t x, int16_t y, int c, bool komma);
 	void print_val3(int val, int16_t x, int16_t y, bool komma);
 	void userShow();
 	void infoscreen();
 	void printValue(uint16_t x, uint16_t y, int val, bool komma);
+	void zDisplay::printSetCursor(uint16_t x, uint16_t y, const __FlashStringHelper* text);
 	void printlnInfoTemp(uint16_t right_x, uint16_t left_x, const __FlashStringHelper* text, int16_t temp);
 	void backgroundPicture(void);
 	void showUserPic(const char *bmp);
@@ -115,7 +117,6 @@ private:
 	U8G2_FOR_ADAFRUIT_GFX u8g2;
 	uint16_t read16(File &f);
 	uint32_t read32(File &f);
-	char namebuf[32];   //BMP files in PIC Verzeichnis
 	File root;
 	int pathlen = 0;
 	//File bmpfile;

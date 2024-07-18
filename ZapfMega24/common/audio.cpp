@@ -7,6 +7,7 @@
 
 #include "audio.h"
 #include "globalVariables.h"
+#include "avr/pgmspace.h"
 
 //#include "gemein.h"
 
@@ -306,17 +307,28 @@ void audio::mp3PlaySongOnPlaylist(uint8_t folder, uint8_t song) {
 }
 
 void audio::bing() {
-	if (mp3D.playStatus==S_PLAYING) {
+	if (mp3D.playStatus == S_PLAYING) {
 		mp3Pause();
 		mp3D.pauseForMidi = true;
 		midi_event ev;
 		ev.size = 0;
-		ev.data[ev.size++] = 0xb0;
-		ev.data[ev.size++] = 120;
+		ev.data[ev.size++] = 0xd0;
+		ev.data[ev.size++] = 127;
 		ev.data[ev.size++] = 0;
-		for (ev.channel = 0; ev.channel < 16; ev.channel++)
-			midiCallback(&ev);
-
+		midiCallback(&ev);
+		ev.size = 0;
+		ev.data[ev.size++] = 0xC0;
+		ev.data[ev.size++] = 10;
+		ev.data[ev.size++] = 0;
+		midiCallback(&ev);
+		ev.size = 0;
+		ev.data[ev.size++] = 0x90;
+		ev.data[ev.size++] = 57;
+		ev.data[ev.size++] = 127;
+		midiCallback(&ev);
+		mp3Pause();
+		delay(500);
+		mp3D.pauseForMidi = false;
 	} else {
 		mp3Play(20, 1);
 	}
@@ -364,6 +376,11 @@ void audio::midiNextEvent(void) {
 		midiSilence();
 	}
 
+}
+
+void audio::loadLoopMidi(const __FlashStringHelper *midiFile) {
+	strcpy_P(buf, (char*) pgm_read_ptr(midiFile));
+	loadLoopMidi(buf);
 }
 
 void audio::loadLoopMidi(const char *midiFile) {
@@ -421,7 +438,7 @@ void audio::tickMetronome(void) {
 void audio::godModeSound(uint8_t godMode) {
 	switch (godMode) {
 	case IDDQD:
-		loadLoopMidi("d_runni2.mid");
+		loadLoopMidi(F("d_runni2.mid"));
 		break;
 	case KEEN:
 		loadLoopMidi("keen.mid");

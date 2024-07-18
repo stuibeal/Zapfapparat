@@ -255,7 +255,7 @@ void zapfBeginnProg(void) {
 		sound.godModeSound(user.getGodMode());
 		userShow();  // Zeigt die Userdaten an
 		auswahlZeit = millis();
-		ZD.infoText("BITTE ZAPFHAHN BETÄTIGEN");
+		ZD.infoText(F("BITTE ZAPFHAHN BETÄTIGEN"));
 		flowmeter.flowDataSend(BEGIN_ZAPF, 0, 0);
 	}
 
@@ -721,7 +721,6 @@ void einstellerUmsteller_ISR() { //Interruptroutine, hier den Drehgeberknopf abf
 
 void reinigungsprogramm(void) {
 //hier braces damit die variablen allein hier sind
-	ZD.infoText("Reinigungsprogramm");
 	temp.sendeBefehl(ZAPFEN_STREICH, 0x0);
 	ventil.cleanPumpOn();
 	unsigned long waitingTime = millis();
@@ -735,7 +734,7 @@ void reinigungsprogramm(void) {
 		}
 	}
 	ventil.cleanPumpOff();
-	ZD.infoText("Ender Geländer");
+	ZD.infoText(F("Ender Geländer"));
 }
 
 void showSpezialProgrammInfo(uint8_t programmNummer) {

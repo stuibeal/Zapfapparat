@@ -10,6 +10,8 @@
 
 #include "zDisplay.h"
 #include "globalVariables.h"
+#include "avr/pgmspace.h"
+#include "Arduino.h"
 
 zDisplay::zDisplay() :
 		MCUFRIEND_kbv(0, 0, 0, 0, 0), U8G2_FOR_ADAFRUIT_GFX() {
@@ -17,7 +19,6 @@ zDisplay::zDisplay() :
 	r = 0;
 	g = 0;
 	b = 0;
-	strcpy(namebuf, "/");
 	MCUFRIEND_kbv _tft;  //tft objekt
 	U8G2_FOR_ADAFRUIT_GFX u8g2;
 
@@ -47,8 +48,9 @@ void zDisplay::beginn(SdFat *psd) {
 	printInitText(F(_VERSION_));
 
 	//BMP SHOW
-	root = _sd->open(namebuf);
-	pathlen = strlen(namebuf);
+	strcpy(buf, "/");
+	root = _sd->open(buf);
+	pathlen = strlen(buf);
 
 }
 /**
@@ -123,6 +125,11 @@ uint32_t zDisplay::read32(File &f) {
  * @param y	Y-Position am Screen
  * @return
  */
+uint8_t zDisplay::showBMP(const __FlashStringHelper *filename, int16_t x, int16_t y){
+	 strcpy_P(buf, (char *)pgm_read_ptr(filename));
+	 return showBMP(buf, x, y);
+}
+
 uint8_t zDisplay::showBMP(char const *nm, int16_t x, int16_t y) {
 	File bmpFile;
 	int bmpWidth, bmpHeight;    // W+H in pixels
@@ -350,25 +357,25 @@ void zDisplay::userShow() {
 	uint16_t x = 271; /*da fängt der Rahmen an*/
 	uint16_t y = 180; /*erste Zeile*/
 
-	u8g2.drawUTF8(x, y - 15, "TEMPERATUR");
-	u8g2.drawUTF8(x, y, "SOLL IN °C");
+	printSetCursor(x, y - 15, F("TEMPERATUR"));
+	printSetCursor(x, y, F("SOLL IN °C"));
 	y = 215;
-	u8g2.drawUTF8(x, y - 15, "ZAPFMENGE");
-	u8g2.drawUTF8(x, y, "IN ML");
+	printSetCursor(x, y - 15, F("ZAPFMENGE"));
+	printSetCursor(x, y, F("IN ML"));
 	y = 250;
-	u8g2.drawUTF8(x, y - 15, "HOIWE AM");
-	u8g2.drawUTF8(x, y, "HEUTIGEN TAG");
+	printSetCursor(x, y - 15, F("HOIWE AM"));
+	printSetCursor(x, y, F("HEUTIGEN TAG"));
 	y = 285;
-	u8g2.drawUTF8(x, y - 15, "REST IM");
-	u8g2.drawUTF8(x, y, "FASS IN L");
+	printSetCursor(x, y - 15, F("REST IM"));
+	printSetCursor(x, y, F("FASS IN L"));
 	showAllUserData();
 
 	/*Wenn über 8 Halbe soll der das volle Bild zeigen*/
 	if (user.getBierTag() > 3999 && !lastUserVoll) {
-		showBMP("/bmp/bg_voll.bmp", 102, 0);
+		showBMP(F("/bmp/bg_voll.bmp"), 102, 0);
 		lastUserVoll = 1;
 	} else if (user.getBierTag() < 4000 && lastUserVoll) {
-		showBMP("/bmp/bg_leer.bmp", 102, 0); /* Bier leer, w:132 h:291 */
+		showBMP(F("/bmp/bg_leer.bmp"), 102, 0); /* Bier leer, w:132 h:291 */
 		lastUserVoll = 0;
 	}
 }
@@ -424,22 +431,32 @@ void zDisplay::infoscreen() {
 	u8g2.println();
 	u8g2.setFont(FONT_NORMAL10);
 	u8g2.setCursor(0, 270);
-	printlnInfoTemp(230, 0, F("Block DS18B20: "),temp.getDSblockTemp());
-	printlnInfoTemp(230, 0, F("Block PT100 Innen: "),temp.getBlockInnenTemp());
-	printlnInfoTemp(230, 0, F("Zapfhahn: "),temp.getHahnTemp());
+	printlnInfoTemp(230, 0, F("Block DS18B20: "), temp.getDSblockTemp());
+	printlnInfoTemp(230, 0, F("Block PT100 Innen: "), temp.getBlockInnenTemp());
+	printlnInfoTemp(230, 0, F("Zapfhahn: "), temp.getHahnTemp());
 	u8g2.setCursor(250, 270);
-	printlnInfoTemp(470, 250, F("Getränkezulauf: "),temp.getZulaufTemp());
-	printlnInfoTemp(470, 250, F("Kühlwasser: "),temp.getKuehlWasserTemp());
-	printlnInfoTemp(470, 250, F("Gehäuse: "),temp.getHausTemp());
+	printlnInfoTemp(470, 250, F("Getränkezulauf: "), temp.getZulaufTemp());
+	printlnInfoTemp(470, 250, F("Kühlwasser: "), temp.getKuehlWasserTemp());
+	printlnInfoTemp(470, 250, F("Gehäuse: "), temp.getHausTemp());
 	u8g2.print(F("Helligkeit: "));
-	u8g2.println(power.getHelligkeit());
+	u8g2.print(power.getHelligkeit());
+	u8g2.setCursor(250, u8g2.getCursorY());
+	u8g2.print(F("Kühlwasserflow: "));
+	u8g2.print(temp.getKuehlWasserFlowRate());
 }
 
-void zDisplay::printlnInfoTemp(uint16_t right_x, uint16_t left_x, const __FlashStringHelper* text, int16_t temp) {
+void zDisplay::printSetCursor(uint16_t x, uint16_t y,
+		const __FlashStringHelper* text) {
+	u8g2.setCursor(x, y);
+	u8g2.print(text);
+}
+
+void zDisplay::printlnInfoTemp(uint16_t right_x, uint16_t left_x,
+		const __FlashStringHelper* text, int16_t temp) {
 	u8g2.setCursor(left_x, u8g2.getCursorY());
 	u8g2.print(text);
 	sprintf(buf, "%2d,%02d°C", temp / 100, temp % 100);
-	u8g2.setCursor(right_x-u8g2.getUTF8Width(buf), u8g2.getCursorY());
+	u8g2.setCursor(right_x - u8g2.getUTF8Width(buf), u8g2.getCursorY());
 	u8g2.println(buf);
 }
 /**
@@ -450,28 +467,21 @@ void zDisplay::printlnInfoTemp(uint16_t right_x, uint16_t left_x, const __FlashS
 void zDisplay::backgroundPicture() {
 	_tft.fillScreen(ZBRAUN);
 	_tft.fillRect(0, 293, 480, 28, BLACK);
-	showBMP("/bmp/bg_zapf.bmp", 0, 0); /* Zapfsäule, w:102 h:291 */
-	showBMP("/bmp/bg_leer.bmp", 102, 0); /* Bier leer, w:132 h:291 */
-	showBMP("/bmp/bg_rahm.bmp", 271, 8); /* Userbildrahmen, w:199 h:136 */
+	showBMP(F("/bmp/bg_zapf.bmp"), 0, 0); /* Zapfsäule, w:102 h:291 */
+	showBMP(F("/bmp/bg_leer.bmp"), 102, 0); /* Bier leer, w:132 h:291 */
+	showBMP(F("/bmp/bg_rahm.bmp"), 271, 8); /* Userbildrahmen, w:199 h:136 */
 	/* Userbild 160x100 geht nach x290 y26 */
 	u8g2.setFont(FONT_SMALL);
 	u8g2.setForegroundColor(WHITE);
 	u8g2.setBackgroundColor(ZDUNKELGRUEN);
 	u8g2.setFontMode(0);
-	u8g2.setCursor(17, 40);
-	u8g2.print(F("KÜHLBLOCK"));
-	u8g2.setCursor(17, 52);
-	u8g2.print(F("TEMPERATUR"));
-	u8g2.setCursor(75, 97);
-	u8g2.print(F("°C"));
-	u8g2.setCursor(17, 140);
-	u8g2.print(F("ZAPFMENGE"));
-	u8g2.setCursor(75, 185);
-	u8g2.print(F("ml"));
-	u8g2.setCursor(17, 230);
-	u8g2.print(F("DRUCK"));
-	u8g2.setCursor(75, 275);
-	u8g2.print(F("atü"));
+	printSetCursor(17, 40, F("KÜHLBLOCK"));
+	printSetCursor(17, 52, F("TEMPERATUR"));
+	printSetCursor(75, 97, F("°C"));
+	printSetCursor(17, 140, F("ZAPFMENGE"));
+	printSetCursor(75, 185, F("ml"));
+	printSetCursor(17, 230, F("DRUCK"));
+	printSetCursor(75, 275, F("atü"));
 }
 
 /**
