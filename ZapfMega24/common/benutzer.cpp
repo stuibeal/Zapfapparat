@@ -8,6 +8,7 @@
 #include "benutzer.h"
 #include "gemein.h"
 #include "globalVariables.h"
+#include "EEPROM.h"
 
 benutzer::benutzer() {
 	gesamtMengeTotal = 0;
@@ -33,12 +34,37 @@ uint16_t benutzer::gesamt() {
 	return bierGesamt[aktuell];
 }
 
+/**
+ *  schreibt die Daten ins EEPROM (bei Stromausfall gesichert)
+ */
+void benutzer::writeDataToEEPROM() {
+	EEPROM.put(0, restMengeFass);
+	EEPROM.put(2, gesamtMengeTag);
+	EEPROM.put(4, gesamtMengeTotal);
+	EEPROM.put(6, gesamtMengeTag);
+}
+
+void benutzer::readDataFromEEPROM() {
+	EEPROM.get(0, restMengeFass);
+	EEPROM.get(2, gesamtMengeTag);
+	EEPROM.get(4, gesamtMengeTotal);
+	EEPROM.get(6, gesamtMengeTag);
+	for (uint8_t x = 0; x< arrayGroesse; x += 2) {
+		/* bei Adresse 100 starten für Userbier */
+		EEPROM.get(EEPROM_START_ADDR_BIERTGESAMT+x*2, bierGesamt[x] );
+		EEPROM.get(EEPROM_START_ADRR_BIERTAG+x*2, bierTag[x]);
+	}
+}
+
+
 void benutzer::addBier(uint16_t zapfmenge) {
 	bierTag[aktuell] += zapfmenge;
 	bierGesamt[aktuell] += zapfmenge;
 	gesamtMengeTotal += zapfmenge;
 	gesamtMengeTag += zapfmenge;
 	restMengeFass -= zapfmenge;
+	EEPROM.put(EEPROM_START_ADDR_BIERTGESAMT+aktuell*2, bierGesamt[aktuell] );
+	EEPROM.put(EEPROM_START_ADRR_BIERTAG+aktuell*2, bierTag[aktuell]);
 }
 
 String benutzer::getName() {

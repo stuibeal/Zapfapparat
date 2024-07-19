@@ -13,6 +13,8 @@
 
 //const uint8_t arrayGroesse = 20;
 #define arrayGroesse 20   //0+19!!!!
+#define EEPROM_START_ADRR_BIERTAG 100
+#define EEPROM_START_ADDR_BIERTGESAMT 200
 
 class benutzer {
 public:
@@ -30,6 +32,8 @@ public:
 	uint16_t restMengeFass; /*Fass sollte unter 65,535l haben*/
 	uint16_t gesamt();
 	String getName();
+	void benutzer::writeDataToEEPROM(void);
+	void benutzer::readDataFromEEPROM(void);
 	void addBier(uint16_t zapfmenge);
 	uint8_t musik[arrayGroesse];
 	uint8_t getMusik();

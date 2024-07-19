@@ -62,6 +62,11 @@
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/DS18B20_RT/0.2.3</locationURI>
 		</link>
 		<link>
+			<name>libraries/EEPROM</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.8.6/libraries/EEPROM</locationURI>
+		</link>
+		<link>
 			<name>libraries/Encoder</name>
 			<type>2</type>
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Encoder/1.4.4</locationURI>
