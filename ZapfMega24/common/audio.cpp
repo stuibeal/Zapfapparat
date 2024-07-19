@@ -312,21 +312,26 @@ void audio::bing() {
 		mp3D.pauseForMidi = true;
 		midi_event ev;
 		ev.size = 0;
-		ev.data[ev.size++] = 0xd0;
+		ev.data[ev.size++] = 0xDA; // channel pressure
 		ev.data[ev.size++] = 127;
 		ev.data[ev.size++] = 0;
 		midiCallback(&ev);
 		ev.size = 0;
-		ev.data[ev.size++] = 0xC0;
+		ev.data[ev.size++] = 0xCA; //hex: C: change instrument A: channel 10
 		ev.data[ev.size++] = 10;
 		ev.data[ev.size++] = 0;
 		midiCallback(&ev);
 		ev.size = 0;
-		ev.data[ev.size++] = 0x90;
-		ev.data[ev.size++] = 57;
-		ev.data[ev.size++] = 127;
+		ev.data[ev.size++] = 0xBA; //hex: B: controller A: channel 10
+		ev.data[ev.size++] = 91; //Reverb
+		ev.data[ev.size++] = 55;
 		midiCallback(&ev);
-		delay(500);
+		ev.size = 0;
+		ev.data[ev.size++] = 0x9A; //HEX 09: note on /A: channel 10
+		ev.data[ev.size++] = 57; //PITCH (note number)
+		ev.data[ev.size++] = 127; //velocity
+		midiCallback(&ev);
+		delay(1000);
 		mp3Pause();
 		midiSilence();
 
@@ -381,7 +386,7 @@ void audio::midiNextEvent(void) {
 }
 
 void audio::loadLoopMidi(const __FlashStringHelper *midiFile) {
-	strcpy_P(buf, (char*) pgm_read_ptr(midiFile));
+	strcpy_P(buf, (const char*) midiFile);
 	loadLoopMidi(buf);
 }
 
