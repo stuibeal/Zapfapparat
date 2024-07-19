@@ -24,6 +24,8 @@ zDisplay::zDisplay() :
 
 	_oldText1 = nullptr;
 	_oldText2 = nullptr;
+	infoWarteZeit = 0;
+	infoGezeigt = 0;
 }
 
 zDisplay::~zDisplay() {
@@ -82,6 +84,9 @@ void zDisplay::infoText(const char *text) {
 	u8g2.setBackgroundColor(BLACK);
 	u8g2.setFont(FONT_NORMAL12);
 	u8g2.print(text);
+	infoWarteZeit = millis();
+	infoGezeigt= true;
+
 }
 void zDisplay::infoText(const __FlashStringHelper *text) {
 	_tft.fillRect(0, 292, 480, 28, BLACK);
@@ -90,6 +95,18 @@ void zDisplay::infoText(const __FlashStringHelper *text) {
 	u8g2.setBackgroundColor(BLACK);
 	u8g2.setFont(FONT_NORMAL12);
 	u8g2.print(text);
+	infoWarteZeit = millis();
+	infoGezeigt= true;
+}
+
+void zDisplay::infoCheck() {
+	if (infoGezeigt) {
+		if (millis()- infoWarteZeit > 10000) {
+			showTastenFunktion(nullptr, nullptr);
+			infoWarteZeit = millis();
+			infoGezeigt = false;
+		}
+	}
 }
 
 /**

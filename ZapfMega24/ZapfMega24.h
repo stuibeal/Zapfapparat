@@ -29,6 +29,7 @@ void zapfEndeProg(void);
 void checkImmer(void);
 void checkWhileZapfing(void);
 void dauerCheck(void);
+void backToNull(void);
 void warteZeitCheck(void);
 uint8_t readTaste(uint8_t taste);
 void waehlscheibe() ;

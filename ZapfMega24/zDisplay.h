@@ -90,6 +90,7 @@ public:
 	void printInitText(const char *text);
 	void printInitText(const __FlashStringHelper* text);
 	void infoText(const char *text);
+	void infoCheck(void);
 	void infoText(const __FlashStringHelper* text);
 	uint8_t showBMP(const __FlashStringHelper *filename, int16_t x, int16_t y);
 	uint8_t showBMP(char const *nm, int16_t x, int16_t y);
@@ -98,7 +99,7 @@ public:
 	void userShow();
 	void infoscreen();
 	void printValue(uint16_t x, uint16_t y, int val, bool komma);
-	void zDisplay::printSetCursor(uint16_t x, uint16_t y, const __FlashStringHelper* text);
+	void printSetCursor(uint16_t x, uint16_t y, const __FlashStringHelper* text);
 	void printlnInfoTemp(uint16_t right_x, uint16_t left_x, const __FlashStringHelper* text, int16_t temp);
 	void backgroundPicture(void);
 	void showUserPic(const char *bmp);
@@ -125,6 +126,8 @@ private:
 	uint8_t b;
 	const char *_oldText1;
 	const char *_oldText2;
+	uint32_t infoWarteZeit;
+	bool infoGezeigt;
 
 protected:
 	SdFat *_sd; 		// Pointer zum SD-Objekt vom Hauptprogramm

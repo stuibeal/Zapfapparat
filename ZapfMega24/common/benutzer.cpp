@@ -17,6 +17,7 @@ benutzer::benutzer() {
 	oldZapfStatus = zapfStandby;
 	restMengeFass = 30000;
 	zapfMenge = 0;
+	lastZapfMenge = 0;
 	for (uint8_t x = 0; x < arrayGroesse; x++) {
 		bierTemp[x] = STANDARD_TEMP;
 		bierMenge[x] = STANDARD_MENGE;
@@ -42,6 +43,8 @@ void benutzer::writeDataToEEPROM() {
 	EEPROM.put(2, gesamtMengeTag);
 	EEPROM.put(4, gesamtMengeTotal);
 	EEPROM.put(6, gesamtMengeTag);
+	EEPROM.put(EEPROM_START_ADDR_BIERTGESAMT+aktuell*2, bierGesamt[aktuell] );
+	EEPROM.put(EEPROM_START_ADRR_BIERTAG+aktuell*2, bierTag[aktuell]);
 }
 
 void benutzer::readDataFromEEPROM() {
@@ -57,14 +60,14 @@ void benutzer::readDataFromEEPROM() {
 }
 
 
-void benutzer::addBier(uint16_t zapfmenge) {
-	bierTag[aktuell] += zapfmenge;
-	bierGesamt[aktuell] += zapfmenge;
-	gesamtMengeTotal += zapfmenge;
-	gesamtMengeTag += zapfmenge;
-	restMengeFass -= zapfmenge;
-	EEPROM.put(EEPROM_START_ADDR_BIERTGESAMT+aktuell*2, bierGesamt[aktuell] );
-	EEPROM.put(EEPROM_START_ADRR_BIERTAG+aktuell*2, bierTag[aktuell]);
+void benutzer::addBier() {
+	writeDataToEEPROM();
+	bierTag[aktuell] += zapfMenge;
+	bierGesamt[aktuell] += zapfMenge;
+	gesamtMengeTotal += zapfMenge;
+	gesamtMengeTag += zapfMenge;
+	restMengeFass -= zapfMenge;
+	writeDataToEEPROM();
 }
 
 String benutzer::getName() {

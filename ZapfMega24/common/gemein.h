@@ -142,6 +142,8 @@
 //TODO: noch einbauen
 #define GIANNA 12
 #define LIGABUE 13
+#define IDKFA 14
+
 
 
 

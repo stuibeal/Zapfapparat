@@ -151,6 +151,9 @@ void setup(void) {
 	}
 	ZD.printInitText(F("Flowmeter ifm SM6020 ready"));
 
+	user.readDataFromEEPROM();
+	ZD.printInitText(F("Daten vom EEPROM gelesen"));
+
 	ZD.printInitText(F("Talondrucker starten..."));
 	drucker.initialise(); /* Thermodrucker */
 
@@ -218,20 +221,22 @@ void zapfErrorProg() {
 		ZD.infoText(F("HEY DU HONK! ERST BENUTZER WÄHLEN!"));
 		sound.on();
 		ventil.closeValve();
+		sound.check();
 		sound.mp3Play(29, 3);
 		while (ventil.getValveProzent() > 0) {
 			ventil.check();
 		}
-		ZD.infoText(F("Zapfhahn gesperrt mein Herr!"));
+		while (digitalRead(FLOW_WINDOW)){
+			delay(1);
+		}
+		flowmeter.flowDataSend(END_ZAPF, 0);
+		user.zapfMenge = flowmeter.getFreshZapfMillis();
+		ZD.infoText(F("Zapfhahn gesperrt mein Herr! Wählen!"));
 		user.zapfStatus = user.zapfModus::zapfStandby;
 	}
 }
 void preZapf(uint8_t nummer) {
 	kienmuehle = 0; /*wenn man sich verwählt hat bei der Nummerneingabe wirds gelöscht*/
-	/* sollten da noch Bierreste sein gehören die dem Vorgänger*/
-	if (flowmeter.getFreshZapfMillis() > 0) {
-		user.addBier(flowmeter.getMilliliter());
-	}
 	user.aktuell = nummer;
 	user.oldZapfStatus = user.zapfModus::zapfStandby;
 	user.zapfStatus = user.zapfModus::zapfBeginn;
@@ -242,7 +247,11 @@ void zapfBeginnProg(void) {
 		user.oldZapfStatus = user.zapfStatus;
 		/* sollte er fehlgezapft haben und dann gewählt werden die ihm draufgeschrieben*/
 		if (user.oldZapfStatus == user.zapfModus::zapfError) {
-			user.addBier(flowmeter.getFreshZapfMillis());
+			user.addBier();
+			ZD.showAllUserData();
+			user.zapfMenge=flowmeter.getFreshZapfMillis(); //wenn nix zwischengezapft wurde sollts 0 sein
+			ZD.infoText(F("Restbier der Fehlzapfung aufgerechnet!"));
+
 		}
 		/* sollte er am Nulluser rumgespielt haben kriegt er die Einstellung */
 		if (user.checkNullUser()) {
@@ -253,10 +262,10 @@ void zapfBeginnProg(void) {
 		temp.sendeBefehl(BEGIN_ZAPF, 0x0);
 		flowmeter.flowDataSend(SET_USER_ML, user.getMenge());
 		sound.godModeSound(user.getGodMode());
+		temp.sendeBefehl(BEGIN_ZAPF, 0x0);
 		userShow();  // Zeigt die Userdaten an
 		auswahlZeit = millis();
 		ZD.infoText(F("BITTE ZAPFHAHN BETÄTIGEN"));
-		flowmeter.flowDataSend(BEGIN_ZAPF, 0, 0);
 	}
 
 	dauerCheck();
@@ -310,7 +319,7 @@ void amZapfenProg(void) {
 	}
 	if (readTaste(2)) {
 		user.zapfStatus = user.zapfModus::zapfEnde;
-		user.setMenge(flowmeter.getMilliliter());
+		user.setMenge(user.zapfMenge);
 	}
 }
 
@@ -339,10 +348,11 @@ void godZapfenProg(void) {
 		user.zapfStatus = user.zapfModus::zapfEnde;
 	}
 	/*GOD braucht den grünen Balken mehr denn je*/
-	ZD.showBalken(flowmeter.getFreshZapfMillis(), user.getMenge());
+	user.zapfMenge=flowmeter.getFreshZapfMillis();
+	ZD.showBalken(user.zapfMenge, user.getMenge());
 
 	// Nachschaun ob er fertig ist und dann bingen und zamschreim
-	if (flowmeter.getMilliliter() >= user.getMenge()) {
+	if (user.zapfMenge >= user.getMenge()) {
 		user.zapfStatus = user.zapfModus::zapfEnde;
 		sound.mp3Pause();
 	}
@@ -375,13 +385,11 @@ void zapfEndeProg(void) {
 		sound._SMF->close();
 		sound.midiSilence();
 		ventil.check();
-
+		/*Sollte der noch weiterzapfen*/
 		while (digitalRead(FLOW_WINDOW)) {
-
-			/* do not much */
-			delay(1);
+			checkWhileZapfing();
 		}
-		user.addBier(flowmeter.getFreshZapfMillis());
+		user.addBier();
 		flowmeter.flowDataSend(END_ZAPF, 0); //damit die Zapfmillis wieder auf null sind
 		ZD.showAllUserData();
 		sound.setStandby(0);
@@ -391,8 +399,18 @@ void zapfEndeProg(void) {
 	}
 
 	/*Ab hier Dauerausführung*/
+
+	while (digitalRead(FLOW_WINDOW)) {
+		// wenn der doch noch weiterzapft!
+		checkWhileZapfing();
+	}
+
+	if (readTaste(1)) {
+		backToNull();
+	}
+
 	if (readTaste(2)) {
-		drucker.printerZapfEnde(user.zapfMenge);
+		drucker.printerZapfEnde(user.lastZapfMenge);
 	}
 
 	dauerCheck();
@@ -404,7 +422,7 @@ void checkWhileZapfing() {
 		static uint8_t counter = 0;
 		counter++;
 		oldTime = millis();
-		flowmeter.flowDataSend(GET_ML, 0, 0);
+		user.zapfMenge=flowmeter.getFreshZapfMillis();
 		if (counter > 4) {
 			counter = 0;
 			temp.holeDaten();
@@ -414,7 +432,7 @@ void checkWhileZapfing() {
 				ZD.infoText(buf);
 			}
 		} else {
-			ZD.print_val3((int) flowmeter.getMilliliter(), 17, 170, GANZZAHL);
+			ZD.print_val3((int) user.zapfMenge, 17, 170, GANZZAHL);
 		}
 	}
 
@@ -436,6 +454,8 @@ void checkImmer() {
 
 void dauerCheck(void) {
 	checkImmer();
+
+	ZD.infoCheck();
 
 	if (digitalRead(WSready)) {
 		waehlscheibe();
@@ -478,16 +498,20 @@ void dauerCheck(void) {
 
 }
 
+void backToNull() {
+	user.aktuell = 0;
+	power.ledGrundbeleuchtung();
+	user.zapfStatus = user.zapfModus::zapfStandby;
+	ZD.userShow();
+}
+
 void warteZeitCheck() {
 	if (millis() - auswahlZeit > WARTE_ZEIT) {
 		/* Sollte der Sakra in der Wartezeit noch was gezapft haben*/
-		if (flowmeter.getFreshZapfMillis() > 0) {
-			user.addBier(flowmeter.getMilliliter());
+		if (user.zapfMenge > 0) {
+			user.addBier();
 		}
-		user.aktuell = 0;
-		power.ledGrundbeleuchtung();
-		user.zapfStatus = user.zapfModus::zapfStandby;
-		ZD.userShow();
+		backToNull();
 	}
 
 }
@@ -692,7 +716,7 @@ void userShow(void) {
 
 void showZapfapparatData(void) {
 	ZD.print_val3(temp.getBlockAussenTemp(), 17, 82, KOMMA);
-	ZD.print_val3((int) flowmeter.getMilliliter(), 17, 170, GANZZAHL);
+	ZD.print_val3((int) user.zapfMenge, 17, 170, GANZZAHL);
 	ZD.print_val3((int) ventil.getPressure(), 17, 260, KOMMA);
 }
 
