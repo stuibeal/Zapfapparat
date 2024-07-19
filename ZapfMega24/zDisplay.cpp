@@ -125,9 +125,11 @@ uint32_t zDisplay::read32(File &f) {
  * @param y	Y-Position am Screen
  * @return
  */
-uint8_t zDisplay::showBMP(const __FlashStringHelper *filename, int16_t x, int16_t y){
-	 strcpy_P(buf, (char *)pgm_read_ptr(filename));
-	 return showBMP(buf, x, y);
+
+uint8_t zDisplay::showBMP(const __FlashStringHelper *filename, int16_t x,
+		int16_t y) {
+	strcpy_P(buf, (const char*) filename);
+	return showBMP(buf, x, y);
 }
 
 uint8_t zDisplay::showBMP(char const *nm, int16_t x, int16_t y) {

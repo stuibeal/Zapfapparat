@@ -23,8 +23,8 @@
 #define LICHT_SENSOR_PIN  A6
 #define LCD_BACKLIGHT_PIN 4   //Hintergrundbeleuchtung Display
 #define OTHER_MC_PIN	  A5
-#define LAMPE_ON 💡
-#define LAMPE_AUS 🚫
+#define LAMPE_AN 10  //wenn helligkeit kleiner als wert
+#define LAMPE_AUS 19 //wenn helligkeit größer als wert
 #define WS_LED_ADDRESS     0x40
 #define WS_LED_FREQUENCY   400     //min 24Hz, max 1524Hz
 #define GRUEN_LED_ABGEDUNKELT 40
@@ -72,13 +72,14 @@ public:
 	void beginPower();
 	void check();
 	void tastenLed(uint8_t taste, uint8_t helligkeit);
-	void setLed(uint8_t ledNr, uint16_t pwm);
+	void setLed(uint8_t ledNr, bool on);
 	void setWhiteLed(uint16_t helligkeit);
 	void ledGrundbeleuchtung(void);
 	void wsLedGrundbeleuchtung(void);
 	void schLampeControl(uint8_t offon);
 	void zapfLichtControl(uint8_t pwmValue);
 	void autoLight(void);
+	void setBackLight(void);
 	void goSleep(void);
 
 
@@ -92,6 +93,8 @@ private:
 	machineState bkMachineState;
 	unsigned long millisSeitZapfEnde;
 	unsigned long millisSeitLetztemCheck;
+	bool oldLightIsOn;
+	bool lightIsOn;
 
 };
 

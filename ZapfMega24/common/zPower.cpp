@@ -97,7 +97,14 @@ void zPower::tastenLed(uint8_t taste, uint8_t helligkeit) {
 	}
 }
 
-void zPower::setLed(uint8_t ledNr, uint16_t pwm) {
+void zPower::setLed(uint8_t ledNr, bool on) {
+	uint16_t pwm = 0;
+	if (on){
+		pwm = map(helligkeit, 1, 100, 10, 0xFFF);
+	} else {
+		pwm = map(helligkeit, 1, 100, 3, 400);
+	}
+
 	wsLed.setPWM(ledNr, pwm);
 
 }
@@ -116,11 +123,10 @@ void zPower::ledGrundbeleuchtung() {
 void zPower::wsLedGrundbeleuchtung() {
 	//grün
 	for (uint8_t channel = 1; channel < 11; channel++) {
-		wsLed.setPWM(channel, GRUEN_LED_ABGEDUNKELT);
+		setLed(channel, 0);
 	}
 	//weiß
-	wsLed.setPWM(0, WEISS_LED_ABGEDUNKELT);
-	wsLed.setPWM(11, WEISS_LED_ABGEDUNKELT);
+	setWhiteLed(WEISS_LED_ABGEDUNKELT);
 }
 
 void zPower::schLampeControl(uint8_t offon) {
@@ -141,16 +147,38 @@ void zPower::zapfLichtControl(uint8_t pwmValue) {
 
 void zPower::autoLight(void) {
 	if (autoLightBool) {
-		if (helligkeit < 20) {
-			schLampeControl(1);
-			zapfLichtControl(255-helligkeit);
+		uint8_t ledBrightness = LAMPE_AN - helligkeit +10;
+		oldLightIsOn = lightIsOn;
+		if (helligkeit < LAMPE_AN) {
+			lightIsOn = true;
 		}
-		else {
-			schLampeControl(0);
-			zapfLichtControl(0);
+
+		if (helligkeit > LAMPE_AUS) {
+			lightIsOn = false;
+		}
+
+		if (oldLightIsOn != lightIsOn) {
+			if (lightIsOn) {
+				schLampeControl(1);
+				zapfLichtControl(ledBrightness);
+			} else {
+				schLampeControl(0);
+				zapfLichtControl(0);
+			}
 		}
 	}
 }
+
+void zPower::setBackLight(void) {
+	flowmeter.flowDataSend(GET_ML,0,0);
+	delay(30);
+	uint8_t ledBrightness = 0;
+	if (lightIsOn) {
+		ledBrightness = 10;
+	}
+	flowmeter.flowDataSend(DIM_LED_TO_WERT, 127, ledBrightness);  //LEDFun ausschalten
+}
+
 
 void zPower::goSleep(void) {
 	/*

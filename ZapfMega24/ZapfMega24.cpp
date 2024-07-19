@@ -114,7 +114,7 @@ void setup(void) {
 	} else {
 		ZD.printInitText("SD Karte OPTIMAL!");
 	}
-	ZD.showBMP("/bmp/z-logo.bmp", 20, 20);
+	ZD.showBMP(F("/bmp/z-logo.bmp"), 20, 20);
 
 
 	//Rotary Encoder
@@ -318,6 +318,7 @@ void godZapfenProg(void) {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
 		sound.on();
+		sound.mp3Pause();
 	}
 
 	/*MIDI nach Zapfhahn*/
@@ -343,6 +344,7 @@ void godZapfenProg(void) {
 	// Nachschaun ob er fertig ist und dann bingen und zamschreim
 	if (flowmeter.getMilliliter() >= user.getMenge()) {
 		user.zapfStatus = user.zapfModus::zapfEnde;
+		sound.mp3Pause();
 	}
 
 }
@@ -375,6 +377,7 @@ void zapfEndeProg(void) {
 		ventil.check();
 
 		while (digitalRead(FLOW_WINDOW)) {
+
 			/* do not much */
 			delay(1);
 		}
@@ -384,7 +387,7 @@ void zapfEndeProg(void) {
 		sound.setStandby(0);
 		logbuch.logAfterZapf();
 		belohnungsMusik();
-
+		power.setBackLight();
 	}
 
 	/*Ab hier Dauerausführung*/
@@ -459,7 +462,7 @@ void dauerCheck(void) {
 	}
 	// Sonderfunktionsinfoanzeige
 	if (digitalRead(TASTE1_PIN)) {
-		power.tastenLed(2, 255);
+		power.tastenLed(1, 255);
 		if (kienmuehle < 10) {
 			showSpezialProgrammInfo(kienmuehle);
 		}
@@ -514,7 +517,7 @@ void waehlscheibe() {
 	auswahlZeit = millis();
 	flowmeter.flowDataSend(LED_FUN_1, 10, 200); /*LEDFUN ein*/
 	uint8_t zahlemann = readWaehlscheibe(); /*Wählscheibe auslesen*/
-	flowmeter.flowDataSend(GET_ML, 0, 0);  //LEDFun ausschalten
+	power.setBackLight();
 	sound.pruefe();
 
 	/* bei leichtem Antippen der Wählscheibe, keine Wählung */
@@ -530,7 +533,7 @@ void waehlscheibe() {
 			preZapf(zahlemann);
 			break;
 		case 1: /* Wenn doch, Nummerneingabe starten */
-			power.tastenLed(2, 255);
+			power.tastenLed(1, 255);
 			if (zahlemann == 10) {
 				zahlemann = 0;
 			}
@@ -647,7 +650,7 @@ void infoseite(void) {
 //ZD.setFont(&FreeSans9pt7b);
 
 	for (int x = 10; x < 256; x++) {
-		analogWrite(TASTE1_LED, x);
+		analogWrite(TASTE2_LED, x);
 		delay(10);
 	}
 	while (digitalRead(TASTE2_PIN)) {

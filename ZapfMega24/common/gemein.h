@@ -125,6 +125,7 @@
 #define LED_FUN_2 0x23
 #define LED_FUN_3 0x24
 #define LED_FUN_4 0x25
+#define DIM_LED_TO_WERT 0x26
 
 //God MODES
 #define IDDQD 1
