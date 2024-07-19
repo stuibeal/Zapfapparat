@@ -33,8 +33,9 @@ public:
 	uint16_t restMengeFass; /*Fass sollte unter 65,535l haben*/
 	uint16_t gesamt();
 	String getName();
-	void benutzer::writeDataToEEPROM(void);
-	void benutzer::readDataFromEEPROM(void);
+	void cleanEEPROM(void);
+	void writeDataToEEPROM(void);
+	void readDataFromEEPROM(void);
 	void addBier(void);
 	uint8_t musik[arrayGroesse];
 	uint8_t getMusik();

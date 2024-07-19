@@ -602,7 +602,7 @@ void zDisplay::showTastenFunktion(const char *textTaste1,
 		textTaste1 = _oldText1;
 	}
 	if (textTaste2 == nullptr) {
-		textTaste2 = _oldText1;
+		textTaste2 = _oldText2;
 	}
 	_oldText1 = textTaste1;
 	_oldText2 = textTaste2;

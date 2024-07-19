@@ -59,7 +59,7 @@ const char tt_bittezapfen[] = "BITTE ZAPFHAHN BETÄTIGEN";
 const char tt_abbruch[] = "ABBRUCH";
 
 //Waehlscheibe
-uint16_t kienmuehle = 0;  //Sondereingabe bei drücken der Taste2
+uint32_t kienmuehle = 0;  //Sondereingabe bei drücken der Taste2
 volatile uint8_t einsteller = 2;
 uint8_t oldeinsteller = 2;
 
@@ -324,17 +324,21 @@ void amZapfenProg(void) {
 }
 
 void godZapfenProg(void) {
-	if (user.oldZapfStatus != user.zapfStatus) {
-		user.oldZapfStatus = user.zapfStatus;
-		sound.on();
-		sound.mp3Pause();
-	}
-
-	/*MIDI nach Zapfhahn*/
 	static uint8_t oldFlowWindow;
 	static uint8_t flowWindow;
 	oldFlowWindow = flowWindow;
 	flowWindow = digitalRead(FLOW_WINDOW);
+
+	if (user.oldZapfStatus != user.zapfStatus) {
+		user.oldZapfStatus = user.zapfStatus;
+		sound.on();
+		sound.mp3Pause();
+		oldFlowWindow = false;
+		flowWindow = true;
+		sound._SMF->pause(false);
+	}
+
+	/*MIDI nach Zapfhahn*/
 	if (oldFlowWindow == true && flowWindow == false) {
 		sound._SMF->pause(true);
 	}
@@ -629,8 +633,8 @@ void waehlFunktionen() {
 	case 1275: //Die Telefonnummer der Kienmühle
 		oldWaehlscheibeFun();
 		break;
-	case 9413: //Telefonnummer
-		reinigungsprogramm();
+	case 337766: //EEPROM
+		user.cleanEEPROM();
 		break;
 	default:
 		spezialprogramm(kienmuehle);

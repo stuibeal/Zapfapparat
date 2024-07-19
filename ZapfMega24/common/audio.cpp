@@ -316,18 +316,18 @@ void audio::bing() {
 		ev.data[ev.size++] = 127;
 		ev.data[ev.size++] = 0;
 		midiCallback(&ev);
-		ev.size = 0;
-		ev.data[ev.size++] = 0xCA; //hex: C: change instrument A: channel 10
-		ev.data[ev.size++] = 10;
-		ev.data[ev.size++] = 0;
-		midiCallback(&ev);
+//		ev.size = 0;
+//		ev.data[ev.size++] = 0xCA; //hex: C: change instrument A: channel 10
+//		ev.data[ev.size++] = 10;
+//		ev.data[ev.size++] = 0;
+//		midiCallback(&ev);
 		ev.size = 0;
 		ev.data[ev.size++] = 0xBA; //hex: B: controller A: channel 10
 		ev.data[ev.size++] = 91; //Reverb
 		ev.data[ev.size++] = 55;
 		midiCallback(&ev);
 		ev.size = 0;
-		ev.data[ev.size++] = 0x9A; //HEX 09: note on /A: channel 10
+		ev.data[ev.size++] = 0x99; //HEX 09: note on /9: channel 10
 		ev.data[ev.size++] = 57; //PITCH (note number)
 		ev.data[ev.size++] = 127; //velocity
 		midiCallback(&ev);
