@@ -13,8 +13,8 @@
 
 //const uint8_t arrayGroesse = 20;
 #define arrayGroesse 20   //0+19!!!!
-#define EEPROM_START_ADRR_BIERTAG 100
-#define EEPROM_START_ADDR_BIERTGESAMT 200
+#define EEPROM_START_ADDR_BIERTAG 100
+#define EEPROM_START_ADDR_BIERGESAMT 200
 
 class benutzer {
 public:

@@ -85,7 +85,7 @@ void zDisplay::infoText(const char *text) {
 	u8g2.setFont(FONT_NORMAL12);
 	u8g2.print(text);
 	infoWarteZeit = millis();
-	infoGezeigt= true;
+	infoGezeigt = true;
 
 }
 void zDisplay::infoText(const __FlashStringHelper *text) {
@@ -96,12 +96,12 @@ void zDisplay::infoText(const __FlashStringHelper *text) {
 	u8g2.setFont(FONT_NORMAL12);
 	u8g2.print(text);
 	infoWarteZeit = millis();
-	infoGezeigt= true;
+	infoGezeigt = true;
 }
 
 void zDisplay::infoCheck() {
 	if (infoGezeigt) {
-		if (millis()- infoWarteZeit > 10000) {
+		if (millis() - infoWarteZeit > 10000) {
 			showTastenFunktion(nullptr, nullptr);
 			infoWarteZeit = millis();
 			infoGezeigt = false;
@@ -369,24 +369,7 @@ void zDisplay::userShow() {
 	u8g2.setFontDirection(0);
 	/*VOREINSTELLUNG INFOANZEIGE*/
 	u8g2.setFont(FONT_NORMAL19);
-	_tft.fillRect(271, 146, 209, 140, ZBRAUN);
-	u8g2.setFont(FONT_NORMAL10); /*10er font is 16 hoch*/
-	u8g2.setForegroundColor(BLACK);
-	u8g2.setBackgroundColor(ZBRAUN);
-	uint16_t x = 271; /*da fängt der Rahmen an*/
-	uint16_t y = 180; /*erste Zeile*/
-
-	printSetCursor(x, y - 15, F("TEMPERATUR"));
-	printSetCursor(x, y, F("SOLL IN °C"));
-	y = 215;
-	printSetCursor(x, y - 15, F("ZAPFMENGE"));
-	printSetCursor(x, y, F("IN ML"));
-	y = 250;
-	printSetCursor(x, y - 15, F("HOIWE AM"));
-	printSetCursor(x, y, F("HEUTIGEN TAG"));
-	y = 285;
-	printSetCursor(x, y - 15, F("REST IM"));
-	printSetCursor(x, y, F("FASS IN L"));
+	backGroundUserData();
 	showAllUserData();
 
 	/*Wenn über 8 Halbe soll der das volle Bild zeigen*/
@@ -423,6 +406,7 @@ void zDisplay::infoscreen() {
 	u8g2.setBackgroundColor(BLACK);
 	u8g2.setCursor(240, 60);
 	u8g2.setFont(FONT_NORMAL12);
+	//USERDATEN
 	uint16_t y = 5;
 	for (int x = 0; x < 20; x++) {
 		if (x > 9) {
@@ -441,6 +425,23 @@ void zDisplay::infoscreen() {
 		u8g2.setCursor(y + 225 - u8g2.getUTF8Width(buf), u8g2.getCursorY());
 		u8g2.println(buf);
 	}
+	//GESAMTMENGE
+	u8g2.setFont(FONT_NORMAL12);
+	u8g2.setCursor(240, 230);
+	u8g2.print(F("Gesamt Total:"));
+	u8g2.setFont(FONT_BOLD12);
+	sprintf(buf, "%u ml", user.gesamtMengeTotal);
+	u8g2.setCursor(465 - u8g2.getUTF8Width(buf), u8g2.getCursorY());
+	u8g2.println(buf);
+	u8g2.setFont(FONT_NORMAL12);
+	u8g2.setCursor(240, u8g2.getCursorY());
+	u8g2.print(F("Gesamt Tag:"));
+	u8g2.setFont(FONT_BOLD12);
+	sprintf(buf, "%u ml", user.gesamtMengeTag);
+	u8g2.setCursor(465 - u8g2.getUTF8Width(buf), u8g2.getCursorY());
+	u8g2.println(buf);
+
+	//TEMPERATURDATEN
 	temp.holeDaten();
 	u8g2.setCursor(0, 230);
 	u8g2.setFont(FONT_BOLD12);
@@ -478,6 +479,28 @@ void zDisplay::printlnInfoTemp(uint16_t right_x, uint16_t left_x,
 	u8g2.setCursor(right_x - u8g2.getUTF8Width(buf), u8g2.getCursorY());
 	u8g2.println(buf);
 }
+
+void zDisplay::backGroundUserData() {
+	_tft.fillRect(271, 146, 209, 140, ZBRAUN);
+	u8g2.setFont(FONT_NORMAL10); /*10er font is 16 hoch*/
+	u8g2.setForegroundColor(BLACK);
+	u8g2.setBackgroundColor(ZBRAUN);
+	uint16_t x = 271; /*da fängt der Rahmen an*/
+	uint16_t y = 180; /*erste Zeile*/
+
+	printSetCursor(x, y - 15, F("TEMPERATUR"));
+	printSetCursor(x, y, F("SOLL IN °C"));
+	y = 215;
+	printSetCursor(x, y - 15, F("ZAPFMENGE"));
+	printSetCursor(x, y, F("IN ML"));
+	y = 250;
+	printSetCursor(x, y - 15, F("HOIWE AM"));
+	printSetCursor(x, y, F("HEUTIGEN TAG"));
+	y = 285;
+	printSetCursor(x, y - 15, F("REST IM"));
+	printSetCursor(x, y, F("FASS IN L"));
+}
+
 /**
  * @fn void backgroundPicture()
  * @brief Grundlegendes Hintergrundbild mit Beschriftung

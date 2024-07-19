@@ -312,25 +312,32 @@ void audio::bing() {
 		mp3D.pauseForMidi = true;
 		midi_event ev;
 		ev.size = 0;
-		ev.data[ev.size++] = 0xDA; // channel pressure
+		ev.data[ev.size++] = 0xD9; // channel pressure
 		ev.data[ev.size++] = 127;
 		ev.data[ev.size++] = 0;
 		midiCallback(&ev);
 //		ev.size = 0;
-//		ev.data[ev.size++] = 0xCA; //hex: C: change instrument A: channel 10
-//		ev.data[ev.size++] = 10;
+//		ev.data[ev.size++] = 0xC9; //hex: C: change instrument 9: channel 10
+//		ev.data[ev.size++] = 5;
 //		ev.data[ev.size++] = 0;
 //		midiCallback(&ev);
-		ev.size = 0;
-		ev.data[ev.size++] = 0xBA; //hex: B: controller A: channel 10
-		ev.data[ev.size++] = 91; //Reverb
-		ev.data[ev.size++] = 55;
-		midiCallback(&ev);
+//		ev.size = 0;
+//		ev.data[ev.size++] = 0xB9; //hex: B: controller A: channel 10
+//		ev.data[ev.size++] = 91; //Reverb
+//		ev.data[ev.size++] = 100;
+//		midiCallback(&ev);
 		ev.size = 0;
 		ev.data[ev.size++] = 0x99; //HEX 09: note on /9: channel 10
 		ev.data[ev.size++] = 57; //PITCH (note number)
 		ev.data[ev.size++] = 127; //velocity
 		midiCallback(&ev);
+		delay(100);
+		ev.size = 0;
+		ev.data[ev.size++] = 0x99; //HEX 09: note on /9: channel 10
+		ev.data[ev.size++] = 50; //PITCH (note number)
+		ev.data[ev.size++] = 127; //velocity
+		midiCallback(&ev);
+
 		delay(1000);
 		mp3Pause();
 		midiSilence();

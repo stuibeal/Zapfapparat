@@ -373,7 +373,7 @@ void kurzVorZapfEndeProg(void) {
 
 	}
 	checkWhileZapfing();
-	if (flowmeter.getMilliliter() >= user.getMenge()) {
+	if (user.zapfMenge >= user.getMenge()) {
 		user.zapfStatus = user.zapfModus::zapfEnde;
 	}
 
@@ -415,6 +415,7 @@ void zapfEndeProg(void) {
 
 	if (readTaste(2)) {
 		drucker.printerZapfEnde(user.lastZapfMenge);
+		backToNull();
 	}
 
 	dauerCheck();
@@ -489,6 +490,7 @@ void dauerCheck(void) {
 		power.tastenLed(1, 255);
 		if (kienmuehle < 10) {
 			showSpezialProgrammInfo(kienmuehle);
+
 		}
 	}
 
@@ -496,6 +498,8 @@ void dauerCheck(void) {
 	if (!digitalRead(TASTE1_PIN) && kienmuehle > 0) {
 		power.tastenLed(2, TASTEN_LED_NORMAL);
 		waehlFunktionen();
+		ZD.backGroundUserData();
+		ZD.showAllUserData();
 		power.ledGrundbeleuchtung();
 		power.setLed(user.aktuell, 0xFFF);
 	}
@@ -503,6 +507,10 @@ void dauerCheck(void) {
 }
 
 void backToNull() {
+	if (user.zapfMenge > 0) {
+		user.addBier();
+		user.zapfMenge=0;
+	}
 	user.aktuell = 0;
 	power.ledGrundbeleuchtung();
 	user.zapfStatus = user.zapfModus::zapfStandby;
@@ -511,10 +519,6 @@ void backToNull() {
 
 void warteZeitCheck() {
 	if (millis() - auswahlZeit > WARTE_ZEIT) {
-		/* Sollte der Sakra in der Wartezeit noch was gezapft haben*/
-		if (user.zapfMenge > 0) {
-			user.addBier();
-		}
 		backToNull();
 	}
 
@@ -893,7 +897,7 @@ void spezialprogramm(uint32_t input) {
 			user.restMengeFass = varContent * 1000;
 			ZD.showAllUserData();
 		} else {
-			ZD.infoText("Fassgröße über 65l nicht möglich!");
+			ZD.infoText(F("Fassgröße über 65l nicht möglich!"));
 		}
 		break;
 
@@ -965,7 +969,7 @@ void spezialprogramm(uint32_t input) {
 				ZD.infoText(buf);
 				delay(2000);
 			} else {
-				ZD.infoText("Kannst Du irgendwas?");
+				ZD.infoText(F("Kannst Du irgendwas?"));
 			}
 
 			delay(1);
@@ -975,7 +979,7 @@ void spezialprogramm(uint32_t input) {
 		break;
 
 	default:
-		ZD.infoText("Auswahl nicht möglich");
+		ZD.infoText(F("Auswahl nicht möglich"));
 		kienmuehle = 0;
 		break;
 	}

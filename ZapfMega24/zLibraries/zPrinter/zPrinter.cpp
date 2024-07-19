@@ -34,7 +34,7 @@ void zPrinter::initialise() {
 	delay(1000);
 	printer.println(_NAME_);
 	printer.println(_VERSION_);
-	printer.setLineHeight(24);
+	//printer.setLineHeight(24);
 	printer.feedRows(2);
 	printer.sleep();
 	//_printer = &printer;

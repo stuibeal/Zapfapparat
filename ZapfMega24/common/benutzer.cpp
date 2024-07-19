@@ -41,34 +41,50 @@ uint16_t benutzer::gesamt() {
 
 void benutzer::cleanEEPROM() {
 	for (uint16_t x = 2; x < 300; x++) {
-		EEPROM.put(x, 0);
+		EEPROM.write(x, 0);
 	}
 }
 
 void benutzer::writeDataToEEPROM() {
-	EEPROM.put(0, restMengeFass);
-	EEPROM.put(2, gesamtMengeTag);
-	EEPROM.put(4, gesamtMengeTotal);
-	EEPROM.put(6, gesamtMengeTag);
-	EEPROM.put(EEPROM_START_ADDR_BIERTGESAMT + aktuell * 2,
-			bierGesamt[aktuell]);
-	EEPROM.put(EEPROM_START_ADRR_BIERTAG + aktuell * 2, bierTag[aktuell]);
+	eeprom_write_word((uint16_t*)0, restMengeFass);
+	eeprom_write_word((uint16_t*)2, gesamtMengeTag);
+	eeprom_write_word((uint16_t*)4, gesamtMengeTotal);
+	eeprom_write_word((uint16_t*)EEPROM_START_ADDR_BIERGESAMT+ (aktuell*2), bierGesamt[aktuell]);
+	eeprom_write_word((uint16_t*)EEPROM_START_ADDR_BIERTAG+ (aktuell*2), bierTag[aktuell]);
+
+
+//	EEPROM.put(0, restMengeFass);
+//	EEPROM.put(2, gesamtMengeTag);
+//	EEPROM.put(4, gesamtMengeTotal);
+//	EEPROM.put(6, gesamtMengeTag);
+//	EEPROM.put(EEPROM_START_ADDR_BIERTGESAMT + aktuell * 2,
+//			bierGesamt[aktuell]);
+//	EEPROM.put(EEPROM_START_ADRR_BIERTAG + aktuell * 2, bierTag[aktuell]);
 }
 
 void benutzer::readDataFromEEPROM() {
-	EEPROM.get(0, restMengeFass);
-	EEPROM.get(2, gesamtMengeTag);
-	EEPROM.get(4, gesamtMengeTotal);
-	EEPROM.get(6, gesamtMengeTag);
-	for (uint8_t x = 0; x < arrayGroesse; x += 2) {
+//	EEPROM.get(0, restMengeFass);
+//	EEPROM.get(2, gesamtMengeTag);
+//	EEPROM.get(4, gesamtMengeTotal);
+//	EEPROM.get(6, gesamtMengeTag);
+//	for (uint8_t x = 0; x < arrayGroesse; x += 2) {
+//		/* bei Adresse 100 starten für Userbier */
+//		EEPROM.get(EEPROM_START_ADDR_BIERTGESAMT + x * 2, bierGesamt[x]);
+//		EEPROM.get(EEPROM_START_ADRR_BIERTAG + x * 2, bierTag[x]);
+//	}
+
+	restMengeFass=eeprom_read_word((uint16_t*)0);
+	gesamtMengeTag = eeprom_read_word((uint16_t*)2);
+	gesamtMengeTotal = eeprom_read_word((uint16_t*)4);
+	for (uint8_t x = 0; x < arrayGroesse; x ++) {
 		/* bei Adresse 100 starten für Userbier */
-		EEPROM.get(EEPROM_START_ADDR_BIERTGESAMT + x * 2, bierGesamt[x]);
-		EEPROM.get(EEPROM_START_ADRR_BIERTAG + x * 2, bierTag[x]);
+		bierGesamt[x]= eeprom_read_word((uint16_t*) EEPROM_START_ADDR_BIERGESAMT + (x * 2));
+		bierTag[x]= eeprom_read_word((uint16_t*) EEPROM_START_ADDR_BIERTAG + (x * 2));
 	}
+
 }
 
 void benutzer::addBier() {
-	writeDataToEEPROM();
 	bierTag[aktuell] += zapfMenge;
 	bierGesamt[aktuell] += zapfMenge;
 	gesamtMengeTotal += zapfMenge;

@@ -101,6 +101,7 @@ public:
 	void printValue(uint16_t x, uint16_t y, int val, bool komma);
 	void printSetCursor(uint16_t x, uint16_t y, const __FlashStringHelper* text);
 	void printlnInfoTemp(uint16_t right_x, uint16_t left_x, const __FlashStringHelper* text, int16_t temp);
+	void backGroundUserData();
 	void backgroundPicture(void);
 	void showUserPic(const char *bmp);
 	void showUserGod2Pic(void);
@@ -118,6 +119,7 @@ private:
 	U8G2_FOR_ADAFRUIT_GFX u8g2;
 	uint16_t read16(File &f);
 	uint32_t read32(File &f);
+
 	File root;
 	int pathlen = 0;
 	//File bmpfile;
