@@ -23,7 +23,6 @@
 							</builder>
 							<tool id="io.sloeber.tool.sketch.compiler.cpp.644963390" name="Arduino C++ Compiler" superClass="io.sloeber.tool.sketch.compiler.cpp">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.cpp.sketch.option.incpath.834662047" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/Adafruit_Thermal_Printer_Library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/Wire/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/SPI/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/MD_MIDIFile/src}&quot;"/>
@@ -42,12 +41,13 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/U8g2_for_Adafruit_GFX/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/DS18B20_RT/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/EEPROM/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/SoftwareSerial/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/zLlibraries/zAdafruit_Thermal_Printer_Library}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.84790751" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
 							<tool id="io.sloeber.tool.compiler.c.784289029" name="Arduino C Compiler" superClass="io.sloeber.tool.compiler.c">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.c.sketch.option.incpath.1725545594" name="Include Paths (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/Adafruit_Thermal_Printer_Library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/common}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/Wire/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/SPI/src}&quot;"/>
@@ -66,12 +66,13 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/U8g2_for_Adafruit_GFX/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/DS18B20_RT/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/EEPROM/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/SoftwareSerial/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/zLibraries/zAdafruit_Thermal_Printer_Library}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.c.sketch.input.493068515" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
 							</tool>
 							<tool id="io.sloeber.tool.sketch.compiler.s.799133728" name="Arduino Assembler" superClass="io.sloeber.tool.sketch.compiler.s">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.asm.sketch.option.incpath.1905510134" name="Include Paths (-I)" superClass="io.sloeber.compiler.asm.sketch.option.incpath" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/Adafruit_Thermal_Printer_Library}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/Wire/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/SPI/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/MD_MIDIFile/src}&quot;"/>
@@ -89,6 +90,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/U8g2_for_Adafruit_GFX/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/DS18B20_RT/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/EEPROM/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/SoftwareSerial/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/zLibraries/zAdafruit_Thermal_Printer_Library}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.S.sketch.input.1427311441" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
 							</tool>
@@ -129,7 +132,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="common|libraries/Adafruit_Thermal_Printer_Library/processing|libraries/?*/**/third-party/**|libraries/Adafruit_Thermal_Printer_Library/ruby|libraries/**/._*|libraries/SdFat/doc|libraries/Adafruit_GFX_Library/fontconvert|libraries/OneWire/docs|libraries/Adafruit_Thermal_Printer_Library/python|libraries/?*/**/?xamples/**|libraries/Encoder/docs|libraries/OneWire/util|libraries/?*/utility/*/*|libraries/MD_YX5300/media|libraries/?*/**/?xtras/**|libraries/MD_MIDIFile/media|libraries/Adafruit_GFX_Library/Fonts|libraries/MD_MIDIFile/docs|libraries/?*/**/test*/**|libraries/MD_YX5300/docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="zLibraries/zAdafruit_Thermal_Printer_Library|zAdafruit_Thermal_Printer_Library|zAdafruit_Thermal_Printer_Libraray|common|libraries/Adafruit_Thermal_Printer_Library/processing|libraries/?*/**/third-party/**|libraries/Adafruit_Thermal_Printer_Library/ruby|libraries/**/._*|libraries/SdFat/doc|libraries/Adafruit_GFX_Library/fontconvert|libraries/OneWire/docs|libraries/Adafruit_Thermal_Printer_Library/python|libraries/?*/**/?xamples/**|libraries/Encoder/docs|libraries/OneWire/util|libraries/?*/utility/*/*|libraries/MD_YX5300/media|libraries/?*/**/?xtras/**|libraries/MD_MIDIFile/media|libraries/Adafruit_GFX_Library/Fonts|libraries/MD_MIDIFile/docs|libraries/?*/**/test*/**|libraries/MD_YX5300/docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="common"/>
 					</sourceEntries>
 				</configuration>

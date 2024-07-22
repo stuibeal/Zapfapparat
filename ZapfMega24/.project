@@ -52,11 +52,6 @@
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Adafruit_GFX_Library/1.11.9</locationURI>
 		</link>
 		<link>
-			<name>libraries/Adafruit_Thermal_Printer_Library</name>
-			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/Adafruit_Thermal_Printer_Library/1.4.1</locationURI>
-		</link>
-		<link>
 			<name>libraries/DS18B20_RT</name>
 			<type>2</type>
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/DS18B20_RT/0.2.3</locationURI>
@@ -105,6 +100,11 @@
 			<name>libraries/SdFat</name>
 			<type>2</type>
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/SdFat/2.2.3</locationURI>
+		</link>
+		<link>
+			<name>libraries/SoftwareSerial</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.8.6/libraries/SoftwareSerial</locationURI>
 		</link>
 		<link>
 			<name>libraries/U8g2_for_Adafruit_GFX</name>

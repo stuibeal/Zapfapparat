@@ -72,6 +72,9 @@ void zPower::check() {
 		}
 		uint16_t newHelligkeit = analogRead(LICHT_SENSOR_PIN);
 		helligkeit = (oldHelligkeit + newHelligkeit) / 8;
+		if (helligkeit > 100) {
+			helligkeit = 100;
+		}
 		autoLight();
 	}
 

@@ -7,8 +7,9 @@
 
 #include "zPrinter.h"
 #include "globalVariables.h"
-#include <Adafruit_Thermal.h> //Thermal Printer
+#include "./zLibraries/zAdafruit_Thermal_Printer_Library/Adafruit_Thermal.h"
 #include "benutzer.h"
+#include "z-logo-sw.h"
 
 Adafruit_Thermal printer(&Serial2, PRINTER_DTR);
 
@@ -77,6 +78,8 @@ void zPrinter::printerButtonPressed() {
 void zPrinter::printerZapfEnde(uint16_t zahl) {
 	if (printerOn) {
 		printerWakeUp();
+
+		printer.printBitmap(Z_LOGO_SW_WIDTH, Z_LOGO_SW_HEIGHT, z_logo_sw);
 		printer.justify('L');
 		printer.setSize('S');
 		printer.setLineHeight(24);
@@ -88,10 +91,14 @@ void zPrinter::printerZapfEnde(uint16_t zahl) {
 		printer.print(F("Gesamtmenge des Tages: "));
 		printer.print(user.gesamt());
 		printer.println(F(" ml"));
+		printer.print(F("Gesamtmenge des Tages: "));
+		printer.print(user.gesamt());
+		printer.println(F(" ml"));
 		if (user.aktuell == 3) {
 			printer.setSize('L');
 			printer.println(F("OPTIMAL!"));
 		}
+		printer.printBarcode("2024081201334", EAN13);
 		printer.feed(20);
 		printerSleep();
 	}
