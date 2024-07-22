@@ -394,7 +394,6 @@ void zapfEndeProg(void) {
 			checkWhileZapfing();
 		}
 		user.addBier();
-		flowmeter.flowDataSend(END_ZAPF, 0); //damit die Zapfmillis wieder auf null sind
 		ZD.showAllUserData();
 		sound.setStandby(0);
 		logbuch.logAfterZapf();
@@ -403,6 +402,7 @@ void zapfEndeProg(void) {
 	}
 
 	/*Ab hier Dauerausführung*/
+
 
 	while (digitalRead(FLOW_WINDOW)) {
 		// wenn der doch noch weiterzapft!
@@ -509,7 +509,6 @@ void dauerCheck(void) {
 void backToNull() {
 	if (user.zapfMenge > 0) {
 		user.addBier();
-		user.zapfMenge=0;
 	}
 	user.aktuell = 0;
 	power.ledGrundbeleuchtung();

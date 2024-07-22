@@ -46,12 +46,13 @@ void benutzer::cleanEEPROM() {
 }
 
 void benutzer::writeDataToEEPROM() {
-	eeprom_write_word((uint16_t*)0, restMengeFass);
-	eeprom_write_word((uint16_t*)2, gesamtMengeTag);
-	eeprom_write_word((uint16_t*)4, gesamtMengeTotal);
-	eeprom_write_word((uint16_t*)EEPROM_START_ADDR_BIERGESAMT+ (aktuell*2), bierGesamt[aktuell]);
-	eeprom_write_word((uint16_t*)EEPROM_START_ADDR_BIERTAG+ (aktuell*2), bierTag[aktuell]);
-
+	eeprom_write_word((uint16_t*) 0, restMengeFass);
+	eeprom_write_word((uint16_t*) 2, gesamtMengeTag);
+	eeprom_write_word((uint16_t*) 4, gesamtMengeTotal);
+	eeprom_write_word((uint16_t*) EEPROM_START_ADDR_BIERGESAMT + (aktuell * 2),
+			bierGesamt[aktuell]);
+	eeprom_write_word((uint16_t*) EEPROM_START_ADDR_BIERTAG + (aktuell * 2),
+			bierTag[aktuell]);
 
 //	EEPROM.put(0, restMengeFass);
 //	EEPROM.put(2, gesamtMengeTag);
@@ -73,13 +74,15 @@ void benutzer::readDataFromEEPROM() {
 //		EEPROM.get(EEPROM_START_ADRR_BIERTAG + x * 2, bierTag[x]);
 //	}
 
-	restMengeFass=eeprom_read_word((uint16_t*)0);
-	gesamtMengeTag = eeprom_read_word((uint16_t*)2);
-	gesamtMengeTotal = eeprom_read_word((uint16_t*)4);
-	for (uint8_t x = 0; x < arrayGroesse; x ++) {
+	restMengeFass = eeprom_read_word((uint16_t*) 0);
+	gesamtMengeTag = eeprom_read_word((uint16_t*) 2);
+	gesamtMengeTotal = eeprom_read_word((uint16_t*) 4);
+	for (uint8_t x = 0; x < arrayGroesse; x++) {
 		/* bei Adresse 100 starten für Userbier */
-		bierGesamt[x]= eeprom_read_word((uint16_t*) EEPROM_START_ADDR_BIERGESAMT + (x * 2));
-		bierTag[x]= eeprom_read_word((uint16_t*) EEPROM_START_ADDR_BIERTAG + (x * 2));
+		bierGesamt[x] = eeprom_read_word(
+				(uint16_t*) EEPROM_START_ADDR_BIERGESAMT + (x * 2));
+		bierTag[x] = eeprom_read_word(
+				(uint16_t*) EEPROM_START_ADDR_BIERTAG + (x * 2));
 	}
 
 }
@@ -90,6 +93,9 @@ void benutzer::addBier() {
 	gesamtMengeTotal += zapfMenge;
 	gesamtMengeTag += zapfMenge;
 	restMengeFass -= zapfMenge;
+	flowmeter.flowDataSend(END_ZAPF, 0); //damit die Zapfmillis wieder auf null sind
+	lastZapfMenge = zapfMenge;
+	zapfMenge = 0;
 	writeDataToEEPROM();
 }
 

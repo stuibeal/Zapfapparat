@@ -21,7 +21,7 @@ public:
 	benutzer();
 	virtual ~benutzer();
 	uint8_t aktuell = 0;
-	const char *userN[arrayGroesse] ={"Bitte wählen","Christoph","Mädels","Barracuda","Ebi","Maex","Didi","Beda","Basi","Al","Burschen","Alois","Stefan M.L.","Framo","Marina","Anne","Pia","Italia","Maria","Piene"};
+	const char *userN[arrayGroesse] ={"Bitte wählen","Christoph","Mädels","Barracuda","Ebi","Maex","Didi","Beda","Basi","Al","Burschen","Alois","Stefan M.L.","Framo","Marina","Anne","Pia","Ulli","Maria","Piene"};
 	uint16_t bierTemp[arrayGroesse];
 	uint16_t bierMenge[arrayGroesse];
 	uint16_t bierTag[arrayGroesse];
