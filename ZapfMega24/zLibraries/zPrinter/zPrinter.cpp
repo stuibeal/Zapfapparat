@@ -7,7 +7,7 @@
 
 #include "zPrinter.h"
 #include "globalVariables.h"
-#include "./zLibraries/zAdafruit_Thermal_Printer_Library/Adafruit_Thermal.h"
+#include "Adafruit_Thermal.h"
 #include "benutzer.h"
 #include "z-logo-sw.h"
 
@@ -30,11 +30,14 @@ void zPrinter::initialise() {
 	//pinMode (PRINTER_DTR, INPUT);
 	digitalWrite(PRINTER_ON_PIN, HIGH);
 	Serial2.begin(PRINTER_BAUDRATE);
-	delay(1000);
+	delay(200);
 	printer.begin();
-	delay(1000);
-	printer.println(_NAME_);
-	printer.println(_VERSION_);
+	delay(200);
+	printer.setCharset(CHARSET_GERMANY);
+	printer.setHeatConfig(9, 140, 40);
+	printer.println(F(""));
+	printer.println(F(_NAME_));
+	printer.println(F(_VERSION_));
 	//printer.setLineHeight(24);
 	printer.feedRows(2);
 	printer.sleep();
@@ -83,16 +86,22 @@ void zPrinter::printerZapfEnde(uint16_t zahl) {
 		printer.justify('L');
 		printer.setSize('S');
 		printer.setLineHeight(24);
-		printer.print(F("Zapfkamerad "));
-		printer.print(user.getName());
-		printer.println(F(" hat gerade"));
-		printer.print((int) zahl);
-		printer.println(F(" ml gezapft!"));
-		printer.print(F("Gesamtmenge des Tages: "));
-		printer.print(user.gesamt());
+		printer.println(F("Zapfkamerad*in: "));
+		printer.println(user.getName());
+		printer.print(F("Zapfmenge: "));
+		printer.print((int) user.zapfMenge);
 		printer.println(F(" ml"));
-		printer.print(F("Gesamtmenge des Tages: "));
-		printer.print(user.gesamt());
+		printer.print(F("Überzapfung: "));
+		printer.print((int) (user.zapfMenge - user.getMenge()) );
+		printer.println(F(" ml"));
+		printer.print(F("Nachzapfung: "));
+		printer.print((int) user.lastZapfMenge);
+		printer.println(F(" ml"));
+		printer.print(F("Tagesmenge: "));
+		printer.print(user.getBierTag());
+		printer.println(F(" ml"));
+		printer.print(F("Gesamtmenge: "));
+		printer.print(user.getBierGesamt());
 		printer.println(F(" ml"));
 		if (user.aktuell == 3) {
 			printer.setSize('L');

@@ -11,7 +11,7 @@
 #include <SdFat.h>            // Use the SdFat library
 #include "zPower.h"
 #include "waehlscheibe.h"
-#include "./zLibraries/zAdafruit_Thermal_Printer_Library/Adafruit_Thermal.h"
+#include "Adafruit_Thermal.h"
 #include "Adafruit_GFX.h"
 #include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
 #include "U8g2_for_Adafruit_GFX.h"

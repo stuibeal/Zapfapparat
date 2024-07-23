@@ -42,7 +42,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/DS18B20_RT/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/EEPROM/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/SoftwareSerial/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/zLlibraries/zAdafruit_Thermal_Printer_Library}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/zLibraries/zAdafruit_Thermal_Printer_Library}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.84790751" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
@@ -67,7 +67,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/DS18B20_RT/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/EEPROM/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/SoftwareSerial/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/zLibraries/zAdafruit_Thermal_Printer_Library}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/zLibraries/zAdafruit_Thermal_Printer_Library}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.c.sketch.input.493068515" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
 							</tool>
@@ -91,7 +91,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/DS18B20_RT/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/EEPROM/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/libraries/SoftwareSerial/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ZapfMega24/zLibraries/zAdafruit_Thermal_Printer_Library}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/zLibraries/zAdafruit_Thermal_Printer_Library}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.S.sketch.input.1427311441" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
 							</tool>
@@ -131,9 +131,27 @@
 							<targetPlatform id="io.sloeber.core.sketch.0.libraries/?*/utility/*/*.1667838668" name=""/>
 						</toolChain>
 					</folderInfo>
+					<folderInfo id="io.sloeber.core.sketch.0.1490765710" name="/" resourcePath="zLibraries/zAdafruit_Thermal_Printer_Library">
+						<toolChain id="io.sloeber.core.toolChain.release.1999675566" name="Arduino Toolchain (Sloeber edition)" superClass="io.sloeber.core.toolChain.release" unusedChildren="">
+							<tool id="io.sloeber.tool.sketch.compiler.cpp.188503308" name="Arduino C++ Compiler" superClass="io.sloeber.tool.sketch.compiler.cpp.644963390">
+								<inputType id="io.sloeber.compiler.cpp.sketch.input.1469359592" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
+							</tool>
+							<tool id="io.sloeber.tool.compiler.c.1750418972" name="Arduino C Compiler" superClass="io.sloeber.tool.compiler.c.784289029">
+								<inputType id="io.sloeber.compiler.c.sketch.input.2135172750" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
+							</tool>
+							<tool id="io.sloeber.tool.sketch.compiler.s.467924738" name="Arduino Assembler" superClass="io.sloeber.tool.sketch.compiler.s.799133728">
+								<inputType id="io.sloeber.compiler.S.sketch.input.942701342" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
+							</tool>
+							<tool id="io.sloeber.tool.ar.1558360037" name="Arduino archiver" superClass="io.sloeber.tool.ar.1166954683"/>
+							<tool id="io.sloeber.tool.combine.603712950" name="Arduino combiner" superClass="io.sloeber.tool.combine.2020793214"/>
+							<tool id="io.sloeber.tool.objcopy.eep.2119648240" name="Arduino tool objcopy command" superClass="io.sloeber.tool.objcopy.eep.1746914535"/>
+							<tool id="io.sloeber.tool.size.1931558483" name="Arduino tool Print Size" superClass="io.sloeber.tool.size.72824615"/>
+						</toolChain>
+					</folderInfo>
 					<sourceEntries>
 						<entry excluding="zLibraries/zAdafruit_Thermal_Printer_Library|zAdafruit_Thermal_Printer_Library|zAdafruit_Thermal_Printer_Libraray|common|libraries/Adafruit_Thermal_Printer_Library/processing|libraries/?*/**/third-party/**|libraries/Adafruit_Thermal_Printer_Library/ruby|libraries/**/._*|libraries/SdFat/doc|libraries/Adafruit_GFX_Library/fontconvert|libraries/OneWire/docs|libraries/Adafruit_Thermal_Printer_Library/python|libraries/?*/**/?xamples/**|libraries/Encoder/docs|libraries/OneWire/util|libraries/?*/utility/*/*|libraries/MD_YX5300/media|libraries/?*/**/?xtras/**|libraries/MD_MIDIFile/media|libraries/Adafruit_GFX_Library/Fonts|libraries/MD_MIDIFile/docs|libraries/?*/**/test*/**|libraries/MD_YX5300/docs" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="common"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="zLibraries/zAdafruit_Thermal_Printer_Library"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
