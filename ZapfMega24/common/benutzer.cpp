@@ -138,6 +138,7 @@ void benutzer::clearDayUserData() {
 
 void benutzer::clearAllUserData() {
 	cleanEEPROM();
+	clearDayUserData();
 	gesamtMengeTag = 0;
 	gesamtMengeTotal = 0;
 	restMengeFass = 30000;

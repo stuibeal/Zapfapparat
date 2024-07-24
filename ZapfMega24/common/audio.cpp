@@ -179,6 +179,9 @@ uint8_t audio::pruefe() {
 		}
 		break;
 	case AUDIO_STANDBY:
+		if (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END) {
+				mp3D.playStatus = S_STOPPED;
+			}
 		if (!mp3D.standby) {
 			_mp3->check();
 			audioMillis = millis();
@@ -188,7 +191,7 @@ uint8_t audio::pruefe() {
 	} /*switch*/
 
 	if (DEBUG_A) {
-		sprintf(buf, "WZ:%lu S:%d 3:%u l%u/%u F%u S%u PTL %d sby %d",
+		sprintf_P(buf, PSTR("WZ:%lu S:%d 3:%u l%u/%u F%u S%u PTL %d sby %d"),
 				wartezeit / 1000, state, mp3D.lastMp3Status,
 				mp3D.actualPlayListSong, mp3D.songsInPlayList,
 				playlistFolder[mp3D.actualPlayListSong],
@@ -250,11 +253,15 @@ void audio::mp3Play(uint8_t folder, uint8_t song) {
 
 void audio::mp3PlayAndWait(uint8_t folder, uint8_t song) {
 	pruefe();
+	mp3D.lastMp3Status = 0;
 	mp3Play(folder, song);
 	do {
 		sound.pruefe();
-		delay(100);
-	} while (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END);
+		if (DEBUG_A) {
+			ZD.infoText(buf);
+			delay(200);
+		}
+	} while (mp3D.playStatus == S_PLAYING);
 }
 
 void audio::mp3AddToPlaylist(uint8_t folder, uint8_t song) {

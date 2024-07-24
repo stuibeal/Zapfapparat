@@ -307,7 +307,7 @@ void zPower::goSleep(void) {
 		if (sound.getPlFolder() == 23 && sound.getPlSong() == 1) {
 			playNotGNF = 0;
 		}
-		//ZD.infoText(buf);
+		ZD.infoText(buf);
 		delay(100);
 
 	} while (playNotGNF);
@@ -339,6 +339,7 @@ void zPower::goSleep(void) {
 	do {
 		sound.pruefe();
 		delay(200);
+		ZD.infoText(buf);
 
 	} while (sound.getPlaylistSize() > 0);
 	digitalWrite(OTHER_MC_PIN, 0);

@@ -44,13 +44,13 @@ void zLog::initialise(SdFat *psd, benutzer *puser, tempControl *ptemp,
 
 void zLog::getClockString(void) {
 	RTC_DCF.getDateTime(&dateTime);
-	sprintf(_buf, "Es is %02u:%02u:%02u am %02u.%02u.%02u", dateTime.getHour(),
+	sprintf_P(_buf, PSTR("Es is %02u:%02u:%02u am %02u.%02u.%02u"), dateTime.getHour(),
 			dateTime.getMinute(), dateTime.getSecond(), dateTime.getDay(),
 			dateTime.getMonth(), dateTime.getYear());
 }
 void zLog::getClockBarcode(void) {
 	RTC_DCF.getDateTime(&dateTime);
-	sprintf(buf, "%02u%02u%02u%02u%02u%02u", dateTime.getDay(),
+	sprintf_P(buf, PSTR("%02u%02u%02u%02u%02u%02u"), dateTime.getDay(),
 			dateTime.getMonth(), dateTime.getYear(), dateTime.getHour(),
 			dateTime.getMinute(), dateTime.getSecond());
 }
@@ -163,7 +163,7 @@ bool zLog::logSystemMsg(const __FlashStringHelper *sysMsg) {
 	if (fileStatus) {
 		char timeBuf[22]="";
 		RTC_DCF.getDateTime(&dateTime);
-		sprintf(timeBuf, "%02u.%02u.%02u %02u:%02u:%02u - ", dateTime.getDay(),
+		sprintf_P(timeBuf, PSTR("%02u.%02u.%02u %02u:%02u:%02u - "), dateTime.getDay(),
 				dateTime.getMonth(), dateTime.getYear(), dateTime.getHour(),
 				dateTime.getMinute(), dateTime.getSecond());
 		systemLogFile.print(timeBuf);
@@ -179,7 +179,7 @@ bool zLog::logSystemMsg(const char *sysMsg) {
 	fileStatus = systemLogFile;
 	if (fileStatus) {
 		char timeBuf[22]="";
-		sprintf(timeBuf, "%02u.%02u.%02u %02u:%02u:%02u - ", dateTime.getDay(),
+		sprintf_P(timeBuf, PSTR("%02u.%02u.%02u %02u:%02u:%02u - "), dateTime.getDay(),
 				dateTime.getMonth(), dateTime.getYear(), dateTime.getHour(),
 				dateTime.getMinute(), dateTime.getSecond());
 		systemLogFile.print(timeBuf);

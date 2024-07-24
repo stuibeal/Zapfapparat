@@ -391,11 +391,11 @@ void zapfEndeProg(void) {
 		}
 		user.addBier();
 		ZD.showAllUserData();
-		sound.setStandby(0);
 		if(!logbuch.logAfterZapf()){
 			ZD.infoText(F("Irgendwas mit dem Logfile."));
 		}
 		belohnungsMusik();
+		sound.setStandby(0);
 		power.setBackLight();
 	}
 
@@ -688,6 +688,11 @@ void waehlFunktionen() {
 		sound.mp3AddToPlaylist(30, 1);
 		ZD.infoText(F("WDR Westblick"));
 		break;
+	case 33549: //feliz
+		sound.mp3AddToPlaylist(1, 2);
+		ZD.infoText(F("Feliz Navidad!"));
+		break;
+
 	default:
 		spezialprogramm(kienmuehle);
 		break;
@@ -704,23 +709,25 @@ void belohnungsMusik() {
 	if (user.getBierTag() > 2000 && user.getMusik() == 0) {
 		user.setMusik(1);
 		delay(1000); //for the bing
-		sound.mp3PlayAndWait(29,7);
+		sound.mp3PlayAndWait(29,1); //fällt mir im moment nix ein
 		sound.mp3Play(user.aktuell, 1);
 	}
 	if (user.getBierTag() > 2500 && user.getMusik() == 1) {
 		user.setMusik(2);
 		delay(1000); //for the bing
-		sound.mp3PlayAndWait(29,5);
+		sound.mp3PlayAndWait(29,10); //wir nähern uns dem originalpackerl
 		sound.mp3Play(user.aktuell, 2);
 	}
 	if (user.getBierTag() > 3000 && user.getMusik() == 2) {
 		user.setMusik(3);
 		delay(1000); //for the bing
+		sound.mp3PlayAndWait(29,5); //originalpackerl
 		sound.mp3Play(user.aktuell, 3);
 	}
 	if (user.getBierTag() > 3500 && user.getMusik() == 3) {
 		user.setMusik(0);
 		delay(1000); //for the bing
+		sound.mp3PlayAndWait(29,4); //na
 		sound.mp3Play(user.aktuell, 4);
 	}
 
@@ -814,12 +821,13 @@ void reinigungsprogramm(void) {
 		if (millis() - waitingTime >= 1000) {
 			waitingTime = millis();
 			sekunden++;
-			sprintf(buf, "Reinigt seit %d Sekunden", sekunden);
+			sprintf_P(buf, PSTR("Reinigt seit %d Sekunden"), sekunden);
 			ZD.showTastenFunktion(buf, tt_fertig);
 		}
 	}
 	ventil.cleanPumpOff();
-	ZD.infoText(F("Ender Geländer"));
+	ZD.infoText(F("Reinigung abgeschlossen"));
+	temp.sendeBefehl(WACH_AUF, 0);
 }
 
 void showSpezialProgrammInfo(uint8_t programmNummer) {

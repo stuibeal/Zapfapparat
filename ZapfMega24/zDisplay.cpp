@@ -87,7 +87,9 @@ void zDisplay::infoText(const char *text) {
 	u8g2.print(text);
 	infoWarteZeit = millis();
 	infoGezeigt = true;
-	logbuch.logSystemMsg(text);
+	if (!DEBUG_A) {
+		logbuch.logSystemMsg(text);
+	}
 }
 
 void zDisplay::infoText(const __FlashStringHelper *text) {
@@ -455,7 +457,8 @@ void zDisplay::infoscreen() {
 	u8g2.setFont(FONT_NORMAL10);
 	u8g2.setCursor(0, 270);
 	printlnInfoTemp(230, 0, F("Block DS18B20: "), temp.getDSblockTemp());
-	printlnInfoTemp(230, 0, F("Block PT100 Aussen: "), temp.getBlockAussenTemp());
+	printlnInfoTemp(230, 0, F("Block PT100 Aussen: "),
+			temp.getBlockAussenTemp());
 	printlnInfoTemp(230, 0, F("Zapfhahn: "), temp.getHahnTemp());
 	u8g2.setCursor(250, 270);
 	printlnInfoTemp(470, 250, F("Getränkezulauf: "), temp.getZulaufTemp());
@@ -612,8 +615,8 @@ void zDisplay::showAllUserData() {
  */
 void zDisplay::showBalken() {
 	long int aktuelleBreite = 0;
-	aktuelleBreite = map((long int) user.zapfMenge, 0, (long int) user.getMenge(), 0,
-			480);
+	aktuelleBreite = map((long int) user.zapfMenge, 0,
+			(long int) user.getMenge(), 0, 480);
 	if (aktuelleBreite > 0) {
 		_tft.fillRect(0, 292, aktuelleBreite, 4, ZDUNKELGRUEN);
 	}

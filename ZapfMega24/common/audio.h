@@ -13,7 +13,7 @@
 #include "string.h"
 
 #ifndef DEBUG_A
-#define DEBUG_A 0
+#define DEBUG_A 1
 #endif
 
 #define USE_SOFTWARESERIAL 0   ///kein Softwareserial, native Port! - für MIDI
