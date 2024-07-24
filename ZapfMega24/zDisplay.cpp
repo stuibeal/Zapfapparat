@@ -87,8 +87,9 @@ void zDisplay::infoText(const char *text) {
 	u8g2.print(text);
 	infoWarteZeit = millis();
 	infoGezeigt = true;
-
+	logbuch.logSystemMsg(text);
 }
+
 void zDisplay::infoText(const __FlashStringHelper *text) {
 	_tft.fillRect(0, 292, 480, 28, BLACK);
 	u8g2.setCursor(10, 316);
@@ -98,6 +99,7 @@ void zDisplay::infoText(const __FlashStringHelper *text) {
 	u8g2.print(text);
 	infoWarteZeit = millis();
 	infoGezeigt = true;
+	logbuch.logSystemMsg(text);
 }
 
 void zDisplay::infoCheck() {

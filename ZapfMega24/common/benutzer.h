@@ -14,6 +14,7 @@
 //const uint8_t arrayGroesse = 20;
 #define EEPROM_START_ADDR_BIERTAG 100
 #define EEPROM_START_ADDR_BIERGESAMT 200
+#define EEPROM_START_ADDR_MUSIK 300
 
 class benutzer {
 public:
@@ -26,6 +27,8 @@ public:
 	uint16_t bierMenge[arrayGroesse];
 	uint16_t bierTag[arrayGroesse];
 	uint16_t bierGesamt[arrayGroesse];
+	uint8_t musik[arrayGroesse];
+
 	uint16_t zapfMenge;
 	uint16_t lastZapfMenge;
 	uint16_t gesamtMengeTotal;
@@ -37,13 +40,13 @@ public:
 	void writeDataToEEPROM(void);
 	void readDataFromEEPROM(void);
 	void addBier(void);
-	uint8_t musik[arrayGroesse];
 	uint8_t getMusik();
 	void setMusik(uint8_t musikvar);
 	void setMenge(uint16_t mengevar);
 	void setTemp(uint16_t tempvar);
 	uint8_t checkNullUser(void);
 	void clearDayUserData(void);
+	void clearAllUserData(void);
 
 	inline void setGodMode(uint8_t wasfuergott) {
 		godMode[aktuell] = wasfuergott;

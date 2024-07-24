@@ -188,10 +188,12 @@ uint8_t audio::pruefe() {
 	} /*switch*/
 
 	if (DEBUG_A) {
-		sprintf(buf, "WZ:%lu S:%d 3:%u l%u/%u F%u S%u PTL %d sby %d", wartezeit / 1000, state,
-				mp3D.lastMp3Status, mp3D.actualPlayListSong,
-				mp3D.songsInPlayList, playlistFolder[mp3D.actualPlayListSong],
-				playlistSong[mp3D.actualPlayListSong],mp3D.playTheList, mp3D.standby);
+		sprintf(buf, "WZ:%lu S:%d 3:%u l%u/%u F%u S%u PTL %d sby %d",
+				wartezeit / 1000, state, mp3D.lastMp3Status,
+				mp3D.actualPlayListSong, mp3D.songsInPlayList,
+				playlistFolder[mp3D.actualPlayListSong],
+				playlistSong[mp3D.actualPlayListSong], mp3D.playTheList,
+				mp3D.standby);
 	}
 	if (mp3D.playTheList) {
 		_mp3->check();
@@ -238,11 +240,21 @@ void audio::setStandby(bool stby) {
 
 void audio::mp3Play(uint8_t folder, uint8_t song) {
 	on();
-	while(pruefe()!= AUDIO_ON && pruefe()!=AUDIO_STANDBY){}
+	while (pruefe() != AUDIO_ON && pruefe() != AUDIO_STANDBY) {
+	}
 	_mp3->playSpecific(folder, song);
 	mp3D.playStatus = S_PLAYING;
 	mp3D.lastMp3Status = 0;
 
+}
+
+void audio::mp3PlayAndWait(uint8_t folder, uint8_t song) {
+	pruefe();
+	mp3Play(folder, song);
+	do {
+		sound.pruefe();
+		delay(100);
+	} while (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END);
 }
 
 void audio::mp3AddToPlaylist(uint8_t folder, uint8_t song) {
@@ -402,9 +414,9 @@ void audio::midiSilence(void)
 		{
 	midi_event ev;
 
-	// All sound off
-	// When All Sound Off is received all oscillators will turn off, and their volume
-	// envelopes are set to zero as soon as possible.
+// All sound off
+// When All Sound Off is received all oscillators will turn off, and their volume
+// envelopes are set to zero as soon as possible.
 	ev.size = 0;
 	ev.data[ev.size++] = 0xb0;
 	ev.data[ev.size++] = 120;

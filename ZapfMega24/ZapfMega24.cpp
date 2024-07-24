@@ -704,15 +704,13 @@ void belohnungsMusik() {
 	if (user.getBierTag() > 2000 && user.getMusik() == 0) {
 		user.setMusik(1);
 		delay(1000); //for the bing
-		sound.mp3Play(29,7);
-		delay(4000);
+		sound.mp3PlayAndWait(29,7);
 		sound.mp3Play(user.aktuell, 1);
 	}
 	if (user.getBierTag() > 2500 && user.getMusik() == 1) {
 		user.setMusik(2);
 		delay(1000); //for the bing
-		sound.mp3Play(29,5);
-		delay(9000);
+		sound.mp3PlayAndWait(29,5);
 		sound.mp3Play(user.aktuell, 2);
 	}
 	if (user.getBierTag() > 3000 && user.getMusik() == 2) {
@@ -730,9 +728,8 @@ void belohnungsMusik() {
 
 //Infoknopf
 void infoseite(void) {
-	analogWrite(TASTE2_LED, 10);
-//	sound.loadSingleMidi("SKYFALL.MID");
-//	sound._SMF->pause(false);
+	power.tastenLed(2, 255);
+	ZD.infoscreen();
 	if (!sound.mp3D.playTheList) {
 		if (user.aktuell == 0) {
 			sound.mp3Play(20, 5); //ebi du bist die vier
@@ -741,22 +738,11 @@ void infoseite(void) {
 			sound.mp3Play(20, 7); //no soup for you
 		}
 	}
-
-	ZD.infoscreen();
-
-	for (int x = 10; x < 256; x++) {
-		analogWrite(TASTE2_LED, x);
-		delay(10);
-	}
-	while (digitalRead(TASTE2_PIN)) {
-	}
-	for (int x = 255; x > 11; x--) {
-		analogWrite(TASTE2_LED, x);
-		delay(2);
+	logbuch.logSystemMsg(F("Infoseite aufgerufen"));
+	while (readTaste(2)){
 	}
 	anfang();
 	userShow();
-
 }
 
 uint8_t errorLed() {
@@ -864,6 +850,10 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 		case 2: // ABC APPARAT
 			ZD.printProgrammInfo(F("Apparat"));
 			ZD.printProgrammInfoZeilen(1, 1, F("LEAN: Reinigung"));
+			ZD.printProgrammInfoZeilen(2, 1, F("UF00: Daten löschen"));
+			ZD.printProgrammInfoZeilen(4, 1, F("VORSICHT!"));
+			ZD.printProgrammInfoZeilen(5, 1, F("WEG  IST WEG."));
+
 			break;
 		case 3: // DEF FASS
 			ZD.printProgrammInfo(F("Fasswechsel"));
@@ -951,7 +941,11 @@ void spezialprogramm(uint32_t input) {
 		switch (varContent) {
 		case 5326: // lean
 			reinigungsprogramm();
+			logbuch.logSystemMsg(F("CLEAN: Reinigungsprogramm gestartet"));
 			break;
+		case 8300: // a ufnull
+			user.clearAllUserData();
+			logbuch.logSystemMsg(F("AUFNULL: Alle Daten gelöscht"));
 		}
 		break;
 
@@ -960,6 +954,9 @@ void spezialprogramm(uint32_t input) {
 		if (varContent < 65) {
 			user.restMengeFass = varContent * 1000;
 			ZD.showAllUserData();
+			sprintf(buf, "Neues Fass %d Liter installiert", varContent);
+			ZD.infoText(buf);
+			logbuch.logSystemMsg(buf);
 		} else {
 			ZD.infoText(F("Fassgröße über 65l nicht möglich!"));
 		}
@@ -992,6 +989,7 @@ void spezialprogramm(uint32_t input) {
 		switch (varContent) {
 		case 5337: //LEEP
 			power.goSleep();
+			logbuch.logSystemMsg(F("SLEEP: Schlafprogramm initialisiert"));
 			break;
 		}
 		break;
@@ -1012,7 +1010,7 @@ void spezialprogramm(uint32_t input) {
 			break;
 		case 2:
 			sound.mp3Pause();
-			sprintf(buf, "status %d", sound.mp3D.playStatus);
+			sprintf_P(buf, PSTR("status %d"), sound.mp3D.playStatus);
 			ZD.infoText(buf);
 			break;
 		case 3:
@@ -1028,11 +1026,16 @@ void spezialprogramm(uint32_t input) {
 				folder = 30 + (varContent / 100);
 				song = varContent % 100;
 				sound.mp3AddToPlaylist(folder, song);
+				sprintf_P(buf, PSTR("Lied %d in Ordner %d zu Playlist hinzugefügt"), 20+varContent, sound.mp3D.songsInPlayList);
+				ZD.infoText(buf);
+				logbuch.logSystemMsg(buf);
 			} else if (varContent > 10 && varContent < 20) {
 				sound.mp3FillShufflePlaylist(20 + varContent);
-				sprintf(buf, "Folderfiles: %d", sound.mp3D.songsInPlayList);
+				sprintf_P(buf, PSTR("Playlist Ordner %d, %d Files"), 20+varContent, sound.mp3D.songsInPlayList);
 				ZD.infoText(buf);
+				logbuch.logSystemMsg(buf);
 				delay(2000);
+//				sprintf(buf, "Playlist Ordner %d, %d Files", varContent+30, sound.mp3D.songsInPlayList);
 			} else {
 				ZD.infoText(F("Kannst Du irgendwas?"));
 			}

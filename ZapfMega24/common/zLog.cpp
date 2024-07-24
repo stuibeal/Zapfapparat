@@ -92,6 +92,7 @@ bool zLog::logAfterZapf(void) {
 	bool fileStatus = 1;
 	//Zeit einlesen
 	RTC_DCF.getDateTime(&dateTime);
+	_sd->chdir("/");
 	sprintf(buf, "LOG_%02u%02u%2u.csv", dateTime.getDay(), dateTime.getMonth(),
 			dateTime.getYear());
 
@@ -156,13 +157,16 @@ bool zLog::logAfterZapf(void) {
 
 bool zLog::logSystemMsg(const __FlashStringHelper *sysMsg) {
 	bool fileStatus = 1;
+	_sd->chdir("/");
 	FsFile systemLogFile = _sd->open("systemlog.md", FILE_WRITE);
 	fileStatus = systemLogFile;
 	if (fileStatus) {
-		sprintf(buf, "%02u.%02u.%02u %02u:%02u:%02u, ", dateTime.getDay(),
+		char timeBuf[22]="";
+		RTC_DCF.getDateTime(&dateTime);
+		sprintf(timeBuf, "%02u.%02u.%02u %02u:%02u:%02u - ", dateTime.getDay(),
 				dateTime.getMonth(), dateTime.getYear(), dateTime.getHour(),
 				dateTime.getMinute(), dateTime.getSecond());
-		systemLogFile.print(buf);
+		systemLogFile.print(timeBuf);
 		systemLogFile.println(sysMsg);
 	}
 	systemLogFile.close();
@@ -174,16 +178,16 @@ bool zLog::logSystemMsg(const char *sysMsg) {
 	FsFile systemLogFile = _sd->open("systemlog.md", FILE_WRITE);
 	fileStatus = systemLogFile;
 	if (fileStatus) {
-		sprintf(buf, "%02u.%02u.%02u %02u:%02u:%02u, ", dateTime.getDay(),
+		char timeBuf[22]="";
+		sprintf(timeBuf, "%02u.%02u.%02u %02u:%02u:%02u - ", dateTime.getDay(),
 				dateTime.getMonth(), dateTime.getYear(), dateTime.getHour(),
 				dateTime.getMinute(), dateTime.getSecond());
-		systemLogFile.print(buf);
+		systemLogFile.print(timeBuf);
 		systemLogFile.println(sysMsg);
 	}
 	systemLogFile.close();
 	return fileStatus;
 }
-
 
 /*
  // Daten schreiben

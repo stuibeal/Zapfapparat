@@ -59,6 +59,7 @@ public:
 	void midiReset(void);
 	void setStandby(bool stby);
 	void mp3Play(uint8_t folder, uint8_t song);
+	void mp3PlayAndWait(uint8_t folder, uint8_t song);
 	void mp3AddToPlaylist(uint8_t folder, uint8_t song);
 	void mp3ClearPlaylist(void);
 	void mp3Pause();

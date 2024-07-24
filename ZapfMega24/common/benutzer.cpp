@@ -40,7 +40,7 @@ uint16_t benutzer::gesamt() {
  */
 
 void benutzer::cleanEEPROM() {
-	for (uint16_t x = 2; x < 300; x++) {
+	for (uint16_t x = 2; x < 400; x++) {
 		EEPROM.write(x, 0);
 	}
 }
@@ -53,27 +53,11 @@ void benutzer::writeDataToEEPROM() {
 			bierGesamt[aktuell]);
 	eeprom_write_word((uint16_t*) EEPROM_START_ADDR_BIERTAG + (aktuell * 2),
 			bierTag[aktuell]);
-
-//	EEPROM.put(0, restMengeFass);
-//	EEPROM.put(2, gesamtMengeTag);
-//	EEPROM.put(4, gesamtMengeTotal);
-//	EEPROM.put(6, gesamtMengeTag);
-//	EEPROM.put(EEPROM_START_ADDR_BIERTGESAMT + aktuell * 2,
-//			bierGesamt[aktuell]);
-//	EEPROM.put(EEPROM_START_ADRR_BIERTAG + aktuell * 2, bierTag[aktuell]);
+	eeprom_write_byte((uint8_t*) EEPROM_START_ADDR_MUSIK + aktuell,
+			musik[aktuell]);
 }
 
 void benutzer::readDataFromEEPROM() {
-//	EEPROM.get(0, restMengeFass);
-//	EEPROM.get(2, gesamtMengeTag);
-//	EEPROM.get(4, gesamtMengeTotal);
-//	EEPROM.get(6, gesamtMengeTag);
-//	for (uint8_t x = 0; x < arrayGroesse; x += 2) {
-//		/* bei Adresse 100 starten für Userbier */
-//		EEPROM.get(EEPROM_START_ADDR_BIERTGESAMT + x * 2, bierGesamt[x]);
-//		EEPROM.get(EEPROM_START_ADRR_BIERTAG + x * 2, bierTag[x]);
-//	}
-
 	restMengeFass = eeprom_read_word((uint16_t*) 0);
 	gesamtMengeTag = eeprom_read_word((uint16_t*) 2);
 	gesamtMengeTotal = eeprom_read_word((uint16_t*) 4);
@@ -83,6 +67,8 @@ void benutzer::readDataFromEEPROM() {
 				(uint16_t*) EEPROM_START_ADDR_BIERGESAMT + (x * 2));
 		bierTag[x] = eeprom_read_word(
 				(uint16_t*) EEPROM_START_ADDR_BIERTAG + (x * 2));
+		musik[x] = eeprom_read_byte(
+				(uint8_t*) EEPROM_START_ADDR_MUSIK + aktuell);
 	}
 
 }
@@ -141,10 +127,19 @@ uint8_t benutzer::checkNullUser() {
 }
 
 void benutzer::clearDayUserData() {
-	 gesamtMengeTag = 0;
-	 //Userdaten noch löschen
-	 for (int x = 0; x < arrayGroesse; x++) {
-	 user.bierTag[x] = 0;
-	 }
+	gesamtMengeTag = 0;
+	//Userdaten noch löschen
+	for (int x = 0; x < arrayGroesse; x++) {
+		user.bierTag[x] = 0;
+		user.musik[x] = 0;
+	}
 
+}
+
+void benutzer::clearAllUserData() {
+	cleanEEPROM();
+	gesamtMengeTag = 0;
+	gesamtMengeTotal = 0;
+	restMengeFass = 30000;
+	writeDataToEEPROM();
 }
