@@ -27,13 +27,8 @@ public:
 	void printerWakeUp(void);
 	void schaltAus(void);
 	void schaltEin(void);
-	void printerButtonPressed();
 	void printerZapfEnde();
 	void printerErrorZapfEnde();
-	void printMessage(String printMessage);
-	void printFeed(int feedrate);
-	void printerTest();
-	void printerSetup();
 	void printKaethe();
 	inline void setPrinterOn() {
 		printerOn = true;

@@ -12,7 +12,6 @@
 #include <string.h>
 
 //const uint8_t arrayGroesse = 20;
-#define arrayGroesse 20   //0+19!!!!
 #define EEPROM_START_ADDR_BIERTAG 100
 #define EEPROM_START_ADDR_BIERGESAMT 200
 
@@ -20,6 +19,7 @@ class benutzer {
 public:
 	benutzer();
 	virtual ~benutzer();
+	static const  uint8_t arrayGroesse = 20;   //0+19!!!!
 	uint8_t aktuell = 0;
 	const char *userN[arrayGroesse] ={"Bitte wählen","Christoph","Mädels","Barracuda","Ebi","Maex","Didi","Beda","Basi","Al","Burschen","Alois","Stefan M.L.","Framo","Marina","Anne","Pia","Ulli","Maria","Piene"};
 	uint16_t bierTemp[arrayGroesse];

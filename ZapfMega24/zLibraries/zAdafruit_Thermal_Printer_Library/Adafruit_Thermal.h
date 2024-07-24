@@ -102,6 +102,10 @@ public:
    */
   Adafruit_Thermal(Stream *s = &Serial, uint8_t dtr = 255);
 
+  ~Adafruit_Thermal(){
+	  //destructor
+  }
+
   size_t
     /*!
      * @brief Writes a character to the thermal printer
