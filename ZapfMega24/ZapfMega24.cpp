@@ -389,7 +389,9 @@ void zapfEndeProg(void) {
 		user.addBier();
 		ZD.showAllUserData();
 		sound.setStandby(0);
-		logbuch.logAfterZapf();
+		if(!logbuch.logAfterZapf()){
+			ZD.infoText(F("Irgendwas mit dem Logfile."));
+		}
 		belohnungsMusik();
 		power.setBackLight();
 	}
