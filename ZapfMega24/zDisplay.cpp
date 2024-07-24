@@ -9,6 +9,7 @@
  */
 
 #include "zDisplay.h"
+
 #include "globalVariables.h"
 #include "avr/pgmspace.h"
 #include "Arduino.h"
@@ -452,7 +453,7 @@ void zDisplay::infoscreen() {
 	u8g2.setFont(FONT_NORMAL10);
 	u8g2.setCursor(0, 270);
 	printlnInfoTemp(230, 0, F("Block DS18B20: "), temp.getDSblockTemp());
-	printlnInfoTemp(230, 0, F("Block PT100 Innen: "), temp.getBlockInnenTemp());
+	printlnInfoTemp(230, 0, F("Block PT100 Aussen: "), temp.getBlockAussenTemp());
 	printlnInfoTemp(230, 0, F("Zapfhahn: "), temp.getHahnTemp());
 	u8g2.setCursor(250, 270);
 	printlnInfoTemp(470, 250, F("Getränkezulauf: "), temp.getZulaufTemp());
@@ -577,7 +578,11 @@ void zDisplay::showSingleUserData(uint8_t whatLine) {
 		printValue(cursX, cursY, user.getMenge(), GANZZAHL);
 		break;
 	case 3:
-		printValue(cursX, cursY, user.getBierTag() / 5, KOMMA);
+		if (user.aktuell == 0) {
+			printValue(cursX, cursY, user.gesamtMengeTag / 500, GANZZAHL);
+		} else {
+			printValue(cursX, cursY, user.getBierTag() / 5, KOMMA);
+		}
 		break;
 	case 4:
 		printValue(cursX, cursY, user.getRestMengeFass() / 10, KOMMA);
@@ -603,9 +608,9 @@ void zDisplay::showAllUserData() {
  * @param istwert
  * @param zielwert
  */
-void zDisplay::showBalken(uint16_t istwert, uint16_t zielwert) {
+void zDisplay::showBalken() {
 	long int aktuelleBreite = 0;
-	aktuelleBreite = map((long int) istwert, 0, (long int) user.getMenge(), 0,
+	aktuelleBreite = map((long int) user.zapfMenge, 0, (long int) user.getMenge(), 0,
 			480);
 	if (aktuelleBreite > 0) {
 		_tft.fillRect(0, 292, aktuelleBreite, 4, ZDUNKELGRUEN);
@@ -709,4 +714,8 @@ void zDisplay::printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte,
 	u8g2.setBackgroundColor(ZBRAUN);
 	u8g2.setCursor(x, y);
 	u8g2.print(textZeile);
+}
+
+void zDisplay::fillScreen(uint16_t color) {
+	_tft.fillScreen(color);
 }

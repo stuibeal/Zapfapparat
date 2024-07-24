@@ -22,7 +22,8 @@ zWireHelper::~zWireHelper() {
 }
 
 void zWireHelper::initialise() {
-//nothing to do?
+	flowDataSend(WACH_AUF,0);
+	//nothing to do?
 }
 
 /**

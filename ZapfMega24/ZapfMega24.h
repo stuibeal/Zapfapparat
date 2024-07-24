@@ -27,6 +27,7 @@ void godZapfenProg(void);
 void kurzVorZapfEndeProg(void);
 void zapfEndeProg(void);
 void checkImmer(void);
+void flowCheckWhileZapfing(uint8_t reset);
 void checkWhileZapfing(void);
 void dauerCheck(void);
 void backToNull(void);

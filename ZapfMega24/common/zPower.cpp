@@ -6,6 +6,8 @@
  */
 
 #include "zPower.h"
+
+#include "../zDisplay.h"
 #include "Arduino.h"
 #include "gemein.h"
 #include "globalVariables.h"
@@ -22,6 +24,8 @@ zPower::zPower() {
 	autoLightBool = 1;
 	zSchLampeStatus = 0;
 	bkLichtStatus = 0;
+	lightIsOn = 0;
+	oldLightIsOn = 0;
 }
 
 zPower::~zPower() {
@@ -45,7 +49,7 @@ void zPower::beginPower() {
 	pinMode(Z_SCH_LAMPE_PIN, OUTPUT);
 	pinMode(LICHT_SENSOR_PIN, INPUT);
 	pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
-	analogWrite(LCD_BACKLIGHT_PIN, 128);
+	analogWrite(LCD_BACKLIGHT_PIN, 0);
 	ledGrundbeleuchtung();
 }
 
@@ -102,7 +106,7 @@ void zPower::tastenLed(uint8_t taste, uint8_t helligkeit) {
 
 void zPower::setLed(uint8_t ledNr, bool on) {
 	uint16_t pwm = 0;
-	if (on){
+	if (on) {
 		pwm = map(helligkeit, 1, 100, 10, 0xFFF);
 	} else {
 		pwm = map(helligkeit, 1, 100, 3, 400);
@@ -110,6 +114,12 @@ void zPower::setLed(uint8_t ledNr, bool on) {
 
 	wsLed.setPWM(ledNr, pwm);
 
+}
+
+void zPower::setAllWSLed(uint16_t helligkeit) {
+	for (int i = 0; i < 12; i++) {
+		wsLed.setPWM(i, helligkeit);
+	}
 }
 
 void zPower::setWhiteLed(uint16_t helligkeit) {
@@ -150,7 +160,7 @@ void zPower::zapfLichtControl(uint8_t pwmValue) {
 
 void zPower::autoLight(void) {
 	if (autoLightBool) {
-		uint8_t ledBrightness = LAMPE_AN - helligkeit +10;
+		uint8_t ledBrightness = LAMPE_AN - helligkeit + 10;
 		oldLightIsOn = lightIsOn;
 		if (helligkeit < LAMPE_AN) {
 			lightIsOn = true;
@@ -173,103 +183,204 @@ void zPower::autoLight(void) {
 }
 
 void zPower::setBackLight(void) {
-	flowmeter.flowDataSend(GET_ML,0,0);
+	flowmeter.flowDataSend(GET_ML, 0, 0);
 	delay(30);
 	uint8_t ledBrightness = 0;
 	if (lightIsOn) {
 		ledBrightness = 10;
 	}
-	flowmeter.flowDataSend(DIM_LED_TO_WERT, 127, ledBrightness);  //LEDFun ausschalten
+	flowmeter.flowDataSend(DIM_LED_TO_WERT, 127, ledBrightness); //LEDFun ausschalten
+}
+void zPower::dimLight(uint16_t lichtpin, uint16_t anfang, uint16_t ende,
+		uint16_t delaytime) {
+	if (anfang < ende) {
+		for (uint16_t x = anfang; x < ende + 1; x++) {
+			if (lichtpin > 0) {
+				if (lichtpin == 1) {
+					zapfLichtControl(x);
+				} else {
+					analogWrite(lichtpin, x);
+				}
+			} else {
+				setAllWSLed(x * 4);
+			}
+			delay(delaytime);
+		}
+	} else {
+		for (uint16_t x = anfang; x > ende - 1; x--) {
+			if (lichtpin > 0) {
+				if (lichtpin == 1) {
+					zapfLichtControl(x);
+				} else {
+					analogWrite(lichtpin, x);
+				}
+			} else {
+				setAllWSLed(x * 4);
+			}
+			delay(delaytime);
+		}
+		if (lichtpin > 0) {
+			analogWrite(lichtpin, ende);
+		} else {
+			setAllWSLed(ende);
+		}
+	}
+
 }
 
-
 void zPower::goSleep(void) {
-	/*
-	 * hell = 200;
+	digitalWrite(Z_SCH_LAMPE_PIN, 1);
+	sound.setStandby(1);
+	sound.mp3ClearPlaylist();
+	sound.playStop();
+	sound.on();
+	while (sound.pruefe() != sound.AUDIO_STANDBY) {
+	}
+	ZD.infoText(buf);
+	ZD.fillScreen(BLACK);
+	ZD.showBMP(F("/bmp/DOOM02.bmp"), 80, 60); //320x200
+	switch (logbuch.getWochadog()) {
+	case logbuch.MODA:
+		sound.mp3AddToPlaylist(23, 4); //USA
+		sound.mp3AddToPlaylist(28, 1); //Anne 10 Mark
+		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
+		break;
+	case logbuch.ERDA:
+		sound.mp3AddToPlaylist(23, 5); //Luxemburg
+		sound.mp3AddToPlaylist(28, 2); //Anne de Henn
+		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
+		break;
+	case logbuch.MIGGA:
+		sound.mp3AddToPlaylist(23, 6); //Deutschlandlied
+		sound.mp3AddToPlaylist(29, 8); //berger unanagenehmer teil
+		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
+		break;
+	case logbuch.PFINSDA:
+		sound.mp3AddToPlaylist(23, 9); //DDR
+		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
+		sound.mp3AddToPlaylist(23, 7); //Grossvater
+		break;
+	case logbuch.FREIDA:
+		sound.mp3AddToPlaylist(23, 2); //Bayernhymne
+		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
+		break;
+	case logbuch.SAMSDA:
+		sound.mp3AddToPlaylist(23, 2); //Bayernhymne
+		sound.mp3AddToPlaylist(28, 3); //Anne De weiber
+		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
+		break;
+	case logbuch.SUNDA:
+		sound.mp3AddToPlaylist(23, 3); //EUROPA
+		sound.mp3AddToPlaylist(29, 1); //Berger da fällt mir im moment nix ein
+		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
+		break;
+	}
+	dimLight(LCD_BACKLIGHT_PIN, 255, 0, 20);
+	temp.sendeBefehl(ZAPFEN_STREICH, 0);
+	dimLight(TASTE1_LED, TASTEN_LED_NORMAL, 255, 30);
+	dimLight(TASTE2_LED, TASTEN_LED_NORMAL, 255, 30);
+	digitalWrite(FLOW_SM6020, 0);
+	dimLight(0, GRUEN_LED_ABGEDUNKELT / 4, 255, 3);
+	drucker.schaltAus();
+	dimLight(1, 0, 255, 15); //0: WS Led 1: Zapflicht
+	ZD.showBMP(F("/bmp/DOOM02b.bmp"), 80, 60); //320x200
 
-	 //Hier checken ob was gespielt wird, ansonsten audio aus
-	 //audio.check();
+	bool playNotGNF = 1;
+	do {
+		sound.pruefe();
+		if (sound.getPlFolder() == 23 && sound.getPlSong() == 1) {
+			playNotGNF = 0;
+		}
+		//ZD.infoText(buf);
+		delay(100);
 
-	 if (hell < 6) {
-	 dunkelCount++;
-	 } else {
-	 dunkelCount = 0;
-	 }
+	} while (playNotGNF);
+	ZD.infoText(F("Gute Nacht, Freunde!"));
+	digitalWrite(Z_SCH_LAMPE_PIN, 0);
+	user.clearDayUserData();
+	user.writeDataToEEPROM();
+	ventil.closeValve();
+	do {
+		ventil.check();
+		sprintf(buf, "%d", ventil.getValveProzent());
+		ZD.infoText(buf);
+	} while (ventil.getValveProzent() > 0);
 
-	 if (dunkelCount > 9) {
-	 //Nachtprogramm
-	 DEBUGMSG("Nachtprogramm")
-	 dunkelBool = true;
+	sprintf(buf, "%d", ventil.getValveProzent());
+	ZD.infoText(buf);
+	delay(2000);
 
-	 sound.mp3Play(12, 1); //Gute NAcht Freunde
+	logbuch.disableDCF77LED();
+	dimLight(LCD_BACKLIGHT_PIN, 0, 255, 30);
+	analogWrite(LCD_BACKLIGHT_PIN, 255);
+	dimLight(TASTE1_LED, 255, 0, 60);
+	dimLight(TASTE2_LED, 255, 0, 60);
+	dimLight(0, 255, 0, 30);
+	dimLight(1, 255, 0, 120); //0: WS Led 1: Zapflicht
+	zapfLichtControl(0);
+	flowmeter.flowDataSend(ZAPFEN_STREICH, 0);
 
-	 for (int x = 0; x < 256; x++) {
-	 analogWrite(lcdBacklightPwm, x);
-	 delay(50);
-	 }
+	do {
+		sound.pruefe();
+		delay(200);
 
-	 for (int x = 255; x >= 0; x--) {
-	 analogWrite(TASTE1_LED, x);
-	 delay(50);
-	 }
+	} while (sound.getPlaylistSize() > 0);
+	digitalWrite(OTHER_MC_PIN, 0);
+	sound.off();
+	sound.setStandby(0);
+	sound.mp3D.playTheList = 0;
+	while (sound.pruefe() != sound.AUDIO_OFF) {
+	}
+	sound.stromAus();
+	autoLightBool = 0;
+	uint8_t sleeping = 1;
+	do {
+		check();
+		oldeinsteller = einsteller;
+		if (helligkeit > 20) {
+			sleeping = 0;
+		}
+		if (oldeinsteller != einsteller) {
+			sleeping = 0;
+		}
+		if (digitalRead(TASTE2_PIN) || digitalRead(TASTE1_PIN)) {
+			sleeping = 0;
+		}
+	} while (sleeping);
+	digitalWrite(OTHER_MC_PIN, 1);
+	digitalWrite(FLOW_SM6020, 1);
+	logbuch.enableDCF77LED();
+	autoLightBool = 1;
+	sound.stromAn();
 
-	 for (int x = 255; x >= 0; x--) {
-	 analogWrite(TASTE2_LED, x);
-	 delay(50);
-	 }
+	delay(1000);
+	analogWrite(LCD_BACKLIGHT_PIN, 0); //0: voll hell
+	anfang();
+	ZD.infoText(F("Lust auf ein Frühbierchen?"));
 
-	 //		for (int x = 255; x >= 0; x--) {
-	 //			for (uint8_t pwmnum = 0; pwmnum < 13; pwmnum++) {
-	 //				pwm.setPWM(pwmnum, 0, x); //Wählscheibe runterdimmen
-	 //			}
-	 //			delay(10);
-	 //		}
+	//	//Daten noch loggen
+//
+//	while (dunkelBool == true) {
+//		hell = analogRead(helligkeitSensor);
+//		if (hell > 200) {
+//			hellCount++;
+//			delay(10000);
+//		} else {
+//			hellCount = 0;
+//		}
+//		if (digitalRead(TASTE1_PIN) == HIGH) {
+//			dunkelBool = false;
+//			delay(100);
+//			anfang();
+//		}
+//		if (hellCount > 9) {
+//			dunkelBool = false;
+//			digitalWrite(AUDIO_AMP, HIGH);
+//			digitalWrite(otherMcOn, HIGH);
+//			delay(3000);   //pause machen damit die auch alle hochkommen
+//			anfang();
+//		}
+//	}
+//}
 
-	 flowmeter.flowDataSend(END_ZAPF, 0, 0);
-	 flowmeter.flowDataSend(ZAPFEN_STREICH, 0, 0);
-	 temp.sendeBefehl(ZAPFEN_STREICH, 0x0);
-	 user.gesamtMengeTag = 0;
-	 aktuellerTag++;
-	 ventil.closeValve();
-	 for (int x = 0; x <= 11; x++) {
-	 ventil.check();
-	 delay(1000);
-	 }
-
-	 delay(130000); //dann ist gute nach Freunde aus
-	 sound.mp3Play(12, aktuellerTag); //lied 2-7
-	 delay(240000);
-
-	 digitalWrite(AUDIO_AMP, LOW);
-	 digitalWrite(otherMcOn, LOW);
-	 //Daten noch loggen
-
-	 //Userdaten noch löschen
-	 for (int x = 0; x <= 10; x++) {
-	 user.bierTag[x] = 0;
-	 }
-
-	 while (dunkelBool == true) {
-	 hell = analogRead(helligkeitSensor);
-	 if (hell > 200) {
-	 hellCount++;
-	 delay(10000);
-	 } else {
-	 hellCount = 0;
-	 }
-	 if (digitalRead(TASTE1_PIN) == HIGH) {
-	 dunkelBool = false;
-	 delay(100);
-	 anfang();
-	 }
-	 if (hellCount > 9) {
-	 dunkelBool = false;
-	 digitalWrite(AUDIO_AMP, HIGH);
-	 digitalWrite(otherMcOn, HIGH);
-	 delay(3000);   //pause machen damit die auch alle hochkommen
-	 anfang();
-	 }
-	 }
-	 }
-	 */
 }

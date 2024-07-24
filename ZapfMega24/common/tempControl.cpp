@@ -61,12 +61,13 @@ void tempControl::begin() {
 	zulauf.setResolution(10);
 	kuehlwasser.setResolution(8);
 	//Schonmal Temperatur anfordern
-//	auslauf.requestTemperatures();
-//	gehaeuse.requestTemperatures();
-//	block.requestTemperatures();
-//	zulauf.requestTemperatures();
-//	kuehlwasser.requestTemperatures();
-
+	auslauf.requestTemperatures();
+	gehaeuse.requestTemperatures();
+	block.requestTemperatures();
+	zulauf.requestTemperatures();
+	kuehlwasser.requestTemperatures();
+	//Aufwecken
+	sendeBefehl(WACH_AUF,0);
 }
 
 //DS18B20

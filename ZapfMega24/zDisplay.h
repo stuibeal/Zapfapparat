@@ -18,10 +18,10 @@
 #include <Arduino.h>
 #include "SdFat.h"
 #include "gemein.h"
-#include "globalVariables.h"
+//#include "globalVariables.h"
 #include "stdio.h"
 #include <string.h>
-#include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
+#include "../zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
 #include "Adafruit_GFX.h"
 #include "U8g2_for_Adafruit_GFX.h"
 #include "tempControl.h"
@@ -107,13 +107,13 @@ public:
 	void showUserGod2Pic(void);
 	void showSingleUserData(uint8_t whatLine);
 	void showAllUserData(void);
-	void showBalken(uint16_t istwert, uint16_t zielwert);
+	void showBalken();
 	void showTastenFunktion(const char* textTaste1, const char* textTaste2);
 	void printProgrammInfo(const __FlashStringHelper *textUeberschrift);
 	void printProgrammInfo(const char* textUeberschrift);
 	void printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const __FlashStringHelper* textZeile);
 	void printProgrammInfoZeilen(uint8_t zeile, uint8_t spalte, const char* textZeile);
-
+	void fillScreen(uint16_t color);
 private:
 	MCUFRIEND_kbv _tft; //TFT Objekt zum aufrufen
 	U8G2_FOR_ADAFRUIT_GFX u8g2;

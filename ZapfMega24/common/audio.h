@@ -49,8 +49,10 @@ public:
 
 	audio();
 	virtual ~audio();
+	void stromAn(void);
+	void stromAus(void);
 	void starte(SdFat *pSD, MD_MIDIFile *pSMF, MD_YX5300 *mp3); //Mit Pointer starten
-	void pruefe();
+	uint8_t pruefe();
 	bool pruefePlaying();
 	void on(void);
 	void off(void);

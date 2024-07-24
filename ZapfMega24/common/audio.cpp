@@ -39,10 +39,32 @@ audio::audio() :
 	mp3D.currentTrack = 0;
 	mp3D.folderFiles = 0;
 	mp3D.waiting = false;
+	mp3D.pauseForMidi = 0;
+	mp3D.playTheList = 0;
+	mp3D.playStatus = S_STOPPED;
 }
 
 audio::~audio() {
 	//  Auto-generated destructor stub
+}
+
+void audio::stromAn() {
+	pinMode(MIDI_RESET, OUTPUT);  //MIDI Reset needs to be ~1 sec!
+	digitalWrite(MIDI_RESET, HIGH);
+	pinMode(AUDIO_AMP, OUTPUT);
+	pinMode(AUDIO_BOARD, OUTPUT);
+	digitalWrite(AUDIO_BOARD, HIGH);
+	delay(1000);
+	digitalWrite(MIDI_RESET, LOW); // MIDI Reset off
+	delay(600);
+	digitalWrite(AUDIO_AMP, HIGH);
+
+}
+
+void audio::stromAus() {
+	digitalWrite(MIDI_RESET, LOW);
+	digitalWrite(AUDIO_BOARD, LOW);
+
 }
 
 void audio::starte(SdFat *pSD, MD_MIDIFile *pSMF, MD_YX5300 *pMp3) {
@@ -58,16 +80,8 @@ void audio::starte(SdFat *pSD, MD_MIDIFile *pSMF, MD_YX5300 *pMp3) {
 	_SMF->setFileFolder("/midi/");
 	_SMF->looping(true);
 
+	stromAn();
 	//MP3, Audio
-	//ZD.println ("Starte ROLAND SCB-7 daughterboard");
-	pinMode(MIDI_RESET, OUTPUT);  //MIDI Reset needs to be ~1 sec!
-	digitalWrite(MIDI_RESET, HIGH);
-
-	//ZD.println ("Starte Audio Amplificatrice");
-	pinMode(AUDIO_AMP, OUTPUT);
-	pinMode(AUDIO_BOARD, OUTPUT);
-
-	digitalWrite(AUDIO_BOARD, HIGH);
 
 	//MP3 Player
 	MP3Stream.begin(MD_YX5300::SERIAL_BPS);
@@ -77,12 +91,8 @@ void audio::starte(SdFat *pSD, MD_MIDIFile *pSMF, MD_YX5300 *pMp3) {
 	delay(500); //warten auf init
 	//ZD.println ("MP3 Player ready...");
 
-	digitalWrite(MIDI_RESET, LOW); // MIDI Reset off
-	delay(600);
-	digitalWrite(AUDIO_AMP, HIGH);
-	//ZD.println ("Harte Musik bereit");
-	//_SMF->load("Ein-Prosit-1.mid");
 	_SMF->looping(false);
+	mp3D.playStatus = S_STOPPED;
 
 }
 bool audio::pruefePlaying() {
@@ -96,23 +106,31 @@ bool audio::pruefePlaying() {
 
 }
 
-void audio::pruefe() {
+uint8_t audio::pruefe() {
 	unsigned long wartezeit = millis() - audioMillis;
+
 	switch (state) {
 	case AUDIO_ON: //Audio ist an
-		if (wartezeit >= 12000) {
+		if (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END) {
+			mp3D.playStatus = S_STOPPED;
+		}
+
+		if (mp3D.standby == 1) {
+			state = AUDIO_STANDBY;
+		} else if (wartezeit >= 12000) {
 			_mp3->check();  //MP3 Player abfragen
 			/**
 			 * Wenn MP3 File End = true
 			 * UND
 			 * MIDI End of File (ausgespielt) ODER Trackcount == 0
 			 */
-			if ((mp3D.lastMp3Status == MD_YX5300::STS_FILE_END)
+			if (mp3D.playStatus == S_STOPPED
 					&& (_SMF->isEOF() || (_SMF->getTrackCount() == 0))) {
 				digitalWrite(AUDIO_AMP, LOW); //AMP aus
 				audioMillis = millis();
 				state = AUDIO_SHUTDOWN;
 			}
+
 		}
 		break;
 
@@ -125,6 +143,9 @@ void audio::pruefe() {
 		break;
 
 	case AUDIO_OFF:
+		if (mp3D.standby) {
+			state = AUDIO_RESTART;
+		}
 		// do nothing?
 		break;
 
@@ -167,27 +188,27 @@ void audio::pruefe() {
 	} /*switch*/
 
 	if (DEBUG_A) {
-		sprintf(buf, "WZ:%lu S:%d 3:%u l%u/%u F%u S%u", wartezeit / 1000, state,
+		sprintf(buf, "WZ:%lu S:%d 3:%u l%u/%u F%u S%u PTL %d sby %d", wartezeit / 1000, state,
 				mp3D.lastMp3Status, mp3D.actualPlayListSong,
 				mp3D.songsInPlayList, playlistFolder[mp3D.actualPlayListSong],
-				playlistSong[mp3D.actualPlayListSong]);
+				playlistSong[mp3D.actualPlayListSong],mp3D.playTheList, mp3D.standby);
 	}
 	if (mp3D.playTheList) {
 		_mp3->check();
 		audioMillis = millis();
-		if (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END) {
-			mp3D.actualPlayListSong++;
+		if (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END
+				|| mp3D.lastMp3Status == MD_YX5300::STS_VERSION) {
+			//mp3D.actualPlayListSong++;
 			if (mp3D.actualPlayListSong < mp3D.songsInPlayList) {
 				mp3NextSongOnPlaylist();
-				mp3D.playStatus = S_PLAYING;
 			} else {
 				mp3ClearPlaylist();
 				state = AUDIO_ON;
-				mp3D.playStatus = S_STOPPED;
 				mp3D.playTheList = false;
 			}
 		}
 	}
+	return state;
 }
 
 void audio::on() {
@@ -217,19 +238,24 @@ void audio::setStandby(bool stby) {
 
 void audio::mp3Play(uint8_t folder, uint8_t song) {
 	on();
+	while(pruefe()!= AUDIO_ON && pruefe()!=AUDIO_STANDBY){}
 	_mp3->playSpecific(folder, song);
+	mp3D.playStatus = S_PLAYING;
+	mp3D.lastMp3Status = 0;
+
 }
 
 void audio::mp3AddToPlaylist(uint8_t folder, uint8_t song) {
 	on();
+	mp3D.songsInPlayList++;
 	playlistFolder[mp3D.songsInPlayList] = folder;
 	playlistSong[mp3D.songsInPlayList] = song;
-	if (mp3D.songsInPlayList == 0) {
-		mp3D.actualPlayListSong = 0;
-		mp3PlaySongOnPlaylist(playlistFolder[mp3D.actualPlayListSong],
+	if (mp3D.songsInPlayList == 1) {
+		mp3D.actualPlayListSong = 1;
+		mp3Play(playlistFolder[mp3D.actualPlayListSong],
 				playlistSong[mp3D.actualPlayListSong]);
+		mp3D.playTheList = true;
 	}
-	mp3D.songsInPlayList++;
 
 }
 
@@ -239,6 +265,10 @@ void audio::mp3ClearPlaylist(void) {
 		playlistSong[i] = 0;
 	}
 	mp3D.songsInPlayList = 0;
+	mp3D.actualPlayListSong = 0;
+	mp3D.playTheList = 0;
+	_mp3->playStop();
+	mp3D.playStatus = S_STOPPED;
 }
 
 void audio::mp3Pause() {
@@ -255,20 +285,21 @@ void audio::mp3Pause() {
 
 void audio::mp3Stop() {
 	_mp3->playStop();
+	mp3D.playStatus = S_STOPPED;
 }
 
 void audio::mp3NextSongOnPlaylist() {
-	if (mp3D.actualPlayListSong < mp3D.songsInPlayList + 1) {
+	if (mp3D.actualPlayListSong < mp3D.songsInPlayList) {
 		mp3D.actualPlayListSong++;
 	} else {
-		mp3D.actualPlayListSong = 0;
+		mp3D.actualPlayListSong = 1;
 	}
 	mp3Play(playlistFolder[mp3D.actualPlayListSong],
 			playlistSong[mp3D.actualPlayListSong]);
 }
 
 void audio::mp3PreviousSongOnPlaylist(void) {
-	if (mp3D.actualPlayListSong > 0) {
+	if (mp3D.actualPlayListSong > 1) {
 		mp3D.actualPlayListSong--;
 	} else {
 		mp3D.actualPlayListSong = mp3D.songsInPlayList;
@@ -285,29 +316,33 @@ void audio::mp3FillShufflePlaylist(uint8_t folder) {
 	_mp3->queryFolderFiles(folder);
 	delay(500);
 	_mp3->check();
+	delay(500);
+	_mp3->check();
 	mp3D.songsInPlayList = mp3D.folderFiles;
 	if (mp3D.songsInPlayList > 0) {
-		for (uint8_t i = 0; i < mp3D.songsInPlayList; i++) {
+		for (uint8_t i = 1; i < mp3D.songsInPlayList + 1; i++) {
 			playlistFolder[i] = folder;
 			playlistSong[i] = i + 1; //lieder beginnen mit 1
 		}
 		shuffleArray();
+		mp3D.playTheList = true;
+		mp3D.actualPlayListSong = 1;
+		mp3Play(playlistFolder[mp3D.actualPlayListSong],
+				playlistSong[mp3D.actualPlayListSong]);
 	}
-	mp3D.playTheList = true;
-	mp3D.actualPlayListSong = 0;
-	mp3Play(playlistFolder[mp3D.actualPlayListSong],
-			playlistSong[mp3D.actualPlayListSong]);
-	mp3D.playStatus = S_PLAYING;
 }
 
 void audio::mp3PlaySongOnPlaylist(uint8_t folder, uint8_t song) {
 	if (mp3D.actualPlayListSong < mp3D.songsInPlayList) {
 		mp3Play(folder, song);
+		mp3D.playTheList = true;
+		mp3D.playStatus = S_PLAYING;
+
 	}
 }
 
 void audio::bing() {
-	if (mp3D.playStatus == S_PLAYING) {
+	if (mp3D.playTheList) {
 		mp3Pause();
 		mp3D.pauseForMidi = true;
 		midi_event ev;
@@ -490,10 +525,10 @@ void audio::godModeSound(uint8_t godMode) {
 
 void audio::shuffleArray() {
 	randomSeed(analogRead(LICHT_SENSOR_PIN));
-	uint8_t last = 0;
+	uint8_t last = 1;
 	uint8_t tempFolder = playlistFolder[last];
 	uint8_t tempSong = playlistSong[last];
-	for (uint8_t i = 0; i < mp3D.songsInPlayList; i++) {
+	for (uint8_t i = 1; i < mp3D.songsInPlayList; i++) {
 		uint8_t index = random(mp3D.songsInPlayList);
 		playlistFolder[last] = playlistFolder[index];
 		playlistSong[last] = playlistSong[index];

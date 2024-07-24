@@ -12,8 +12,13 @@
 #include "benutzer.h"
 #include "zPower.h"
 #include "string.h"
+#include "zLog.h"
+#include "../zDisplay.h"
+#include "../zLibraries/zPrinter/zPrinter.h"
+#include "zValve.h"
 
 //globale Variablen
+
 extern zWireHelper flowmeter;
 extern audio sound;
 extern tempControl temp;
@@ -21,5 +26,11 @@ extern benutzer user;
 extern zPower power;
 extern char buf[80];
 extern PCA9685 wsLed;
+extern zLog logbuch;
+extern zDisplay ZD;
+extern zPrinter drucker;
+extern zValve ventil;
 extern volatile uint8_t einsteller;
+extern uint8_t oldeinsteller;
+extern void anfang();
 #endif /* GLOBALVARIABLES_H_ */

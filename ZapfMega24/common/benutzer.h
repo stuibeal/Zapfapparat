@@ -43,6 +43,7 @@ public:
 	void setMenge(uint16_t mengevar);
 	void setTemp(uint16_t tempvar);
 	uint8_t checkNullUser(void);
+	void clearDayUserData(void);
 
 	inline void setGodMode(uint8_t wasfuergott) {
 		godMode[aktuell] = wasfuergott;

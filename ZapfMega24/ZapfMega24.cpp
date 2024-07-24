@@ -15,7 +15,6 @@
 #include "Adafruit_GFX.h"
 #include "./zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
 #include "U8g2_for_Adafruit_GFX.h"
-#include "zDisplay.h"
 #include "Encoder.h"  //für Drehencoder
 #include "./zLibraries/RTC_DCF/DateTime.h"   // ELV RTC mit DCF
 #include "./zLibraries/RTC_DCF/RealTimeClock_DCF.h"
@@ -25,8 +24,9 @@
 #include "MD_YX5300.h"
 #include "tempControl.h"
 #include "audio.h"
+#include "common/zLog.h"
+#include "zDisplay.h"
 #include "zValve.h"
-#include "zLog.h"
 #include "zWireHelper.h"
 
 // Defines
@@ -116,7 +116,6 @@ void setup(void) {
 	}
 	ZD.showBMP(F("/bmp/z-logo.bmp"), 20, 20);
 
-
 	//Rotary Encoder
 	pinMode(ROTARY_SW_PIN, INPUT); // Drehgeberknopf auf Input
 	attachInterrupt(digitalPinToInterrupt(ROTARY_SW_PIN),
@@ -167,7 +166,7 @@ void anfang(void) {
 	ZD.backgroundPicture();
 	power.ledGrundbeleuchtung();
 	userShow();
-	ZD.showTastenFunktion(tt_sonder,tt_info);
+	ZD.showTastenFunktion(tt_sonder, tt_info);
 }
 
 void loop() {
@@ -226,7 +225,7 @@ void zapfErrorProg() {
 		while (ventil.getValveProzent() > 0) {
 			ventil.check();
 		}
-		while (digitalRead(FLOW_WINDOW)){
+		while (digitalRead(FLOW_WINDOW)) {
 			delay(1);
 		}
 		flowmeter.flowDataSend(END_ZAPF, 0);
@@ -236,6 +235,7 @@ void zapfErrorProg() {
 	}
 }
 void preZapf(uint8_t nummer) {
+	sound.setStandby(true); //dann checkt er nicht ob er ausschalten soll
 	kienmuehle = 0; /*wenn man sich verwählt hat bei der Nummerneingabe wirds gelöscht*/
 	user.aktuell = nummer;
 	user.oldZapfStatus = user.zapfModus::zapfStandby;
@@ -249,12 +249,16 @@ void zapfBeginnProg(void) {
 		if (user.oldZapfStatus == user.zapfModus::zapfError) {
 			user.addBier();
 			ZD.showAllUserData();
-			user.zapfMenge=flowmeter.getFreshZapfMillis(); //wenn nix zwischengezapft wurde sollts 0 sein
+			user.zapfMenge = flowmeter.getFreshZapfMillis(); //wenn nix zwischengezapft wurde sollts 0 sein
 			ZD.infoText(F("Restbier der Fehlzapfung aufgerechnet!"));
 
 		}
 		/* sollte er am Nulluser rumgespielt haben kriegt er die Einstellung */
 		if (user.checkNullUser()) {
+			//die PIENE kann die Temperatur verstellen
+			if (user.aktuell == 19) {
+				temp.sendeBefehl(SET_TEMPERATUR, user.getSollTemperatur());
+			}
 			ZD.showAllUserData();
 		}
 
@@ -264,6 +268,8 @@ void zapfBeginnProg(void) {
 		sound.godModeSound(user.getGodMode());
 		temp.sendeBefehl(BEGIN_ZAPF, 0x0);
 		userShow();  // Zeigt die Userdaten an
+		while (sound.pruefe() != sound.AUDIO_STANDBY) {
+		}
 		auswahlZeit = millis();
 		ZD.infoText(F("BITTE ZAPFHAHN BETÄTIGEN"));
 	}
@@ -286,35 +292,21 @@ void zapfBeginnProg(void) {
 	}
 
 }
+
 void amZapfenProg(void) {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
 		ZD.showTastenFunktion(tt_zapfabbruch, tt_zapfabbruchUndSet);
-		sound.setStandby(1);
-		sound.pruefe();
 		if (user.getGodMode() > 0) {
 			user.zapfStatus = user.zapfModus::godZapfen;
 		}
-
+		flowCheckWhileZapfing(1);
 	}
 	checkWhileZapfing();
-	// Nachkucken ob er im kurz vor Zapfende ist
-	if (millis() - auswahlZeit > 999) {
-		auswahlZeit = millis();
-		static uint16_t lastFlow = flowmeter.getMilliliter();
-
-		if (flowmeter.getMilliliter() + lastFlow * 2 > user.getMenge()) {
-			user.zapfStatus = user.zapfModus::kurzVorZapfEnde;
-		}
-	}
-
-// Nachschaun ob er eventuell zu lang braucht und nix zapft
-	if ((user.getMenge() - flowmeter.getMilliliter()) < 30) {
-		user.zapfStatus = user.zapfModus::zapfEnde;
-	}
-
+	flowCheckWhileZapfing(0);
 // sollte er abbrechen
 	if (readTaste(1)) {
+		drucker.printerErrorZapfEnde();
 		user.zapfStatus = user.zapfModus::zapfEnde;
 	}
 	if (readTaste(2)) {
@@ -352,8 +344,8 @@ void godZapfenProg(void) {
 		user.zapfStatus = user.zapfModus::zapfEnde;
 	}
 	/*GOD braucht den grünen Balken mehr denn je*/
-	user.zapfMenge=flowmeter.getFreshZapfMillis();
-	ZD.showBalken(user.zapfMenge, user.getMenge());
+	user.zapfMenge = flowmeter.getFreshZapfMillis();
+	ZD.showBalken();
 
 	// Nachschaun ob er fertig ist und dann bingen und zamschreim
 	if (user.zapfMenge >= user.getMenge()) {
@@ -367,12 +359,13 @@ void kurzVorZapfEndeProg(void) {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
 		ZD.infoText(F("ZAPFVORGANG FAST FERTIG!"));
-		power.setWhiteLed(0xFFF);
+		power.setLed(0, 1);
 		temp.sendeBefehl(KURZ_VOR_ZAPFENDE, 0x0);
 		power.tastenLed(0, 255);
 
 	}
 	checkWhileZapfing();
+	flowCheckWhileZapfing(0);
 	if (user.zapfMenge >= user.getMenge()) {
 		user.zapfStatus = user.zapfModus::zapfEnde;
 	}
@@ -403,7 +396,6 @@ void zapfEndeProg(void) {
 
 	/*Ab hier Dauerausführung*/
 
-
 	while (digitalRead(FLOW_WINDOW)) {
 		// wenn der doch noch weiterzapft!
 		checkWhileZapfing();
@@ -414,7 +406,8 @@ void zapfEndeProg(void) {
 	}
 
 	if (readTaste(2)) {
-		drucker.printerZapfEnde(user.lastZapfMenge);
+		temp.holeDaten();
+		drucker.printerZapfEnde();
 		backToNull();
 	}
 
@@ -422,12 +415,48 @@ void zapfEndeProg(void) {
 	warteZeitCheck();
 }
 
+void flowCheckWhileZapfing(uint8_t reset) {
+	static uint16_t lastFlow;
+	uint16_t actualFlow;
+	static uint8_t sekundenOhneFlow;
+	if (reset) {
+		lastFlow = 0;
+		actualFlow = 1;
+		sekundenOhneFlow = 0;
+		auswahlZeit = millis();
+	} else {
+
+		// Nachkucken ob er im kurz vor Zapfende ist
+		if (millis() - auswahlZeit > 999) {
+			auswahlZeit = millis();
+			actualFlow = flowmeter.getMilliliter() - lastFlow;
+			if (user.zapfMenge + actualFlow > user.getMenge()) {
+				user.zapfStatus = user.zapfModus::kurzVorZapfEnde;
+			}
+			if (actualFlow == 0) {
+				sekundenOhneFlow++;
+			} else {
+				sekundenOhneFlow = 0;
+			}
+			lastFlow = flowmeter.getMilliliter();
+		}
+
+		// Nachschaun ob er eventuell zu lang braucht und nix zapft
+		if (sekundenOhneFlow > 20) {
+			sekundenOhneFlow = 0;
+			sound.mp3Play(29, 2); //Kackalafax
+			delay(5000);
+			user.zapfStatus = user.zapfModus::zapfEnde;
+		}
+	}
+}
+
 void checkWhileZapfing() {
 	if (((millis() - oldTime) > 100)) {
 		static uint8_t counter = 0;
 		counter++;
 		oldTime = millis();
-		user.zapfMenge=flowmeter.getFreshZapfMillis();
+		user.zapfMenge = flowmeter.getFreshZapfMillis();
 		if (counter > 4) {
 			counter = 0;
 			temp.holeDaten();
@@ -462,6 +491,13 @@ void dauerCheck(void) {
 
 	ZD.infoCheck();
 
+	if (temp.getBlockInnenTemp() < (int16_t) user.bierTemp[19]) {
+		power.setLed(11, 1);
+	}
+	if (temp.getBlockAussenTemp() + 5 < (int16_t) user.bierTemp[19]) {
+		power.setLed(0, 1);
+	}
+
 	if (digitalRead(WSready)) {
 		waehlscheibe();
 	}
@@ -471,10 +507,7 @@ void dauerCheck(void) {
 		ZD.showAllUserData();
 	}
 	//Wenn jemand an den Tasten rumspielt
-	if (digitalRead(TASTE2_PIN)) {
-		if (!sound.mp3D.playTheList) {
-		sound.mp3Play(20,5);
-		}
+	if (digitalRead(TASTE2_PIN) && user.zapfStatus != user.zapfEnde) {
 		infoseite();
 	}
 
@@ -510,6 +543,7 @@ void backToNull() {
 	if (user.zapfMenge > 0) {
 		user.addBier();
 	}
+	temp.sendeBefehl(END_ZAPF, 0x0);
 	user.aktuell = 0;
 	power.ledGrundbeleuchtung();
 	user.zapfStatus = user.zapfModus::zapfStandby;
@@ -543,10 +577,9 @@ uint8_t readTaste(uint8_t taste) {
 }
 
 void waehlscheibe() {
-	sound.setStandby(true); //dann checkt er nicht ob er ausschalten soll
-	sound.on();
 	auswahlZeit = millis();
 	flowmeter.flowDataSend(LED_FUN_1, 10, 200); /*LEDFUN ein*/
+	sound.setStandby(1);
 	uint8_t zahlemann = readWaehlscheibe(); /*Wählscheibe auslesen*/
 	power.setBackLight();
 	sound.pruefe();
@@ -556,6 +589,7 @@ void waehlscheibe() {
 		user.aktuell = 0;
 		ZD.userShow();
 		power.ledGrundbeleuchtung();
+		sound.setStandby(0);
 	}
 
 	if (zahlemann > 0) {
@@ -564,6 +598,7 @@ void waehlscheibe() {
 			preZapf(zahlemann);
 			break;
 		case 1: /* Wenn doch, Nummerneingabe starten */
+			sound.setStandby(0);
 			power.tastenLed(1, 255);
 			if (zahlemann == 10) {
 				zahlemann = 0;
@@ -638,6 +673,15 @@ void waehlFunktionen() {
 		break;
 	case 337766: //EEPROM
 		user.cleanEEPROM();
+		ZD.infoText(F("EEPROM gelöscht. Reset jetzt!"));
+		break;
+	case 983633865: //zuendfunk
+		sound.mp3AddToPlaylist(30, 2);
+		ZD.infoText(F("Zündfunk: Fernreiseguppe"));
+		break;
+	case 937825425: //westblick
+		sound.mp3AddToPlaylist(30, 1);
+		ZD.infoText(F("WDR Westblick"));
 		break;
 	default:
 		spezialprogramm(kienmuehle);
@@ -654,18 +698,26 @@ void seltencheck(void) {
 void belohnungsMusik() {
 	if (user.getBierTag() > 2000 && user.getMusik() == 0) {
 		user.setMusik(1);
+		delay(1000); //for the bing
+		sound.mp3Play(29,7);
+		delay(4000);
 		sound.mp3Play(user.aktuell, 1);
 	}
 	if (user.getBierTag() > 2500 && user.getMusik() == 1) {
 		user.setMusik(2);
+		delay(1000); //for the bing
+		sound.mp3Play(29,5);
+		delay(9000);
 		sound.mp3Play(user.aktuell, 2);
 	}
 	if (user.getBierTag() > 3000 && user.getMusik() == 2) {
 		user.setMusik(3);
+		delay(1000); //for the bing
 		sound.mp3Play(user.aktuell, 3);
 	}
 	if (user.getBierTag() > 3500 && user.getMusik() == 3) {
 		user.setMusik(0);
+		delay(1000); //for the bing
 		sound.mp3Play(user.aktuell, 4);
 	}
 
@@ -676,9 +728,16 @@ void infoseite(void) {
 	analogWrite(TASTE2_LED, 10);
 //	sound.loadSingleMidi("SKYFALL.MID");
 //	sound._SMF->pause(false);
-	ZD.infoscreen();
+	if (!sound.mp3D.playTheList) {
+		if (user.aktuell == 0) {
+			sound.mp3Play(20, 5); //ebi du bist die vier
+		}
+		if (user.aktuell == 5) {
+			sound.mp3Play(20, 7); //no soup for you
+		}
+	}
 
-//ZD.setFont(&FreeSans9pt7b);
+	ZD.infoscreen();
 
 	for (int x = 10; x < 256; x++) {
 		analogWrite(TASTE2_LED, x);
@@ -722,7 +781,7 @@ void userShow(void) {
 }
 
 void showZapfapparatData(void) {
-	ZD.print_val3(temp.getBlockAussenTemp(), 17, 82, KOMMA);
+	ZD.print_val3(temp.getBlockInnenTemp(), 17, 82, KOMMA);
 	ZD.print_val3((int) user.zapfMenge, 17, 170, GANZZAHL);
 	ZD.print_val3((int) ventil.getPressure(), 17, 260, KOMMA);
 }
@@ -730,6 +789,7 @@ void showZapfapparatData(void) {
 void drehgeber() {
 	static long oldPosition = 0;
 	long newPosition = Dreher.read();
+
 	if (newPosition != oldPosition) {
 		switch (einsteller) {
 		case 1:
@@ -926,6 +986,7 @@ void spezialprogramm(uint32_t input) {
 	case 7: //sleep
 		switch (varContent) {
 		case 5337: //LEEP
+			power.goSleep();
 			break;
 		}
 		break;
@@ -946,7 +1007,7 @@ void spezialprogramm(uint32_t input) {
 			break;
 		case 2:
 			sound.mp3Pause();
-			sprintf(buf,"status %d", sound.mp3D.playStatus);
+			sprintf(buf, "status %d", sound.mp3D.playStatus);
 			ZD.infoText(buf);
 			break;
 		case 3:
@@ -962,8 +1023,8 @@ void spezialprogramm(uint32_t input) {
 				folder = 30 + (varContent / 100);
 				song = varContent % 100;
 				sound.mp3AddToPlaylist(folder, song);
-			} else if (varContent > 10 && varContent < 20){
-				sound.mp3FillShufflePlaylist(20+varContent);
+			} else if (varContent > 10 && varContent < 20) {
+				sound.mp3FillShufflePlaylist(20 + varContent);
 				sprintf(buf, "Folderfiles: %d", sound.mp3D.songsInPlayList);
 				ZD.infoText(buf);
 				delay(2000);

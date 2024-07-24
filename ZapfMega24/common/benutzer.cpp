@@ -139,3 +139,12 @@ uint8_t benutzer::checkNullUser() {
 	}
 	return yesno;
 }
+
+void benutzer::clearDayUserData() {
+	 gesamtMengeTag = 0;
+	 //Userdaten noch löschen
+	 for (int x = 0; x < arrayGroesse; x++) {
+	 user.bierTag[x] = 0;
+	 }
+
+}

@@ -16,6 +16,7 @@
 #define ZPOWER_H_
 #include "Arduino.h"
 #include "stdint.h"
+
 #include "PCA9685.h"
 #include "tempControl.h"
 
@@ -68,7 +69,6 @@ public:
 		return inVoltage;
 	}
 
-
 	void beginPower();
 	void check();
 	void tastenLed(uint8_t taste, uint8_t helligkeit);
@@ -82,8 +82,11 @@ public:
 	void setBackLight(void);
 	void goSleep(void);
 
-
 private:
+
+	void dimLight(uint16_t lichtpin, uint16_t anfang, uint16_t ende,
+			uint16_t delaytime);
+	void setAllWSLed(uint16_t helligkeit);
 	uint8_t inVoltage;
 	uint16_t helligkeit;
 	uint8_t autoLightBool;

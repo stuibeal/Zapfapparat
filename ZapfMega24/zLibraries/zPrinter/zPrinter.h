@@ -25,9 +25,11 @@ public:
 	void initialise();
 	void printerSleep(void);
 	void printerWakeUp(void);
+	void schaltAus(void);
+	void schaltEin(void);
 	void printerButtonPressed();
-	void printerZapfEnde(uint16_t zahl);
-	void printerErrorZapfEnde(unsigned int zahl);
+	void printerZapfEnde();
+	void printerErrorZapfEnde();
 	void printMessage(String printMessage);
 	void printFeed(int feedrate);
 	void printerTest();

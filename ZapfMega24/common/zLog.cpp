@@ -7,6 +7,8 @@
 
 #include "zLog.h"
 
+#include "globalVariables.h"
+
 zLog::zLog() {
 	DateTime dateTime = DateTime(0, 1, 1, SAMSDA, 0, 0, 0);
 	_sd = nullptr;
@@ -37,14 +39,37 @@ void zLog::initialise(SdFat *psd, benutzer *puser, tempControl *ptemp,
 	RTC_DCF.begin();
 	RTC_DCF.enableDCF77Reception();
 	RTC_DCF.enableDCF77LED();   //später ausschalten in der nacht!)
-	RTC_DCF.setDateTime(&dateTime); //Damit irgendwas drin is
+	//RTC_DCF.setDateTime(&dateTime); //Damit irgendwas drin is
 }
+
+
 
 void zLog::getClockString(void) {
 	RTC_DCF.getDateTime(&dateTime);
 	sprintf(_buf, "Es is %02u:%02u:%02u am %02u.%02u.%02u", dateTime.getHour(),
 			dateTime.getMinute(), dateTime.getSecond(), dateTime.getDay(),
 			dateTime.getMonth(), dateTime.getYear());
+}
+void zLog::getClockBarcode(void) {
+	RTC_DCF.getDateTime(&dateTime);
+	sprintf(buf, "%02u%02u%02u%02u%02u%02u",  dateTime.getDay(),
+			dateTime.getMonth(), dateTime.getYear(),dateTime.getHour(),
+			dateTime.getMinute(), dateTime.getSecond());
+}
+
+uint8_t zLog::getWochadog(void) {
+	RTC_DCF.getDateTime(&dateTime);
+	return dateTime.getWeekday();
+
+}
+
+
+void zLog::setDcfLed(bool onoff){
+	if(onoff){
+		RTC_DCF.enableDCF77LED();
+	} else {
+		RTC_DCF.disableDCF77LED();
+	}
 }
 
 /* Name:			dataLogger
