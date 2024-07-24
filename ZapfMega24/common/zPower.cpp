@@ -80,6 +80,7 @@ void zPower::check() {
 			helligkeit = 100;
 		}
 		autoLight();
+		lcdAutoLight();
 	}
 
 }
@@ -179,6 +180,21 @@ void zPower::autoLight(void) {
 				zapfLichtControl(0);
 			}
 		}
+	}
+}
+
+void zPower::lcdAutoLight(void) {
+	if (autoLightBool) {
+		if (helligkeit > 100) {
+			analogWrite(LCD_BACKLIGHT_PIN, 0);
+		} else if (helligkeit > 20 && helligkeit < 101) {
+			analogWrite(LCD_BACKLIGHT_PIN, 200 - helligkeit * 2);
+		} else {
+			analogWrite(LCD_BACKLIGHT_PIN, 240);
+		}
+
+	} else {
+		analogWrite(LCD_BACKLIGHT_PIN, 127);
 	}
 }
 
@@ -358,7 +374,7 @@ void zPower::goSleep(void) {
 	anfang();
 	ZD.infoText(F("Lust auf ein Frühbierchen?"));
 
-	//	//Daten noch loggen
+//	//Daten noch loggen
 //
 //	while (dunkelBool == true) {
 //		hell = analogRead(helligkeitSensor);

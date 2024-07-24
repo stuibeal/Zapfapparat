@@ -39,8 +39,10 @@ public:
 	void getClockBarcode(void);
 	uint8_t getWochadog(void);
 	void setDcfLed(bool onoff);
-	void zLog::writeDataInBuf(uint16_t data, bool komma);
+	void writeDataInBuf(uint16_t data, bool komma);
 	bool logAfterZapf(void);
+	bool logSystemMsg(const __FlashStringHelper *sysMsg);
+	bool logSystemMsg(const char *sysMsg);
 
 	DateTime dateTime;
 

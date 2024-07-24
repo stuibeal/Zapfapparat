@@ -70,9 +70,9 @@ void zLog::setDcfLed(bool onoff) {
 }
 
 void zLog::writeDataInBuf(uint16_t data, bool komma) {
-	switch(komma) {
+	switch (komma) {
 	case KOMMA:
-		sprintf(buf, "%d,%d; ", data/100, data%100);
+		sprintf(buf, "%d,%d; ", data / 100, data % 100);
 		break;
 	case GANZZAHL:
 		sprintf(buf, "%d; ", data);
@@ -153,6 +153,37 @@ bool zLog::logAfterZapf(void) {
 	}
 	return fileStatus;
 }
+
+bool zLog::logSystemMsg(const __FlashStringHelper *sysMsg) {
+	bool fileStatus = 1;
+	FsFile systemLogFile = _sd->open("systemlog.md", FILE_WRITE);
+	fileStatus = systemLogFile;
+	if (fileStatus) {
+		sprintf(buf, "%02u.%02u.%02u %02u:%02u:%02u, ", dateTime.getDay(),
+				dateTime.getMonth(), dateTime.getYear(), dateTime.getHour(),
+				dateTime.getMinute(), dateTime.getSecond());
+		systemLogFile.print(buf);
+		systemLogFile.println(sysMsg);
+	}
+	systemLogFile.close();
+	return fileStatus;
+}
+
+bool zLog::logSystemMsg(const char *sysMsg) {
+	bool fileStatus = 1;
+	FsFile systemLogFile = _sd->open("systemlog.md", FILE_WRITE);
+	fileStatus = systemLogFile;
+	if (fileStatus) {
+		sprintf(buf, "%02u.%02u.%02u %02u:%02u:%02u, ", dateTime.getDay(),
+				dateTime.getMonth(), dateTime.getYear(), dateTime.getHour(),
+				dateTime.getMinute(), dateTime.getSecond());
+		systemLogFile.print(buf);
+		systemLogFile.println(sysMsg);
+	}
+	systemLogFile.close();
+	return fileStatus;
+}
+
 
 /*
  // Daten schreiben

@@ -79,6 +79,7 @@ public:
 	void schLampeControl(uint8_t offon);
 	void zapfLichtControl(uint8_t pwmValue);
 	void autoLight(void);
+	void lcdAutoLight(void);
 	void setBackLight(void);
 	void goSleep(void);
 

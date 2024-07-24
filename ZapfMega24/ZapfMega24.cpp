@@ -156,6 +156,8 @@ void setup(void) {
 	ZD.printInitText(F("Talondrucker starten..."));
 	drucker.initialise(); /* Thermodrucker */
 
+	logbuch.logSystemMsg(F("Zapfapparat hochgefahren"));
+
 	anfang();
 	oldTime = millis();
 	nachSchauZeit = millis();
@@ -217,6 +219,7 @@ void zapfStandbyProg(void) {
 void zapfErrorProg() {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
+		logbuch.logSystemMsg(F("Fehlzapfung"));
 		ZD.infoText(F("HEY DU HONK! ERST BENUTZER WÄHLEN!"));
 		sound.on();
 		ventil.closeValve();
