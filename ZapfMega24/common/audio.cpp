@@ -108,17 +108,16 @@ bool audio::pruefePlaying() {
 
 uint8_t audio::pruefe() {
 	unsigned long wartezeit = millis() - audioMillis;
+    _mp3->check();
+	if (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END) {
+		mp3D.playStatus = S_STOPPED;
+	}
 
-	switch (state) {
+    switch (state) {
 	case AUDIO_ON: //Audio ist an
-		if (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END) {
-			mp3D.playStatus = S_STOPPED;
-		}
-
 		if (mp3D.standby == 1) {
 			state = AUDIO_STANDBY;
 		} else if (wartezeit >= 12000) {
-			_mp3->check();  //MP3 Player abfragen
 			/**
 			 * Wenn MP3 File End = true
 			 * UND
@@ -150,7 +149,6 @@ uint8_t audio::pruefe() {
 		break;
 
 	case AUDIO_RESTART: // audio soll wieder an sein
-		_mp3->check();
 		digitalWrite(MIDI_RESET, HIGH); //midi Reset einschalten
 		digitalWrite(AUDIO_BOARD, HIGH);
 		audioMillis = millis();
@@ -159,7 +157,6 @@ uint8_t audio::pruefe() {
 
 	case AUDIO_MIDI_RESET:
 		if (wartezeit > MIDI_RESET_WARTEZEIT) {
-			_mp3->check();
 			digitalWrite(MIDI_RESET, LOW);
 			audioMillis = millis();
 			state = AUDIO_AMP_ON;
@@ -168,7 +165,6 @@ uint8_t audio::pruefe() {
 
 	case AUDIO_AMP_ON:
 		if (wartezeit > AUDIO_ON_WARTEZEIT) {
-			_mp3->check();
 			digitalWrite(AUDIO_AMP, HIGH);
 			audioMillis = millis();
 			if (mp3D.standby) {
@@ -179,9 +175,6 @@ uint8_t audio::pruefe() {
 		}
 		break;
 	case AUDIO_STANDBY:
-		if (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END) {
-				mp3D.playStatus = S_STOPPED;
-			}
 		if (!mp3D.standby) {
 			_mp3->check();
 			audioMillis = millis();
@@ -191,12 +184,12 @@ uint8_t audio::pruefe() {
 	} /*switch*/
 
 	if (DEBUG_A) {
-		sprintf_P(buf, PSTR("WZ:%lu S:%d 3:%u l%u/%u F%u S%u PTL %d sby %d"),
+		sprintf_P(buf, PSTR("WZ:%lu S:%d 3:%u l%u/%u F%u S%u PTL %d sby %d mp3stat %d" ),
 				wartezeit / 1000, state, mp3D.lastMp3Status,
 				mp3D.actualPlayListSong, mp3D.songsInPlayList,
 				playlistFolder[mp3D.actualPlayListSong],
 				playlistSong[mp3D.actualPlayListSong], mp3D.playTheList,
-				mp3D.standby);
+				mp3D.standby, mp3D.playStatus);
 	}
 	if (mp3D.playTheList) {
 		_mp3->check();
