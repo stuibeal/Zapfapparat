@@ -7,7 +7,6 @@
 
 #include "zLog.h"
 #include "SdFat.h"
-#include "FsFile.h"
 #include "globalVariables.h"
 
 zLog::zLog() {
