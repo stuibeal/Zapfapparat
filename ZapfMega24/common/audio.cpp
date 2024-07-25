@@ -207,7 +207,6 @@ void audio::on() {
 }
 
 void audio::off() {
-	strcpy(buf, "Audio soll aus sein-1--");
 	digitalWrite(AUDIO_AMP, LOW); //AMP aus
 	audioMillis = millis();
 	state = AUDIO_SHUTDOWN;

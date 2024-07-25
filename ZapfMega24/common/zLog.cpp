@@ -10,9 +10,8 @@
 #include "globalVariables.h"
 
 zLog::zLog() {
-	DateTime dateTime = DateTime(0, 1, 1, SAMSDA, 0, 0, 0);
+	DateTime dateTime;
 	logState = 0;
-
 }
 
 zLog::~zLog() {
@@ -30,6 +29,7 @@ void zLog::initialise() {
 	RTC_DCF.begin();
 	RTC_DCF.enableDCF77Reception();
 	RTC_DCF.enableDCF77LED();   //später ausschalten in der nacht!)
+	dateTime = DateTime(0, 1, 1, SAMSDA, 0, 0, 0);
 	//RTC_DCF.setDateTime(&dateTime); //Damit irgendwas drin is
 }
 

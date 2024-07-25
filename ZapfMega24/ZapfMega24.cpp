@@ -112,7 +112,7 @@ void setup(void) {
 		}
 		return;   // don't do anything more if not
 	} else {
-		ZD.printInitText("SD Karte OPTIMAL!");
+		ZD.printInitText(F("SD Karte OPTIMAL!"));
 	}
 	ZD.showBMP(F("/bmp/z-logo.bmp"), 20, 20);
 
@@ -127,8 +127,6 @@ void setup(void) {
 	 */
 	sound.starte(&SD, &SMF, &mp3);
 	ZD.printInitText(F("Harte Musik ok"));
-
-	//Altdaten auslesen (SD karte) nach Stromweg oder so...
 
 	//Valve
 	ventil.begin();
@@ -296,7 +294,6 @@ void zapfBeginnProg(void) {
 		user.zapfStatus = user.zapfModus::amZapfen;
 		auswahlZeit = millis();
 	}
-
 }
 
 void amZapfenProg(void) {
@@ -477,7 +474,6 @@ void checkWhileZapfing() {
 			ZD.print_val3((int) user.zapfMenge, 17, 170, GANZZAHL);
 		}
 	}
-
 }
 
 void checkImmer() {
@@ -1089,11 +1085,9 @@ void spezialprogramm(uint32_t input) {
 			} else {
 				ZD.infoText(1, F("Kannst Du irgendwas?"));
 			}
-
 			delay(1);
 			break;
 		}
-
 		break;
 
 	default:

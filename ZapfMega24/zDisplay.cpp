@@ -452,9 +452,9 @@ void zDisplay::infoscreen() {
 	temp.holeDaten();
 	u8g2.setCursor(0, 230);
 	u8g2.setFont(FONT_BOLD12);
-	u8g2.println(_NAME_);
+	u8g2.println(F(_NAME_));
 	u8g2.setFont(FONT_NORMAL12);
-	u8g2.println(_VERSION_);
+	u8g2.println(F(_VERSION_));
 	u8g2.println();
 	u8g2.setFont(FONT_NORMAL10);
 	u8g2.setCursor(0, 270);

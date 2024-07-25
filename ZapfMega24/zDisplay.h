@@ -21,9 +21,9 @@
 //#include "globalVariables.h"
 #include "stdio.h"
 #include <string.h>
+#include "U8g2_for_Adafruit_GFX.h"
 #include "../zLibraries/MCUFRIEND_kbv/MCUFRIEND_kbv.h"
 #include "Adafruit_GFX.h"
-#include "U8g2_for_Adafruit_GFX.h"
 #include "tempControl.h"
 #include "benutzer.h"
 
