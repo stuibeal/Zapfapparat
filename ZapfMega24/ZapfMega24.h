@@ -35,6 +35,7 @@ void warteZeitCheck(void);
 uint8_t readTaste(uint8_t taste);
 void waehlscheibe() ;
 void waehlFunktionen() ;
+void nochSchierCheck(void);
 void seltencheck(void) ;
 void belohnungsMusik() ;
 void infoseite(void) ;

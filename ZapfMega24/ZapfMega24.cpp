@@ -32,8 +32,6 @@
 // Defines
 #define USE_SDFAT
 #define ENCODER_USE_INTERRUPTS  //damit die vom MEGA drin sind und er die als INT setzt
-//#include <MD_cmdProcessor.h>   //weiss nicht ob wir den brauchen
-
 #define DEBUGTO 3  //0 Nothing, 1 Serial, 2 Printer, 3 Display, 4 SD File
 #if DEBUGTO == 3
 #define DEBUGMSG(s) { ZD.infoText(1, s); }
@@ -731,7 +729,25 @@ void waehlFunktionen() {
 	kienmuehle = 0;
 }
 
+void nochSchierCheck(void) {
+	static zPower::powerState oldBatterieStatus;
+	if (oldBatterieStatus != power.getPowerState()) {
+		switch (power.getPowerState()) {
+		case zPower::powerState::BATT_LOW:
+			sound.mp3Play(20,4);
+			ZD.infoText(1, F("Beda, bitte nochschiern. Strom is weng."));
+			break;
+		case zPower::powerState::BATT_ULTRALOW:
+			sound.mp3Play(20,6);
+			ZD.infoText(1, F("BEEEEDAAAAAA! NOCHSCHIEEEERN!"));
+			break;
+		}
+	}
+	oldBatterieStatus = power.getPowerState();
+}
+
 void seltencheck(void) {
+	nochSchierCheck();
 	temp.requestSensors();
 	power.check();
 }
@@ -756,12 +772,22 @@ void belohnungsMusik() {
 		sound.mp3Play(user.aktuell, 3);
 	}
 	if (user.getBierTag() > 3500 && user.getMusik() == 3) {
-		user.setMusik(0);
+		if (user.aktuell == 3 || user.aktuell == 5) {
+			user.setMusik(4);
+		} else {
+			user.setMusik(4);
+		}
 		delay(1000); //for the bing
 		sound.mp3PlayAndWait(29, 4); //na
 		sound.mp3Play(user.aktuell, 4);
 	}
-
+	if (user.aktuell == 3 || user.aktuell == 5) {
+		if (user.getBierTag() > 4000 && user.getMusik() == 4) {
+			user.setMusik(0);
+			delay(1000); //for the bing
+			sound.mp3Play(user.aktuell, 5);
+		}
+	}
 }
 
 //Infoknopf
