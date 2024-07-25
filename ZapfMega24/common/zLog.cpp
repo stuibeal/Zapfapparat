@@ -11,10 +11,6 @@
 
 zLog::zLog() {
 	DateTime dateTime = DateTime(0, 1, 1, SAMSDA, 0, 0, 0);
-	_sd = nullptr;
-	_user = nullptr;
-	_temp = nullptr;
-	_buf = nullptr;
 	logState = 0;
 
 }
@@ -30,12 +26,7 @@ zLog::~zLog() {
  * @param puser	Pointer zu den Userdaten
  * @param ptemp Pointer zu den Temperaturdaten
  */
-void zLog::initialise(SdFat *psd, benutzer *puser, tempControl *ptemp,
-		char *buf) {
-	_sd = psd;  //Save pointer
-	_user = puser;
-	_temp = ptemp;
-	_buf = buf;
+void zLog::initialise() {
 	RTC_DCF.begin();
 	RTC_DCF.enableDCF77Reception();
 	RTC_DCF.enableDCF77LED();   //später ausschalten in der nacht!)
@@ -44,7 +35,7 @@ void zLog::initialise(SdFat *psd, benutzer *puser, tempControl *ptemp,
 
 void zLog::getClockString(void) {
 	RTC_DCF.getDateTime(&dateTime);
-	sprintf_P(_buf, PSTR("Es is %02u:%02u:%02u am %02u.%02u.%02u"), dateTime.getHour(),
+	sprintf_P(buf, PSTR("Es is %02u:%02u:%02u am %02u.%02u.%02u"), dateTime.getHour(),
 			dateTime.getMinute(), dateTime.getSecond(), dateTime.getDay(),
 			dateTime.getMonth(), dateTime.getYear());
 }
@@ -58,7 +49,6 @@ void zLog::getClockBarcode(void) {
 uint8_t zLog::getWochadog(void) {
 	RTC_DCF.getDateTime(&dateTime);
 	return dateTime.getWeekday();
-
 }
 
 void zLog::setDcfLed(bool onoff) {
@@ -69,17 +59,16 @@ void zLog::setDcfLed(bool onoff) {
 	}
 }
 
-void zLog::writeDataInBuf(uint16_t data, bool komma) {
+void zLog::writeData(File *file, uint16_t data, bool komma) {
 	switch (komma) {
 	case KOMMA:
-		sprintf(buf, "%d,%d; ", data / 100, data % 100);
+		sprintf_P(buf, PSTR("%d,%d; "), data / 100, data % 100);
 		break;
 	case GANZZAHL:
-		sprintf(buf, "%d; ", data);
+		sprintf_P(buf, PSTR("%d; "), data);
 		break;
-
 	}
-
+	file->print(buf);
 }
 
 /* Name:			dataLogger
@@ -92,18 +81,18 @@ bool zLog::logAfterZapf(void) {
 	bool fileStatus = 1;
 	//Zeit einlesen
 	RTC_DCF.getDateTime(&dateTime);
-	_sd->chdir("/");
-	sprintf(buf, "LOG_%02u%02u%2u.csv", dateTime.getDay(), dateTime.getMonth(),
+	SD.chdir("/");
+	sprintf_P(buf, PSTR("LOG_%02u%02u%2u.csv"), dateTime.getDay(), dateTime.getMonth(),
 			dateTime.getYear());
 
 	//Wenn Datei noch nicht vorhanden, Kopfzeile schreiben!
-	if (!_sd->exists(buf)) {
-		FsFile logZapfFile = _sd->open(buf, FILE_WRITE);
+	if (!SD.exists(buf)) {
+		FsFile logZapfFile = SD.open(buf, FILE_WRITE);
 		fileStatus = logZapfFile;
 		if (fileStatus) {
 			logZapfFile.print(F("Zeit; "));
-			for (uint8_t x = 0; x < _user->arrayGroesse; x++) {
-				logZapfFile.print(_user->userN[x]);
+			for (uint8_t x = 0; x < user.arrayGroesse; x++) {
+				logZapfFile.print(user.userN[x]);
 				logZapfFile.print(F("; "));
 			}
 			logZapfFile.print(F("Gesamtmenge; "));
@@ -121,31 +110,25 @@ bool zLog::logAfterZapf(void) {
 	}
 
 	//Wenn es die Datei schon gibt, Daten anfügen
-	if (_sd->exists(buf)) {
-		FsFile logZapfFile = _sd->open(buf, FILE_WRITE);
+	if (SD.exists(buf)) {
+		FsFile logZapfFile = SD.open(buf, FILE_WRITE);
 		fileStatus = logZapfFile;
 		if (fileStatus) {
-			sprintf(buf, "%02u:%02u:%02u; ", dateTime.getHour(),
+			sprintf_P(buf, PSTR("%02u:%02u:%02u; "), dateTime.getHour(),
 					dateTime.getMinute(), dateTime.getSecond());
 			logZapfFile.print(buf);
-			for (uint8_t x = 0; x < _user->arrayGroesse; x++) {
-				logZapfFile.print(_user->bierTag[x]);
+			for (uint8_t x = 0; x < user.arrayGroesse; x++) {
+				logZapfFile.print(user.bierTag[x]);
 				logZapfFile.print(F("; "));
 			}
-			writeDataInBuf(_user->gesamtMengeTotal, GANZZAHL);
-			logZapfFile.print(buf);
-			writeDataInBuf(_user->gesamtMengeTag, GANZZAHL);
-			logZapfFile.print(buf);
-			writeDataInBuf(_user->restMengeFass, GANZZAHL);
-			logZapfFile.print(buf);
-			writeDataInBuf(power.getInVoltage(), KOMMA);
-			logZapfFile.print(buf);
-			writeDataInBuf(temp.getStromVerbrauchLetzteZapfung(), GANZZAHL);
-			logZapfFile.print(buf);
-			writeDataInBuf(temp.getKuehlWasserTemp(), KOMMA);
-			logZapfFile.print(buf);
-			writeDataInBuf(power.getHelligkeit(), GANZZAHL);
-			logZapfFile.println(buf);
+			writeData(&logZapfFile, user.gesamtMengeTotal, GANZZAHL);
+			writeData(&logZapfFile, user.gesamtMengeTag, GANZZAHL);
+			writeData(&logZapfFile, user.restMengeFass, GANZZAHL);
+			writeData(&logZapfFile, power.getInVoltage()*10, KOMMA);
+			writeData(&logZapfFile, temp.getStromVerbrauchLetzteZapfung(), GANZZAHL);
+			writeData(&logZapfFile, temp.getKuehlWasserTemp(), KOMMA);
+			writeData(&logZapfFile, power.getHelligkeit(), GANZZAHL);
+			logZapfFile.println(F(""));
 			logZapfFile.close();
 		} else {
 			logZapfFile.close();
@@ -157,8 +140,8 @@ bool zLog::logAfterZapf(void) {
 
 bool zLog::logSystemMsg(const __FlashStringHelper *sysMsg) {
 	bool fileStatus = 1;
-	_sd->chdir("/");
-	FsFile systemLogFile = _sd->open("systemlog.md", FILE_WRITE);
+	SD.chdir("/");
+	FsFile systemLogFile = SD.open("systemlog.md", FILE_WRITE);
 	fileStatus = systemLogFile;
 	if (fileStatus) {
 		char timeBuf[22]="";
@@ -175,7 +158,7 @@ bool zLog::logSystemMsg(const __FlashStringHelper *sysMsg) {
 
 bool zLog::logSystemMsg(const char *sysMsg) {
 	bool fileStatus = 1;
-	FsFile systemLogFile = _sd->open("systemlog.md", FILE_WRITE);
+	FsFile systemLogFile = SD.open("systemlog.md", FILE_WRITE);
 	fileStatus = systemLogFile;
 	if (fileStatus) {
 		char timeBuf[22]="";
@@ -188,35 +171,3 @@ bool zLog::logSystemMsg(const char *sysMsg) {
 	systemLogFile.close();
 	return fileStatus;
 }
-
-/*
- // Daten schreiben
- char timeBuf[20] = "00.00.00 00:00:00, ";
- sprintf(timeBuf, "%02u.%02u.%02u %02u:%02u:%02u, ", dateTime.getDay(),
- dateTime.getMonth(), dateTime.getYear(), dateTime.getHour(),
- dateTime.getMinute(), dateTime.getSecond());
- File dataFile = SD.open(fileBuf, FILE_WRITE);
-
- dataString = timeBuf;
-
- for (uint8_t x = 0; x < 11; x++) {
- dataString += String(user.tag());
- dataString += ",";
- }
- dataString += String(user.gesamtMengeTag);
- dataString += ",";
- dataString += String(inVoltage);
- dataString += ",";
- dataString += String(hell);
-
- // if the file is available, write to it:
- if (dataFile) {
- dataFile.println(dataString);
- dataFile.close();
- }
- // if the file isn't open, pop up an error:
- else {
- //Serial.println("konnte z-log.csv nicht öffnen");
- }
- */
-

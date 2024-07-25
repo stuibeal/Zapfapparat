@@ -53,7 +53,6 @@ public:
 	void stromAus(void);
 	void starte(SdFat *pSD, MD_MIDIFile *pSMF, MD_YX5300 *mp3); //Mit Pointer starten
 	uint8_t pruefe();
-	bool pruefePlaying();
 	void on(void);
 	void off(void);
 	void midiReset(void);

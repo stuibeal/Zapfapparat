@@ -95,16 +95,6 @@ void audio::starte(SdFat *pSD, MD_MIDIFile *pSMF, MD_YX5300 *pMp3) {
 	mp3D.playStatus = S_STOPPED;
 
 }
-bool audio::pruefePlaying() {
-	_mp3->check();  //MP3 Player abfragen
-	const MD_YX5300::cbData *status = _mp3->getStatus(); //statuspointer holen
-//	sprintf(buf, "EOF:%d TC:%d MP3:%d SC:%d", _SMF->isEOF(),
-//			(_SMF->getTrackCount() == 0), MD_YX5300::STS_FILE_END,
-//			status->code);
-	return ((status->code == MD_YX5300::STS_FILE_END)
-			&& (_SMF->isEOF() || (_SMF->getTrackCount() == 0)));
-
-}
 
 uint8_t audio::pruefe() {
 	unsigned long wartezeit = millis() - audioMillis;
@@ -251,7 +241,7 @@ void audio::mp3PlayAndWait(uint8_t folder, uint8_t song) {
 	do {
 		sound.pruefe();
 		if (DEBUG_A) {
-			ZD.infoText(buf);
+			ZD.infoText(0, buf);
 			delay(200);
 		}
 	} while (mp3D.playStatus == S_PLAYING);
@@ -501,35 +491,53 @@ void audio::godModeSound(uint8_t godMode) {
 	case IDDQD:
 		loadLoopMidi(F("d_runni2.mid"));
 		break;
+	case IDKFA:
+		loadLoopMidi(F("E2M3.mid"));
+		break;
+	case IDCLEV:
+		loadLoopMidi(F("d_e1m1.mid"));
+		break;
 	case KEEN:
-		loadLoopMidi("keen.mid");
+		loadLoopMidi(F("keen.mid"));
 		break;
 	case MAGNUM:
-		loadLoopMidi("Magnum.mid");
+		loadLoopMidi(F("Magnum.mid"));
 		break;
 	case MACGYVER:
-		loadLoopMidi("Macgyver.mid");
+		loadLoopMidi(F("Macgyver.mid"));
 		break;
 	case MIAMI:
-		loadLoopMidi("MiamiVice.mid");
+		loadLoopMidi(F("MiamiVice.mid"));
 		break;
 	case SEINFELD:
-		loadLoopMidi("Seinfeld.mid");
+		loadLoopMidi(F("Seinfeld.mid"));
 		break;
 	case ALF:
-		loadLoopMidi("ALF.mid");
+		loadLoopMidi(F("ALF.mid"));
 		break;
 	case COLT:
-		loadLoopMidi("FALLGUY.mid");
+		loadLoopMidi(F("FALLGUY.mid"));
 		break;
 	case DOTT:
-		loadLoopMidi("Dott.mid");
+		loadLoopMidi(F("Dott.mid"));
 		break;
 	case INDY:
-		loadLoopMidi("indy4Theme and Opening Credits.mid");
+		loadLoopMidi(F("indy4Theme and Opening Credits.mid"));
 		break;
 	case JUBI:
-		loadLoopMidi("leaving_schlosskeller_bummbuumm.mid");
+		loadLoopMidi(F("leaving_schlosskeller_bummbuumm.mid"));
+		break;
+	case GIANNA:
+		loadLoopMidi(F("Meravigliosa creatura.mid"));
+		break;
+	case LIGABUE:
+		loadLoopMidi(F("ilgiornodeigiorni.mid"));
+		break;
+	case GLORIA:
+		loadLoopMidi(F("Gloria 1999(k).mid"));
+		break;
+	case VAGABONDO:
+		loadLoopMidi(F("Io_vagabondo.mid"));
 		break;
 
 	}

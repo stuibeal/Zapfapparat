@@ -245,6 +245,8 @@ void zPower::dimLight(uint16_t lichtpin, uint16_t anfang, uint16_t ende,
 }
 
 void zPower::goSleep(void) {
+	logbuch.logAfterZapf();
+	logbuch.logSystemMsg(F("Schläft ein..."));
 	digitalWrite(Z_SCH_LAMPE_PIN, 1);
 	sound.setStandby(1);
 	sound.mp3ClearPlaylist();
@@ -252,7 +254,7 @@ void zPower::goSleep(void) {
 	sound.on();
 	while (sound.pruefe() != sound.AUDIO_STANDBY) {
 	}
-	ZD.infoText(buf);
+	ZD.infoText(1, buf);
 	ZD.fillScreen(BLACK);
 	ZD.showBMP(F("/bmp/DOOM02.bmp"), 80, 60); //320x200
 	switch (logbuch.getWochadog()) {
@@ -307,23 +309,23 @@ void zPower::goSleep(void) {
 		if (sound.getPlFolder() == 23 && sound.getPlSong() == 1) {
 			playNotGNF = 0;
 		}
-		ZD.infoText(buf);
+		ZD.infoText(1, buf);
 		delay(100);
 
 	} while (playNotGNF);
-	ZD.infoText(F("Gute Nacht, Freunde!"));
+	ZD.infoText(1, F("Gute Nacht, Freunde!"));
 	digitalWrite(Z_SCH_LAMPE_PIN, 0);
 	user.clearDayUserData();
 	user.writeDataToEEPROM();
 	ventil.closeValve();
 	do {
 		ventil.check();
-		sprintf(buf, "%d", ventil.getValveProzent());
-		ZD.infoText(buf);
+		sprintf_P(buf, PSTR("%d"), ventil.getValveProzent());
+		ZD.infoText(1, buf);
 	} while (ventil.getValveProzent() > 0);
 
-	sprintf(buf, "%d", ventil.getValveProzent());
-	ZD.infoText(buf);
+	sprintf_P(buf, PSTR("%d"), ventil.getValveProzent());
+	ZD.infoText(1, buf);
 	delay(2000);
 
 	logbuch.disableDCF77LED();
@@ -339,7 +341,7 @@ void zPower::goSleep(void) {
 	do {
 		sound.pruefe();
 		delay(200);
-		ZD.infoText(buf);
+		ZD.infoText(1, buf);
 
 	} while (sound.getPlaylistSize() > 0);
 	digitalWrite(OTHER_MC_PIN, 0);
@@ -355,12 +357,15 @@ void zPower::goSleep(void) {
 		check();
 		oldeinsteller = einsteller;
 		if (helligkeit > 20) {
+			logbuch.logSystemMsg(F("Aufwachen: Helligkeit über 20"));
 			sleeping = 0;
 		}
 		if (oldeinsteller != einsteller) {
+			logbuch.logSystemMsg(F("Aufwachen: Z Gedrückt"));
 			sleeping = 0;
 		}
 		if (digitalRead(TASTE2_PIN) || digitalRead(TASTE1_PIN)) {
+			logbuch.logSystemMsg(F("Aufwachen: Taste gedrückt"));
 			sleeping = 0;
 		}
 	} while (sleeping);
@@ -373,31 +378,5 @@ void zPower::goSleep(void) {
 	delay(1000);
 	analogWrite(LCD_BACKLIGHT_PIN, 0); //0: voll hell
 	anfang();
-	ZD.infoText(F("Lust auf ein Frühbierchen?"));
-
-//	//Daten noch loggen
-//
-//	while (dunkelBool == true) {
-//		hell = analogRead(helligkeitSensor);
-//		if (hell > 200) {
-//			hellCount++;
-//			delay(10000);
-//		} else {
-//			hellCount = 0;
-//		}
-//		if (digitalRead(TASTE1_PIN) == HIGH) {
-//			dunkelBool = false;
-//			delay(100);
-//			anfang();
-//		}
-//		if (hellCount > 9) {
-//			dunkelBool = false;
-//			digitalWrite(AUDIO_AMP, HIGH);
-//			digitalWrite(otherMcOn, HIGH);
-//			delay(3000);   //pause machen damit die auch alle hochkommen
-//			anfang();
-//		}
-//	}
-//}
-
+	ZD.infoText(1, F("Lust auf ein Frühbierchen?"));
 }

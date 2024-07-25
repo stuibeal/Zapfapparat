@@ -78,7 +78,7 @@ void zDisplay::printInitText(const char *text) {
  *
  * @param text
  */
-void zDisplay::infoText(const char *text) {
+void zDisplay::infoText(bool withLog, const char *text) {
 	_tft.fillRect(0, 292, 480, 28, BLACK);
 	u8g2.setCursor(10, 316);
 	u8g2.setForegroundColor(WHITE);
@@ -87,12 +87,12 @@ void zDisplay::infoText(const char *text) {
 	u8g2.print(text);
 	infoWarteZeit = millis();
 	infoGezeigt = true;
-	if (!DEBUG_A) {
+	if (!DEBUG_A && withLog) {
 		logbuch.logSystemMsg(text);
 	}
 }
 
-void zDisplay::infoText(const __FlashStringHelper *text) {
+void zDisplay::infoText(bool withLog, const __FlashStringHelper *text) {
 	_tft.fillRect(0, 292, 480, 28, BLACK);
 	u8g2.setCursor(10, 316);
 	u8g2.setForegroundColor(WHITE);
@@ -101,7 +101,9 @@ void zDisplay::infoText(const __FlashStringHelper *text) {
 	u8g2.print(text);
 	infoWarteZeit = millis();
 	infoGezeigt = true;
-	logbuch.logSystemMsg(text);
+	if (withLog) {
+		logbuch.logSystemMsg(text);
+	}
 }
 
 void zDisplay::infoCheck() {
@@ -318,9 +320,9 @@ uint8_t zDisplay::showBMP(char const *nm, int16_t x, int16_t y) {
 void zDisplay::printValue(uint16_t x, uint16_t y, int val, bool komma) {
 	char buf[10];
 	if (komma == 1) {
-		sprintf(buf, "%2d,%02d ", val / 100, val % 100);
+		sprintf_P(buf, PSTR("%2d,%02d "), val / 100, val % 100);
 	} else {
-		sprintf(buf, "%4d", val);
+		sprintf_P(buf, PSTR("%4d"), val);
 	}
 	u8g2.drawStr(x, y, buf);
 }
@@ -342,9 +344,9 @@ void zDisplay::print_val3(int val, int16_t x, int16_t y, bool komma) //Hilfsrout
 	u8g2.setFont(FONT_ZAHLEN);
 	char buf[10];
 	if (komma == 1) {
-		sprintf(buf, "%2d,%02d", val / 100, val % 100);
+		sprintf_P(buf, PSTR("%2d,%02d"), val / 100, val % 100);
 	} else {
-		sprintf(buf, "%4d", val);
+		sprintf_P(buf, PSTR("%4d"), val);
 	}
 	u8g2.drawStr(x, y, buf);
 }
@@ -358,9 +360,9 @@ void zDisplay::userShow() {
 	static bool lastUserVoll = 0;
 
 	if (user.getGodMode() > 0) {
-		sprintf(buf, "/god/%d0.bmp", user.getGodMode());
+		sprintf_P(buf, PSTR("/god/%d0.bmp"), user.getGodMode());
 	} else {
-		sprintf(buf, "/usr/%d.bmp", user.aktuell);
+		sprintf_P(buf, PSTR("/usr/%d.bmp"), user.aktuell);
 	}
 	showUserPic(buf);
 	/*USERNAME*/
@@ -426,7 +428,7 @@ void zDisplay::infoscreen() {
 		u8g2.setFont(FONT_NORMAL12);
 		u8g2.setCursor(y + 35, u8g2.getCursorY());
 		u8g2.print(user.userN[x]);
-		sprintf(buf, "%u ml", user.bierTag[x]);
+		sprintf_P(buf, PSTR("%u ml"), user.bierTag[x]);
 		u8g2.setCursor(y + 225 - u8g2.getUTF8Width(buf), u8g2.getCursorY());
 		u8g2.println(buf);
 	}
@@ -435,14 +437,14 @@ void zDisplay::infoscreen() {
 	u8g2.setCursor(240, 230);
 	u8g2.print(F("Gesamt Total:"));
 	u8g2.setFont(FONT_BOLD12);
-	sprintf(buf, "%u ml", user.gesamtMengeTotal);
+	sprintf_P(buf, PSTR("%u ml"), user.gesamtMengeTotal);
 	u8g2.setCursor(465 - u8g2.getUTF8Width(buf), u8g2.getCursorY());
 	u8g2.println(buf);
 	u8g2.setFont(FONT_NORMAL12);
 	u8g2.setCursor(240, u8g2.getCursorY());
 	u8g2.print(F("Gesamt Tag:"));
 	u8g2.setFont(FONT_BOLD12);
-	sprintf(buf, "%u ml", user.gesamtMengeTag);
+	sprintf_P(buf, PSTR("%u ml"), user.gesamtMengeTag);
 	u8g2.setCursor(465 - u8g2.getUTF8Width(buf), u8g2.getCursorY());
 	u8g2.println(buf);
 
@@ -481,7 +483,7 @@ void zDisplay::printlnInfoTemp(uint16_t right_x, uint16_t left_x,
 		const __FlashStringHelper* text, int16_t temp) {
 	u8g2.setCursor(left_x, u8g2.getCursorY());
 	u8g2.print(text);
-	sprintf(buf, "%2d,%02d°C", temp / 100, temp % 100);
+	sprintf_P(buf, PSTR("%2d,%02d°C"), temp / 100, temp % 100);
 	u8g2.setCursor(right_x - u8g2.getUTF8Width(buf), u8g2.getCursorY());
 	u8g2.println(buf);
 }
@@ -550,7 +552,7 @@ void zDisplay::showUserPic(const char *bmp) {
  */
 void zDisplay::showUserGod2Pic(void) {
 	if (user.getGodMode() > 0) {
-		sprintf(buf, "/god/%d1.bmp", user.getGodMode());
+		sprintf_P(buf, PSTR("/god/%d1.bmp"), user.getGodMode());
 		showUserPic(buf);
 	}
 }

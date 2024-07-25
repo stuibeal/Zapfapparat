@@ -89,7 +89,8 @@ public:
 	void beginn(SdFat *psd);
 	void printInitText(const char *text);
 	void printInitText(const __FlashStringHelper* text);
-	void infoText(const char *text);
+	void infoText(bool withLog, const char *text);
+	void infoText(bool withLog, const __FlashStringHelper *text);
 	void infoCheck(void);
 	void infoText(const __FlashStringHelper* text);
 	uint8_t showBMP(const __FlashStringHelper *filename, int16_t x, int16_t y);

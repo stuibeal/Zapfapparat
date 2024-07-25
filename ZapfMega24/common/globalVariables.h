@@ -16,6 +16,7 @@
 #include "../zDisplay.h"
 #include "../zLibraries/zPrinter/zPrinter.h"
 #include "zValve.h"
+#include "SdFat.h"
 
 //globale Variablen
 
@@ -32,5 +33,6 @@ extern zPrinter drucker;
 extern zValve ventil;
 extern volatile uint8_t einsteller;
 extern uint8_t oldeinsteller;
+extern SdFat SD;
 extern void anfang();
 #endif /* GLOBALVARIABLES_H_ */

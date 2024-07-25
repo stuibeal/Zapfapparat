@@ -36,7 +36,7 @@
 
 #define DEBUGTO 3  //0 Nothing, 1 Serial, 2 Printer, 3 Display, 4 SD File
 #if DEBUGTO == 3
-#define DEBUGMSG(s) { ZD.infoText(s); }
+#define DEBUGMSG(s) { ZD.infoText(1, s); }
 #endif
 #ifndef DEBUG_A
 #define DEBUG_A 1 //Debug Audio
@@ -136,7 +136,7 @@ void setup(void) {
 	ZD.printInitText(F("Ventilsteuerung bereit"));
 
 	//DCF RTC
-	logbuch.initialise(&SD, &user, &temp, buf);
+	logbuch.initialise();
 	ZD.printInitText(F("RTC DCF77 Uhrensohn"));
 
 	temp.begin(); /* Temperaturcontrol uC - Wire sollte gestartet sein! */
@@ -220,7 +220,7 @@ void zapfErrorProg() {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
 		logbuch.logSystemMsg(F("Fehlzapfung"));
-		ZD.infoText(F("HEY DU HONK! ERST BENUTZER WÄHLEN!"));
+		ZD.infoText(1, F("HEY DU HONK! ERST BENUTZER WÄHLEN!"));
 		sound.on();
 		ventil.closeValve();
 		sound.check();
@@ -233,7 +233,7 @@ void zapfErrorProg() {
 		}
 		flowmeter.flowDataSend(END_ZAPF, 0);
 		user.zapfMenge = flowmeter.getFreshZapfMillis();
-		ZD.infoText(F("Zapfhahn gesperrt mein Herr! Wählen!"));
+		ZD.infoText(1, F("Zapfhahn gesperrt mein Herr! Wählen!"));
 		user.zapfStatus = user.zapfModus::zapfStandby;
 	}
 }
@@ -243,6 +243,9 @@ void preZapf(uint8_t nummer) {
 	user.aktuell = nummer;
 	user.oldZapfStatus = user.zapfModus::zapfStandby;
 	user.zapfStatus = user.zapfModus::zapfBeginn;
+	sprintf_P(buf, PSTR("User Nr %d: %s angemeldet"), user.aktuell,
+			user.getName());
+	logbuch.logSystemMsg(buf);
 }
 
 void zapfBeginnProg(void) {
@@ -253,7 +256,7 @@ void zapfBeginnProg(void) {
 			user.addBier();
 			ZD.showAllUserData();
 			user.zapfMenge = flowmeter.getFreshZapfMillis(); //wenn nix zwischengezapft wurde sollts 0 sein
-			ZD.infoText(F("Restbier der Fehlzapfung aufgerechnet!"));
+			ZD.infoText(1, F("Restbier der Fehlzapfung aufgerechnet!"));
 
 		}
 		/* sollte er am Nulluser rumgespielt haben kriegt er die Einstellung */
@@ -274,7 +277,7 @@ void zapfBeginnProg(void) {
 		while (sound.pruefe() != sound.AUDIO_STANDBY) {
 		}
 		auswahlZeit = millis();
-		ZD.infoText(F("BITTE ZAPFHAHN BETÄTIGEN"));
+		ZD.infoText(1, F("BITTE ZAPFHAHN BETÄTIGEN"));
 	}
 
 	dauerCheck();
@@ -361,7 +364,7 @@ void godZapfenProg(void) {
 void kurzVorZapfEndeProg(void) {
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
-		ZD.infoText(F("ZAPFVORGANG FAST FERTIG!"));
+		ZD.infoText(1, F("ZAPFVORGANG FAST FERTIG!"));
 		power.setLed(0, 1);
 		temp.sendeBefehl(KURZ_VOR_ZAPFENDE, 0x0);
 		power.tastenLed(0, 255);
@@ -391,8 +394,8 @@ void zapfEndeProg(void) {
 		}
 		user.addBier();
 		ZD.showAllUserData();
-		if(!logbuch.logAfterZapf()){
-			ZD.infoText(F("Irgendwas mit dem Logfile."));
+		if (!logbuch.logAfterZapf()) {
+			ZD.infoText(1, F("Irgendwas mit dem Logfile."));
 		}
 		belohnungsMusik();
 		sound.setStandby(0);
@@ -468,7 +471,7 @@ void checkWhileZapfing() {
 			sound.pruefe();
 			showZapfapparatData();
 			if (DEBUG_A) {
-				ZD.infoText(buf);
+				ZD.infoText(1, buf);
 			}
 		} else {
 			ZD.print_val3((int) user.zapfMenge, 17, 170, GANZZAHL);
@@ -486,7 +489,7 @@ void checkImmer() {
 		showZapfapparatData();
 		sound.pruefe();
 		if (DEBUG_A) {
-			ZD.infoText(buf);
+			ZD.infoText(1, buf);
 		}
 	}
 }
@@ -545,6 +548,13 @@ void dauerCheck(void) {
 }
 
 void backToNull() {
+	sprintf_P(buf, PSTR("User Nr %d: %s Zapfung beendet"), user.aktuell,
+			user.getName());
+	logbuch.logSystemMsg(buf);
+	sprintf_P(buf,
+			PSTR("User Nr %d: Zapfmenge %d, LastZapfmenge %d, Eingestellt %d "),
+			user.aktuell, user.zapfMenge, user.lastZapfMenge, user.getMenge());
+	logbuch.logSystemMsg(buf);
 	if (user.zapfMenge > 0) {
 		user.addBier();
 	}
@@ -612,65 +622,90 @@ void waehlscheibe() {
 			if (zahlemann < 10) {
 				kienmuehle += zahlemann;
 			}
-			sprintf(buf, "Nr: %9lu", kienmuehle);
-			ZD.infoText(buf);
+			sprintf_P(buf, PSTR("Nummer gwählt: %9lu"), kienmuehle);
+			ZD.infoText(0, buf);
 			break;
 		}
 	}
 }
 
 void waehlFunktionen() {
+	logbuch.logSystemMsg(buf); // hier sollte noch die Nr drinstehen
 	switch (kienmuehle) {
 	case 847: // UHRZEIT
 		logbuch.getClockString();
-		ZD.infoText(buf);
+		ZD.infoText(1, buf);
 		break;
-	case 463633: //GODOFF
+	case GODOFF_NR: //GODOFF
 		user.setGodMode(0);
 		ZD.userShow();
 		break;
-	case 43373:
+	case IDDQD_NR:
 		user.setGodMode(IDDQD);
 		ZD.userShow();
 		break;
-	case 5336:
+	case KEEN_NR:
 		user.setGodMode(KEEN);
 		ZD.userShow();
 		break;
-	case 624686:
+	case MAGNUM_NR:
 		user.setGodMode(MAGNUM);
 		ZD.userShow();
 		break;
-	case 62249837:
+	case MACGYVER_NR:
 		user.setGodMode(MACGYVER);
 		ZD.userShow();
 		break;
-	case 64264:
+	case MIAMI_NR:
 		user.setGodMode(MIAMI);
 		ZD.userShow();
 		break;
-	case 73463353:
+	case SEINFELD_NR:
 		user.setGodMode(SEINFELD);
 		ZD.userShow();
 		break;
-	case 253:
+	case ALF_NR:
 		user.setGodMode(ALF);
 		ZD.userShow();
 		break;
-	case 2658:
+	case COLT_NR:
 		user.setGodMode(COLT);
 		ZD.userShow();
 		break;
-	case 3688:
+	case DOTT_NR:
 		user.setGodMode(DOTT);
 		ZD.userShow();
 		break;
-	case 4639:
+	case INDY_NR:
 		user.setGodMode(INDY);
 		ZD.userShow();
 		break;
-	case 5824:
+	case JUBI_NR:
 		user.setGodMode(JUBI);
+		ZD.userShow();
+		break;
+	case GIANNA_NR:
+		user.setGodMode(GIANNA);
+		ZD.userShow();
+		break;
+	case LIGABUE_NR:
+		user.setGodMode(LIGABUE);
+		ZD.userShow();
+		break;
+	case IDKFA_NR:
+		user.setGodMode(IDKFA);
+		ZD.userShow();
+		break;
+	case IDCLEV_NR:
+		user.setGodMode(IDCLEV);
+		ZD.userShow();
+		break;
+	case GLORIA_NR:
+		user.setGodMode(GLORIA);
+		ZD.userShow();
+		break;
+	case VAGABONDO_NR:
+		user.setGodMode(VAGABONDO);
 		ZD.userShow();
 		break;
 	case 1275: //Die Telefonnummer der Kienmühle
@@ -678,19 +713,19 @@ void waehlFunktionen() {
 		break;
 	case 337766: //EEPROM
 		user.cleanEEPROM();
-		ZD.infoText(F("EEPROM gelöscht. Reset jetzt!"));
+		ZD.infoText(1, F("EEPROM gelöscht. Reset jetzt!"));
 		break;
 	case 983633865: //zuendfunk
 		sound.mp3AddToPlaylist(30, 2);
-		ZD.infoText(F("Zündfunk: Fernreiseguppe"));
+		ZD.infoText(1, F("Zündfunk: Fernreiseguppe"));
 		break;
 	case 937825425: //westblick
 		sound.mp3AddToPlaylist(30, 1);
-		ZD.infoText(F("WDR Westblick"));
+		ZD.infoText(1, F("WDR Westblick"));
 		break;
 	case 33549: //feliz
 		sound.mp3AddToPlaylist(1, 2);
-		ZD.infoText(F("Feliz Navidad!"));
+		ZD.infoText(1, F("Feliz Navidad!"));
 		break;
 
 	default:
@@ -709,25 +744,25 @@ void belohnungsMusik() {
 	if (user.getBierTag() > 2000 && user.getMusik() == 0) {
 		user.setMusik(1);
 		delay(1000); //for the bing
-		sound.mp3PlayAndWait(29,1); //fällt mir im moment nix ein
+		sound.mp3PlayAndWait(29, 1); //fällt mir im moment nix ein
 		sound.mp3Play(user.aktuell, 1);
 	}
 	if (user.getBierTag() > 2500 && user.getMusik() == 1) {
 		user.setMusik(2);
 		delay(1000); //for the bing
-		sound.mp3PlayAndWait(29,10); //wir nähern uns dem originalpackerl
+		sound.mp3PlayAndWait(29, 10); //wir nähern uns dem originalpackerl
 		sound.mp3Play(user.aktuell, 2);
 	}
 	if (user.getBierTag() > 3000 && user.getMusik() == 2) {
 		user.setMusik(3);
 		delay(1000); //for the bing
-		sound.mp3PlayAndWait(29,5); //originalpackerl
+		sound.mp3PlayAndWait(29, 5); //originalpackerl
 		sound.mp3Play(user.aktuell, 3);
 	}
 	if (user.getBierTag() > 3500 && user.getMusik() == 3) {
 		user.setMusik(0);
 		delay(1000); //for the bing
-		sound.mp3PlayAndWait(29,4); //na
+		sound.mp3PlayAndWait(29, 4); //na
 		sound.mp3Play(user.aktuell, 4);
 	}
 
@@ -746,7 +781,7 @@ void infoseite(void) {
 		}
 	}
 	logbuch.logSystemMsg(F("Infoseite aufgerufen"));
-	while (readTaste(2)){
+	while (readTaste(2)) {
 	}
 	anfang();
 	userShow();
@@ -826,7 +861,7 @@ void reinigungsprogramm(void) {
 		}
 	}
 	ventil.cleanPumpOff();
-	ZD.infoText(F("Reinigung abgeschlossen"));
+	ZD.infoText(1, F("Reinigung abgeschlossen"));
 	temp.sendeBefehl(WACH_AUF, 0);
 }
 
@@ -861,7 +896,6 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 			ZD.printProgrammInfoZeilen(2, 1, F("UF00: Daten löschen"));
 			ZD.printProgrammInfoZeilen(4, 1, F("VORSICHT!"));
 			ZD.printProgrammInfoZeilen(5, 1, F("WEG  IST WEG."));
-
 			break;
 		case 3: // DEF FASS
 			ZD.printProgrammInfo(F("Fasswechsel"));
@@ -873,13 +907,20 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 			break;
 		case 4: // GHI  INFO
 			ZD.printProgrammInfo(F("Information"));
-			sprintf(buf, "Playlist: %2d/%2d", sound.getPlaylistPlace(),
+			sprintf_P(buf, PSTR("Playlist: %2d/%2d"), sound.getPlaylistPlace(),
 					sound.getPlaylistSize());
 			ZD.printProgrammInfoZeilen(1, 1, buf);
-			sprintf(buf, "Playing: F:%2d S:%2d", sound.getPlFolder(),
+			sprintf_P(buf, PSTR("Playing: F:%2d S:%2d"), sound.getPlFolder(),
 					sound.getPlSong());
 			ZD.printProgrammInfoZeilen(2, 1, buf);
-
+			sprintf_P(buf, PSTR("YX5300 Status: %d"), sound.mp3D.lastMp3Status);
+			ZD.printProgrammInfoZeilen(3, 1, buf);
+			sprintf_P(buf, PSTR("Audio Status: %d"), sound.pruefe());
+			ZD.printProgrammInfoZeilen(4, 1, buf);
+			sprintf_P(buf, PSTR("MP3 Status: %d"), sound.mp3D.playStatus);
+			ZD.printProgrammInfoZeilen(5, 1, buf);
+			sprintf_P(buf, PSTR("Audio Standby: %d"), sound.mp3D.standby);
+			ZD.printProgrammInfoZeilen(6, 1, buf);
 			break;
 		case 5: //LKJ LICHT
 			ZD.printProgrammInfo(F("Lichtprogramm"));
@@ -905,7 +946,6 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 			ZD.printProgrammInfoZeilen(2, 1, F("wählen um Ventil"));
 			ZD.printProgrammInfoZeilen(3, 1, F("einzustellen."));
 			ZD.printProgrammInfoZeilen(4, 1, F("NICHT HERUMSPIELEN!"));
-
 			break;
 		case 9: //WXY
 			ZD.printProgrammInfo(F("MP3 Player"));
@@ -917,7 +957,6 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 			ZD.printProgrammInfoZeilen(4, 1, F("1 Zahl Ordner, 2 Song"));
 			ZD.printProgrammInfoZeilen(5, 1, F("Zufallsplaylist erstellen"));
 			ZD.printProgrammInfoZeilen(6, 1, F("1 wählen + 1 Zahl Ordner"));
-
 			break;
 		default:
 			break;
@@ -962,11 +1001,12 @@ void spezialprogramm(uint32_t input) {
 		if (varContent < 65) {
 			user.restMengeFass = varContent * 1000;
 			ZD.showAllUserData();
-			sprintf(buf, "Neues Fass %d Liter installiert", varContent);
-			ZD.infoText(buf);
+			sprintf_P(buf, PSTR("Neues Fass mit %d Litern installiert"),
+					varContent);
+			ZD.infoText(1, buf);
 			logbuch.logSystemMsg(buf);
 		} else {
-			ZD.infoText(F("Fassgröße über 65l nicht möglich!"));
+			ZD.infoText(1, F("Fassgröße über 65l nicht möglich!"));
 		}
 		break;
 
@@ -1019,7 +1059,7 @@ void spezialprogramm(uint32_t input) {
 		case 2:
 			sound.mp3Pause();
 			sprintf_P(buf, PSTR("status %d"), sound.mp3D.playStatus);
-			ZD.infoText(buf);
+			ZD.infoText(1, buf);
 			break;
 		case 3:
 			sound.mp3PreviousSongOnPlaylist();
@@ -1034,18 +1074,20 @@ void spezialprogramm(uint32_t input) {
 				folder = 30 + (varContent / 100);
 				song = varContent % 100;
 				sound.mp3AddToPlaylist(folder, song);
-				sprintf_P(buf, PSTR("Lied %d in Ordner %d zu Playlist hinzugefügt"), 20+varContent, sound.mp3D.songsInPlayList);
-				ZD.infoText(buf);
+				sprintf_P(buf,
+						PSTR("Lied %d in Ordner %d zu Playlist hinzugefügt"),
+						20 + varContent, sound.mp3D.songsInPlayList);
+				ZD.infoText(1, buf);
 				logbuch.logSystemMsg(buf);
 			} else if (varContent > 10 && varContent < 20) {
 				sound.mp3FillShufflePlaylist(20 + varContent);
-				sprintf_P(buf, PSTR("Playlist Ordner %d, %d Files"), 20+varContent, sound.mp3D.songsInPlayList);
-				ZD.infoText(buf);
+				sprintf_P(buf, PSTR("Playlist Ordner %d, %d Files"),
+						20 + varContent, sound.mp3D.songsInPlayList);
+				ZD.infoText(1, buf);
 				logbuch.logSystemMsg(buf);
 				delay(2000);
-//				sprintf(buf, "Playlist Ordner %d, %d Files", varContent+30, sound.mp3D.songsInPlayList);
 			} else {
-				ZD.infoText(F("Kannst Du irgendwas?"));
+				ZD.infoText(1, F("Kannst Du irgendwas?"));
 			}
 
 			delay(1);
@@ -1055,7 +1097,7 @@ void spezialprogramm(uint32_t input) {
 		break;
 
 	default:
-		ZD.infoText(F("Auswahl nicht möglich"));
+		ZD.infoText(1, F("Auswahl nicht möglich"));
 		kienmuehle = 0;
 		break;
 	}

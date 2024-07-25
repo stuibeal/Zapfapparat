@@ -28,7 +28,7 @@ class zLog: public RealTimeClock_DCF, DateTime {
 public:
 	zLog();
 	virtual ~zLog();
-	void initialise(SdFat *psd, benutzer *puser, tempControl *ptemp, char *buf);
+	void initialise();
 	inline void setLogState(uint8_t state) {
 		logState = state;
 	}
@@ -39,7 +39,7 @@ public:
 	void getClockBarcode(void);
 	uint8_t getWochadog(void);
 	void setDcfLed(bool onoff);
-	void writeDataInBuf(uint16_t data, bool komma);
+	void writeData(File *file, uint16_t data, bool komma);
 	bool logAfterZapf(void);
 	bool logSystemMsg(const __FlashStringHelper *sysMsg);
 	bool logSystemMsg(const char *sysMsg);
@@ -47,7 +47,7 @@ public:
 	DateTime dateTime;
 
 	enum logstate {
-		LOG = 0, DEBUG
+		DEBUG = 0, LOG = 1
 	};
 	enum wochadog {
 		MODA, ERDA, MIGGA, PFINSDA, FREIDA, SAMSDA, SUNDA
@@ -55,13 +55,6 @@ public:
 
 private:
 	uint8_t logState;
-	char *_buf;
-
-protected:
-	SdFat *_sd;
-	benutzer *_user;
-	tempControl *_temp;
-
 };
 
 #endif /* ZLOG_H_ */

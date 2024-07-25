@@ -129,20 +129,43 @@
 
 //God MODES
 #define IDDQD 1
+#define IDDQD_NR 43373
 #define KEEN 2
+#define KEEN_NR 5336
 #define MAGNUM 3
+#define MAGNUM_NR 624686
 #define MACGYVER 4
+#define MACGYVER_NR 62249837
 #define MIAMI 5
+#define MIAMI_NR 64264
 #define SEINFELD 6
+#define SEINFELD_NR 73463353
 #define ALF 7
+#define ALF_NR 253
 #define COLT 8
+#define COLT_NR 2658
 #define DOTT 9
+#define DOTT_NR 3688
 #define INDY 10
+#define INDY_NR 4639
 #define JUBI 11
-//TODO: noch einbauen
+#define JUBI_NR 5824
 #define GIANNA 12
+#define GIANNA_NR 42662
 #define LIGABUE 13
+#define LIGABUE_NR 5442283
 #define IDKFA 14
+#define IDKFA_NR 43532
+#define IDCLEV 15
+#define IDCLEV_NR 432538
+#define GLORIA 16
+#define GLORIA_NR 456742
+#define VAGABONDO 17
+#define VAGABONDO_NR 824226636
+#define GODOFF_NR 463633
+
+
+
 
 
 
