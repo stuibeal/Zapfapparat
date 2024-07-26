@@ -93,6 +93,12 @@ public:
 	inline uint8_t getPlSong(void) {
 		return playlistSong[mp3D.actualPlayListSong];
 	}
+	inline uint16_t getWartezeit(void) {
+		return (uint16_t) (wartezeit/1000);
+	}
+	inline uint16_t getPlWartezeit(void) {
+		return (uint16_t) (plWartezeit/1000);
+	}
 
 	static uint8_t state;
 	MD_YX5300* _mp3;  //pointer MP3
@@ -121,8 +127,12 @@ public:
 
 private:
 	unsigned long audioMillis;
+	unsigned long plMillis;
 	void shuffleArray();
+	void checkPlayList(void);
 	static void cbResponse(const MD_YX5300::cbData *status);
+	uint32_t wartezeit;
+	uint32_t plWartezeit;
 
 protected:
 	SdFat *_sd;

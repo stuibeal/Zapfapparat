@@ -24,6 +24,9 @@ audio::mp3Dinge audio::mp3D;
 audio::audio() :
 		MD_YX5300(MP3Stream), MD_MIDIFile() {
 	audioMillis = millis();
+	plMillis = millis();
+	wartezeit = 0;
+	plWartezeit = 0;
 	_sd = nullptr;
 	_mp3 = nullptr;
 	_SMF = nullptr;
@@ -97,7 +100,7 @@ void audio::starte(SdFat *pSD, MD_MIDIFile *pSMF, MD_YX5300 *pMp3) {
 }
 
 uint8_t audio::pruefe() {
-	unsigned long wartezeit = millis() - audioMillis;
+	wartezeit = millis() - audioMillis;
 	_mp3->check();
 //	if (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END) {
 //		mp3D.playStatus = S_STOPPED;
@@ -106,7 +109,10 @@ uint8_t audio::pruefe() {
 
 	switch (state) {
 	case AUDIO_ON: //Audio ist an
-		if (mp3D.standby == 1) {
+		if (mp3D.playStatus == S_PLAYING) {
+			audioMillis = millis();
+		}
+		if (mp3D.standby || mp3D.playTheList) {
 			state = AUDIO_STANDBY;
 		} else if (wartezeit >= 12000) {
 			/**
@@ -120,7 +126,6 @@ uint8_t audio::pruefe() {
 				audioMillis = millis();
 				state = AUDIO_SHUTDOWN;
 			}
-
 		}
 		break;
 
@@ -136,7 +141,6 @@ uint8_t audio::pruefe() {
 		if (mp3D.standby) {
 			state = AUDIO_RESTART;
 		}
-		// do nothing?
 		break;
 
 	case AUDIO_RESTART: // audio soll wieder an sein
@@ -166,6 +170,8 @@ uint8_t audio::pruefe() {
 		}
 		break;
 	case AUDIO_STANDBY:
+		audioMillis=millis();
+		checkPlayList();
 		if (!mp3D.standby) {
 			audioMillis = millis();
 			state = AUDIO_ON;
@@ -173,35 +179,29 @@ uint8_t audio::pruefe() {
 		break;
 	} /*switch*/
 
-	if (DEBUG_A) {
-		sprintf_P(buf,
-				PSTR(
-						"WZ:%lu S:%d 3:%u l%u/%u F%u S%u PTL %d sby %d mp3stat %d"),
-				wartezeit / 1000, state, mp3D.lastMp3Status,
-				mp3D.actualPlayListSong, mp3D.songsInPlayList,
-				playlistFolder[mp3D.actualPlayListSong],
-				playlistSong[mp3D.actualPlayListSong], mp3D.playTheList,
-				mp3D.standby, mp3D.playStatus);
-	}
+	return state;
+}
+
+void audio::checkPlayList() {
 	if (mp3D.playTheList) {
+		plWartezeit = millis() - plMillis;
 		if (mp3D.playStatus == S_STOPPED && mp3D.oldPlayStatus == S_PLAYING)
-			/*|| mp3D.lastMp3Status == MD_YX5300::STS_VERSION)*/
-				{
+			mp3D.oldPlayStatus = S_STOPPED;
+		/*|| mp3D.lastMp3Status == MD_YX5300::STS_VERSION)*/
+		{
 			if (mp3D.actualPlayListSong < mp3D.songsInPlayList) {
 				mp3NextSongOnPlaylist();
 			}
-			if (mp3D.actualPlayListSong == mp3D.songsInPlayList && wartezeit > 10000 )
-			{
-				mp3ClearPlaylist();
-				state = AUDIO_ON;
-				mp3D.playTheList = false;
+			if (mp3D.actualPlayListSong == mp3D.songsInPlayList) {
+				plMillis = millis();
 			}
 		}
-		if (mp3D.playStatus == S_PLAYING) {
-			audioMillis = millis();
+		if (mp3D.playStatus == S_STOPPED && plWartezeit > 10000) {
+			mp3ClearPlaylist();
+			state = AUDIO_ON;
+			mp3D.playTheList = false;
 		}
 	}
-	return state;
 }
 
 void audio::on() {
@@ -229,9 +229,10 @@ void audio::setStandby(bool stby) {
 }
 
 void audio::mp3Play(uint8_t folder, uint8_t song) {
-	mp3D.playStatus = S_PLAYING;
-	mp3D.lastMp3Status = 0;
 	on();
+	mp3D.playStatus = S_PLAYING;
+	pruefe();
+	mp3D.lastMp3Status = 0;
 	while (pruefe() != AUDIO_ON && pruefe() != AUDIO_STANDBY) {
 	}
 	_mp3->playSpecific(folder, song);
@@ -239,6 +240,7 @@ void audio::mp3Play(uint8_t folder, uint8_t song) {
 }
 
 void audio::mp3PlayAndWait(uint8_t folder, uint8_t song) {
+	on();
 	mp3D.playStatus = S_PLAYING;
 	pruefe();
 	mp3D.lastMp3Status = 0;
