@@ -112,9 +112,13 @@ uint8_t audio::pruefe() {
 		if (mp3D.playStatus == S_PLAYING) {
 			audioMillis = millis();
 		}
-		if (mp3D.standby || mp3D.playTheList) {
+		if (mp3D.standby) {
 			state = AUDIO_STANDBY;
-		} else if (wartezeit >= 12000) {
+		}
+		if (mp3D.playTheList) {
+			state = AUDIO_PLAYLIST;
+		}
+		if (wartezeit >= 12000) {
 			/**
 			 * Wenn MP3 File End = true
 			 * UND
@@ -170,12 +174,15 @@ uint8_t audio::pruefe() {
 		}
 		break;
 	case AUDIO_STANDBY:
-		audioMillis=millis();
-		checkPlayList();
+		audioMillis = millis();
 		if (!mp3D.standby) {
 			audioMillis = millis();
 			state = AUDIO_ON;
 		}
+		break;
+	case AUDIO_PLAYLIST:
+		audioMillis= millis();
+		checkPlayList();
 		break;
 	} /*switch*/
 
@@ -183,24 +190,24 @@ uint8_t audio::pruefe() {
 }
 
 void audio::checkPlayList() {
-	if (mp3D.playTheList) {
+	if (mp3D.playStatus == S_STOPPED) {
 		plWartezeit = millis() - plMillis;
-		if (mp3D.playStatus == S_STOPPED && mp3D.oldPlayStatus == S_PLAYING)
-			mp3D.oldPlayStatus = S_STOPPED;
-		/*|| mp3D.lastMp3Status == MD_YX5300::STS_VERSION)*/
-		{
-			if (mp3D.actualPlayListSong < mp3D.songsInPlayList) {
-				mp3NextSongOnPlaylist();
-			}
-			if (mp3D.actualPlayListSong == mp3D.songsInPlayList) {
-				plMillis = millis();
-			}
+	}
+	if (mp3D.playStatus == S_STOPPED && mp3D.oldPlayStatus == S_PLAYING)
+		mp3D.oldPlayStatus = S_STOPPED;
+	/*|| mp3D.lastMp3Status == MD_YX5300::STS_VERSION)*/
+	{
+		if (mp3D.actualPlayListSong < mp3D.songsInPlayList) {
+			mp3NextSongOnPlaylist();
 		}
-		if (mp3D.playStatus == S_STOPPED && plWartezeit > 10000) {
-			mp3ClearPlaylist();
-			state = AUDIO_ON;
-			mp3D.playTheList = false;
+		if (mp3D.actualPlayListSong == mp3D.songsInPlayList) {
+			plMillis = millis();
 		}
+	}
+	if (mp3D.playStatus == S_STOPPED && plWartezeit > 10000) {
+		mp3ClearPlaylist();
+		state = AUDIO_ON;
+		mp3D.playTheList = false;
 	}
 }
 
@@ -233,8 +240,8 @@ void audio::mp3Play(uint8_t folder, uint8_t song) {
 	mp3D.playStatus = S_PLAYING;
 	pruefe();
 	mp3D.lastMp3Status = 0;
-	while (pruefe() != AUDIO_ON && pruefe() != AUDIO_STANDBY) {
-	}
+//	while (pruefe() != AUDIO_ON && pruefe() != AUDIO_STANDBY) {
+//	}
 	_mp3->playSpecific(folder, song);
 
 }
@@ -255,7 +262,7 @@ void audio::mp3PlayAndWait(uint8_t folder, uint8_t song) {
 }
 
 void audio::mp3AddToPlaylist(uint8_t folder, uint8_t song) {
-	on();
+	//on();
 	mp3D.songsInPlayList++;
 	playlistFolder[mp3D.songsInPlayList] = folder;
 	playlistSong[mp3D.songsInPlayList] = song;
@@ -276,6 +283,7 @@ void audio::mp3ClearPlaylist(void) {
 	mp3D.songsInPlayList = 0;
 	mp3D.actualPlayListSong = 0;
 	mp3D.playTheList = 0;
+	mp3D.standby = 0;
 	_mp3->playStop();
 	mp3D.playStatus = S_STOPPED;
 }

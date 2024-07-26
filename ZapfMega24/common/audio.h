@@ -45,6 +45,7 @@ public:
 	static const int AUDIO_MIDI_RESET = 4;
 	static const int AUDIO_AMP_ON = 5;
 	static const int AUDIO_STANDBY = 6;
+	static const int AUDIO_PLAYLIST = 7;
 	static const int DING = 1;  //MICROWAVE DING
 	static const int BRANTL = 3; //Brantl Edel Pils
 

@@ -976,23 +976,24 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 		case 4: // GHI  INFO
 			ZD.printProgrammInfo(F("Information"));
 			do {
-				sprintf_P(buf, PSTR("Playlist: %2d/%2d"), sound.getPlaylistPlace(),
-						sound.getPlaylistSize());
+				sprintf_P(buf, PSTR("Status: Aud%d Play%d"), sound.pruefe(),sound.mp3D.playStatus);
 				ZD.printProgrammInfoZeilen(1, 1, buf);
+				sprintf_P(buf, PSTR("YX5300 Status: %d"), sound.mp3D.lastMp3Status);
+				ZD.printProgrammInfoZeilen(2, 1, buf);
 				sprintf_P(buf, PSTR("Playing: F:%2d S:%2d"), sound.getPlFolder(),
 						sound.getPlSong());
-				ZD.printProgrammInfoZeilen(2, 1, buf);
-				sprintf_P(buf, PSTR("YX5300 Status: %d"), sound.mp3D.lastMp3Status);
 				ZD.printProgrammInfoZeilen(3, 1, buf);
-				sprintf_P(buf, PSTR("Status: Aud%d Play%d"), sound.pruefe(),sound.mp3D.playStatus);
+				sprintf_P(buf, PSTR("Playlist: %2d/%2d"), sound.getPlaylistPlace(),
+						sound.getPlaylistSize());
 				ZD.printProgrammInfoZeilen(4, 1, buf);
 				sprintf_P(buf, PSTR("PlayTheList: %d"), sound.mp3D.playTheList);
 				ZD.printProgrammInfoZeilen(5, 1, buf);
 				sprintf_P(buf, PSTR("Audio Standby: %d"), sound.mp3D.standby);
 				ZD.printProgrammInfoZeilen(6, 1, buf);
-				sprintf_P(buf, PSTR("Wartezeit: A%d P%D"), sound.getWartezeit(), sound.getPlWartezeit());
-				ZD.printProgrammInfoZeilen(6, 1, buf);
-			} while(readTaste(1));
+				sprintf_P(buf, PSTR("Wartezeit: A%d P%d"), sound.getWartezeit(), sound.getPlWartezeit());
+				ZD.printProgrammInfoZeilen(7, 1, buf);
+				delay(100);
+			} while(digitalRead(TASTE1_PIN));
 			kienmuehle = 0;
 			break;
 		case 5: //LKJ LICHT
