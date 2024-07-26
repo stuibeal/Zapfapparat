@@ -82,7 +82,7 @@ bool zLog::logAfterZapf(void) {
 	//Zeit einlesen
 	RTC_DCF.getDateTime(&dateTime);
 	SD.chdir("/");
-	sprintf_P(buf, PSTR("LOG_%02u%02u%2u.csv"), dateTime.getDay(), dateTime.getMonth(),
+	sprintf_P(buf, PSTR("/log/LOG_%02u%02u%2u.csv"), dateTime.getDay(), dateTime.getMonth(),
 			dateTime.getYear());
 
 	//Wenn Datei noch nicht vorhanden, Kopfzeile schreiben!
@@ -140,8 +140,11 @@ bool zLog::logAfterZapf(void) {
 
 bool zLog::logSystemMsg(const __FlashStringHelper *sysMsg) {
 	bool fileStatus = 1;
+	RTC_DCF.getDateTime(&dateTime);
 	SD.chdir("/");
-	FsFile systemLogFile = SD.open("systemlog.md", FILE_WRITE);
+	sprintf_P(buf, PSTR("/log/syslog_%02u%02u%2u.log"), dateTime.getDay(), dateTime.getMonth(),
+			dateTime.getYear());
+	FsFile systemLogFile = SD.open(buf, FILE_WRITE);
 	fileStatus = systemLogFile;
 	if (fileStatus) {
 		char timeBuf[22]="";
@@ -158,7 +161,11 @@ bool zLog::logSystemMsg(const __FlashStringHelper *sysMsg) {
 
 bool zLog::logSystemMsg(const char *sysMsg) {
 	bool fileStatus = 1;
-	FsFile systemLogFile = SD.open("systemlog.md", FILE_WRITE);
+	RTC_DCF.getDateTime(&dateTime);
+	SD.chdir("/");
+	sprintf_P(buf, PSTR("/log/syslog_%02u%02u%2u.log"), dateTime.getDay(), dateTime.getMonth(),
+			dateTime.getYear());
+	FsFile systemLogFile = SD.open(buf, FILE_WRITE);
 	fileStatus = systemLogFile;
 	if (fileStatus) {
 		char timeBuf[22]="";

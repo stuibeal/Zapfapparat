@@ -132,6 +132,7 @@ void benutzer::clearDayUserData() {
 	for (int x = 0; x < arrayGroesse; x++) {
 		user.bierTag[x] = 0;
 		user.musik[x] = 0;
+		user.godMode[x] = 0;
 	}
 
 }

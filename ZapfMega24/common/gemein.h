@@ -151,7 +151,7 @@
 #define JUBI 11
 #define JUBI_NR 5824
 #define GIANNA 12
-#define GIANNA_NR 42662
+#define GIANNA_NR 442662
 #define LIGABUE 13
 #define LIGABUE_NR 5442283
 #define IDKFA 14
@@ -163,7 +163,8 @@
 #define VAGABONDO 17
 #define VAGABONDO_NR 824226636
 #define GODOFF_NR 463633
-
+#define DESCENT 18
+#define DESCENT_NR 3372368
 
 
 

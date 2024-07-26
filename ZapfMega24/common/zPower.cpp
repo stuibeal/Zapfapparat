@@ -281,6 +281,7 @@ void zPower::goSleep(void) {
 	case logbuch.FREIDA:
 		sound.mp3AddToPlaylist(23, 2); //Bayernhymne
 		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
+		sound.mp3AddToPlaylist(23, 7); //Grossvater
 		break;
 	case logbuch.SAMSDA:
 		sound.mp3AddToPlaylist(23, 2); //Bayernhymne
@@ -309,7 +310,9 @@ void zPower::goSleep(void) {
 		if (sound.getPlFolder() == 23 && sound.getPlSong() == 1) {
 			playNotGNF = 0;
 		}
-		ZD.infoText(1, buf);
+		sprintf(buf, "f %d s %d ", sound.getPlFolder(), sound.getPlSong());
+		ZD.infoText(0, buf);
+
 		delay(100);
 
 	} while (playNotGNF);
@@ -320,11 +323,9 @@ void zPower::goSleep(void) {
 	ventil.closeValve();
 	do {
 		ventil.check();
-		sprintf_P(buf, PSTR("%d"), ventil.getValveProzent());
-		ZD.infoText(1, buf);
 	} while (ventil.getValveProzent() > 0);
 
-	sprintf_P(buf, PSTR("%d"), ventil.getValveProzent());
+	sprintf_P(buf, PSTR("Ventilstellung: %d"), ventil.getValveProzent());
 	ZD.infoText(1, buf);
 	delay(2000);
 
@@ -341,8 +342,6 @@ void zPower::goSleep(void) {
 	do {
 		sound.pruefe();
 		delay(200);
-		ZD.infoText(1, buf);
-
 	} while (sound.getPlaylistSize() > 0);
 	digitalWrite(OTHER_MC_PIN, 0);
 	sound.off();

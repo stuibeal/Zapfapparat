@@ -98,12 +98,13 @@ void audio::starte(SdFat *pSD, MD_MIDIFile *pSMF, MD_YX5300 *pMp3) {
 
 uint8_t audio::pruefe() {
 	unsigned long wartezeit = millis() - audioMillis;
-    _mp3->check();
-	if (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END) {
-		mp3D.playStatus = S_STOPPED;
-	}
+	_mp3->check();
+//	if (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END) {
+//		mp3D.playStatus = S_STOPPED;
+//		mp3D.lastMp3Status = 0;
+//	}
 
-    switch (state) {
+	switch (state) {
 	case AUDIO_ON: //Audio ist an
 		if (mp3D.standby == 1) {
 			state = AUDIO_STANDBY;
@@ -166,7 +167,6 @@ uint8_t audio::pruefe() {
 		break;
 	case AUDIO_STANDBY:
 		if (!mp3D.standby) {
-			_mp3->check();
 			audioMillis = millis();
 			state = AUDIO_ON;
 		}
@@ -174,7 +174,9 @@ uint8_t audio::pruefe() {
 	} /*switch*/
 
 	if (DEBUG_A) {
-		sprintf_P(buf, PSTR("WZ:%lu S:%d 3:%u l%u/%u F%u S%u PTL %d sby %d mp3stat %d" ),
+		sprintf_P(buf,
+				PSTR(
+						"WZ:%lu S:%d 3:%u l%u/%u F%u S%u PTL %d sby %d mp3stat %d"),
 				wartezeit / 1000, state, mp3D.lastMp3Status,
 				mp3D.actualPlayListSong, mp3D.songsInPlayList,
 				playlistFolder[mp3D.actualPlayListSong],
@@ -182,18 +184,21 @@ uint8_t audio::pruefe() {
 				mp3D.standby, mp3D.playStatus);
 	}
 	if (mp3D.playTheList) {
-		_mp3->check();
-		audioMillis = millis();
-		if (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END
-				|| mp3D.lastMp3Status == MD_YX5300::STS_VERSION) {
-			//mp3D.actualPlayListSong++;
+		if (mp3D.playStatus == S_STOPPED && mp3D.oldPlayStatus == S_PLAYING)
+			/*|| mp3D.lastMp3Status == MD_YX5300::STS_VERSION)*/
+				{
 			if (mp3D.actualPlayListSong < mp3D.songsInPlayList) {
 				mp3NextSongOnPlaylist();
-			} else {
+			}
+			if (mp3D.actualPlayListSong == mp3D.songsInPlayList && wartezeit > 10000 )
+			{
 				mp3ClearPlaylist();
 				state = AUDIO_ON;
 				mp3D.playTheList = false;
 			}
+		}
+		if (mp3D.playStatus == S_PLAYING) {
+			audioMillis = millis();
 		}
 	}
 	return state;
@@ -224,16 +229,17 @@ void audio::setStandby(bool stby) {
 }
 
 void audio::mp3Play(uint8_t folder, uint8_t song) {
+	mp3D.playStatus = S_PLAYING;
+	mp3D.lastMp3Status = 0;
 	on();
 	while (pruefe() != AUDIO_ON && pruefe() != AUDIO_STANDBY) {
 	}
 	_mp3->playSpecific(folder, song);
-	mp3D.playStatus = S_PLAYING;
-	mp3D.lastMp3Status = 0;
 
 }
 
 void audio::mp3PlayAndWait(uint8_t folder, uint8_t song) {
+	mp3D.playStatus = S_PLAYING;
 	pruefe();
 	mp3D.lastMp3Status = 0;
 	mp3Play(folder, song);
@@ -435,7 +441,10 @@ void audio::loadLoopMidi(const __FlashStringHelper *midiFile) {
 
 void audio::loadLoopMidi(const char *midiFile) {
 	_SMF->close();
-	_SMF->load(midiFile);
+	uint8_t status = _SMF->load(midiFile);
+	if (status != 0) {
+		sprintf_P(buf, PSTR("MIDI Filestatus: %d"), status);
+	}
 	_SMF->looping(true);
 	_SMF->pause(true);
 }
@@ -488,57 +497,58 @@ void audio::tickMetronome(void) {
 void audio::godModeSound(uint8_t godMode) {
 	switch (godMode) {
 	case IDDQD:
-		loadLoopMidi(F("d_runni2.mid"));
+		loadLoopMidi(F("/midi/d_runni2.mid"));
 		break;
 	case IDKFA:
-		loadLoopMidi(F("E2M3.mid"));
+		loadLoopMidi(F("/midi/E2M3.mid"));
 		break;
 	case IDCLEV:
-		loadLoopMidi(F("d_e1m1.mid"));
+		loadLoopMidi(F("/midi/d_e1m1.mid"));
 		break;
 	case KEEN:
-		loadLoopMidi(F("keen.mid"));
+		loadLoopMidi(F("/midi/keen.mid"));
 		break;
 	case MAGNUM:
-		loadLoopMidi(F("Magnum.mid"));
+		loadLoopMidi(F("/midi/Magnum.mid"));
 		break;
 	case MACGYVER:
-		loadLoopMidi(F("Macgyver.mid"));
+		loadLoopMidi(F("/midi/Macgyver6.mid"));
 		break;
 	case MIAMI:
-		loadLoopMidi(F("MiamiVice.mid"));
+		loadLoopMidi(F("/midi/MiamiVice.mid"));
 		break;
 	case SEINFELD:
-		loadLoopMidi(F("Seinfeld.mid"));
+		loadLoopMidi(F("/midi/Seinfeld.mid"));
 		break;
 	case ALF:
-		loadLoopMidi(F("ALF.mid"));
+		loadLoopMidi(F("/midi/ALF.mid"));
 		break;
 	case COLT:
-		loadLoopMidi(F("FALLGUY.mid"));
+		loadLoopMidi(F("/midi/FALLGUY.mid"));
 		break;
 	case DOTT:
-		loadLoopMidi(F("Dott.mid"));
+		loadLoopMidi(F("/midi/Tdisco.mid"));
 		break;
 	case INDY:
-		loadLoopMidi(F("indy4Theme and Opening Credits.mid"));
+		loadLoopMidi(F("/midi/indy4Theme and Opening Credits.mid"));
 		break;
 	case JUBI:
-		loadLoopMidi(F("leaving_schlosskeller_bummbuumm.mid"));
+		loadLoopMidi(F("/midi/leaving_schlosskeller_bummbuumm.mid"));
 		break;
 	case GIANNA:
-		loadLoopMidi(F("Meravigliosa creatura.mid"));
+		loadLoopMidi(F("/midi/meravigl(1).mid"));
 		break;
 	case LIGABUE:
-		loadLoopMidi(F("ilgiornodeigiorni.mid"));
+		loadLoopMidi(F("/midi/ilgiornodeigiorni.mid"));
 		break;
 	case GLORIA:
-		loadLoopMidi(F("Gloria 1999(k).mid"));
+		loadLoopMidi(F("/midi/Gloria 1999(k).mid"));
 		break;
 	case VAGABONDO:
-		loadLoopMidi(F("Io_vagabondo.mid"));
+		loadLoopMidi(F("/midi/Io_vagabondo.mid"));
 		break;
-
+	case DESCENT:
+		loadLoopMidi(F("/midi/grabbag.mid"));
 	}
 }
 
@@ -569,6 +579,7 @@ void audio::cbResponse(const MD_YX5300::cbData *status)
 
 	case MD_YX5300::STS_PLAYING:   // current track index
 		mp3D.currentTrack = status->data;
+		mp3D.playStatus = S_PLAYING;
 		break;
 
 	case MD_YX5300::STS_FLDR_FILES:   // number of files in the folder

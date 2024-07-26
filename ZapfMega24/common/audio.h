@@ -8,6 +8,7 @@
 #ifndef AUDIO_H_
 #define AUDIO_H_
 #include  <Arduino.h>
+#define MIDI_MAX_TRACKS 26
 #include "MD_MIDIFile.h"
 #include "MD_YX5300.h"
 #include "string.h"
@@ -108,6 +109,7 @@ public:
 		bool playTheList;
 		bool pauseForMidi;
 		playStatus_t playStatus;
+		playStatus_t oldPlayStatus;
 		uint16_t currentTrack;
 		uint16_t folderFiles;
 		uint16_t lastMp3Status;

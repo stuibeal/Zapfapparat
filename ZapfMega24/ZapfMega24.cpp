@@ -165,6 +165,29 @@ void anfang(void) {
 	power.ledGrundbeleuchtung();
 	userShow();
 	ZD.showTastenFunktion(tt_sonder, tt_info);
+//	SD.chvol();
+//	SD.chdir("/midi/");
+//	sound.on();
+//
+//	while (sound.pruefe() != sound.AUDIO_ON) {
+//		ZD.infoText(0, buf);
+//	}
+//	sound.loadLoopMidi(F("/midi/Io_vagabondo.mid"));
+//
+//	sound._SMF->pause(0);
+//	do {
+//		sound.midiNextEvent();
+//		ZD.infoText(0, buf);
+//
+//	} while (!readTaste(1));
+//	sound.loadLoopMidi("Meravigliosa creatura.mid");
+//
+//	sound._SMF->pause(0);
+//	do {
+//		sound.midiNextEvent();
+//		ZD.infoText(0, buf);
+//
+//	} while (!readTaste(1));
 }
 
 void loop() {
@@ -267,7 +290,6 @@ void zapfBeginnProg(void) {
 		ventil.openValve();
 		temp.sendeBefehl(BEGIN_ZAPF, 0x0);
 		flowmeter.flowDataSend(SET_USER_ML, user.getMenge());
-		sound.godModeSound(user.getGodMode());
 		temp.sendeBefehl(BEGIN_ZAPF, 0x0);
 		userShow();  // Zeigt die Userdaten an
 		while (sound.pruefe() != sound.AUDIO_STANDBY) {
@@ -299,6 +321,7 @@ void amZapfenProg(void) {
 		user.oldZapfStatus = user.zapfStatus;
 		ZD.showTastenFunktion(tt_zapfabbruch, tt_zapfabbruchUndSet);
 		if (user.getGodMode() > 0) {
+			sound.godModeSound(user.getGodMode());
 			user.zapfStatus = user.zapfModus::godZapfen;
 		}
 		flowCheckWhileZapfing(1);
@@ -324,6 +347,7 @@ void godZapfenProg(void) {
 
 	if (user.oldZapfStatus != user.zapfStatus) {
 		user.oldZapfStatus = user.zapfStatus;
+		ZD.infoText(1, buf);
 		sound.on();
 		sound.mp3Pause();
 		oldFlowWindow = false;
@@ -341,15 +365,12 @@ void godZapfenProg(void) {
 	if (!sound._SMF->isPaused()) {
 		sound.tickMetronome();
 	}
-	if (readTaste(1)) {
-		user.zapfStatus = user.zapfModus::zapfEnde;
-	}
 	/*GOD braucht den grünen Balken mehr denn je*/
 	user.zapfMenge = flowmeter.getFreshZapfMillis();
 	ZD.showBalken();
 
-	// Nachschaun ob er fertig ist und dann bingen und zamschreim
-	if (user.zapfMenge >= user.getMenge()) {
+// Nachschaun ob er fertig ist und dann bingen und zamschreim
+	if (user.zapfMenge >= user.getMenge() || readTaste(1)) {
 		user.zapfStatus = user.zapfModus::zapfEnde;
 		sound.mp3Pause();
 	}
@@ -504,23 +525,23 @@ void dauerCheck(void) {
 		waehlscheibe();
 	}
 
-	//Wenn was rumgestellt wird
+//Wenn was rumgestellt wird
 	if (oldeinsteller != einsteller) {
 		ZD.showAllUserData();
 	}
-	//Wenn jemand an den Tasten rumspielt
+//Wenn jemand an den Tasten rumspielt
 	if (digitalRead(TASTE2_PIN) && user.zapfStatus != user.zapfEnde) {
 		infoseite();
 	}
 
-	//alle 10s mal alles nachkucken
+//alle 10s mal alles nachkucken
 	if ((millis() - nachSchauZeit) > 10000
 			&& user.zapfStatus == user.zapfModus::zapfStandby
 			&& !sound.isOn()) {
 		seltencheck();
 		nachSchauZeit = millis();
 	}
-	// Sonderfunktionsinfoanzeige
+// Sonderfunktionsinfoanzeige
 	if (digitalRead(TASTE1_PIN)) {
 		power.tastenLed(1, 255);
 		if (kienmuehle < 10) {
@@ -529,7 +550,7 @@ void dauerCheck(void) {
 		}
 	}
 
-	// Wenn Nummer Fertig und Taste losgelassen
+// Wenn Nummer Fertig und Taste losgelassen
 	if (!digitalRead(TASTE1_PIN) && kienmuehle > 0) {
 		power.tastenLed(2, TASTEN_LED_NORMAL);
 		waehlFunktionen();
@@ -542,7 +563,7 @@ void dauerCheck(void) {
 }
 
 void backToNull() {
-	sprintf_P(buf, PSTR("User Nr %d: %s Zapfung beendet"), user.aktuell,
+	sprintf_P(buf, PSTR("User Nr %d: %S: Zapfung beendet"), user.aktuell,
 			user.getName());
 	logbuch.logSystemMsg(buf);
 	sprintf_P(buf,
@@ -616,8 +637,8 @@ void waehlscheibe() {
 			if (zahlemann < 10) {
 				kienmuehle += zahlemann;
 			}
-			sprintf_P(buf, PSTR("Nummer gwählt: %9lu"), kienmuehle);
-			ZD.infoText(0, buf);
+			sprintf_P(buf, PSTR("Nummer gewählt: %9lu"), kienmuehle);
+			ZD.infoText(1, buf);
 			break;
 		}
 	}
@@ -632,78 +653,101 @@ void waehlFunktionen() {
 		break;
 	case GODOFF_NR: //GODOFF
 		user.setGodMode(0);
+		ZD.infoText(1, F("Godmode Off"));
 		ZD.userShow();
 		break;
 	case IDDQD_NR:
 		user.setGodMode(IDDQD);
 		ZD.userShow();
+		ZD.infoText(1, F("IDDQD"));
 		break;
 	case KEEN_NR:
 		user.setGodMode(KEEN);
+		ZD.infoText(1, F("Commander Keen lives forever, Mr. Romero!"));
 		ZD.userShow();
 		break;
 	case MAGNUM_NR:
 		user.setGodMode(MAGNUM);
+		ZD.infoText(1, F("Magnum, der Wagen!"));
 		ZD.userShow();
 		break;
 	case MACGYVER_NR:
 		user.setGodMode(MACGYVER);
+		ZD.infoText(1, F("Mac Gyver"));
 		ZD.userShow();
 		break;
 	case MIAMI_NR:
 		user.setGodMode(MIAMI);
+		ZD.infoText(1, F("Miami Kraus, äh, Vice"));
 		ZD.userShow();
 		break;
 	case SEINFELD_NR:
 		user.setGodMode(SEINFELD);
+		ZD.infoText(1, F("For all the native speakers here."));
 		ZD.userShow();
 		break;
 	case ALF_NR:
 		user.setGodMode(ALF);
+		ZD.infoText(1, F("ALF!"));
 		ZD.userShow();
 		break;
 	case COLT_NR:
 		user.setGodMode(COLT);
+		ZD.infoText(1, F("Colt Seavers Memorial Spa. Welcome."));
 		ZD.userShow();
 		break;
 	case DOTT_NR:
 		user.setGodMode(DOTT);
+		ZD.infoText(1, F("Day of the Tentacle"));
 		ZD.userShow();
 		break;
 	case INDY_NR:
 		user.setGodMode(INDY);
+		ZD.infoText(1, F("Lucas Arts, Indy"));
 		ZD.userShow();
 		break;
 	case JUBI_NR:
 		user.setGodMode(JUBI);
+		ZD.infoText(1, F("F0U8C1K5"));
 		ZD.userShow();
 		break;
 	case GIANNA_NR:
 		user.setGodMode(GIANNA);
+		ZD.infoText(1, F("Meravigliosa creatura"));
 		ZD.userShow();
 		break;
 	case LIGABUE_NR:
 		user.setGodMode(LIGABUE);
+		ZD.infoText(1, F("Luciano Ligabue"));
 		ZD.userShow();
 		break;
 	case IDKFA_NR:
 		user.setGodMode(IDKFA);
+		ZD.infoText(1, F("IDKFA - Ammo up!"));
 		ZD.userShow();
 		break;
 	case IDCLEV_NR:
 		user.setGodMode(IDCLEV);
 		ZD.userShow();
+		ZD.infoText(1, F("IDCLEV - mit meinem Bier überspringe ich Mauern"));
 		break;
 	case GLORIA_NR:
 		user.setGodMode(GLORIA);
 		ZD.userShow();
+		ZD.infoText(1, F("Umberto Tozzi, Gloria"));
 		break;
 	case VAGABONDO_NR:
 		user.setGodMode(VAGABONDO);
 		ZD.userShow();
+		ZD.infoText(1, F("I Nomadi, Io Vagabondo"));
+		break;
+	case DESCENT_NR:
+		user.setGodMode(DESCENT);
+		ZD.infoText(1, F("DESCENT GRABBAG"));
 		break;
 	case 1275: //Die Telefonnummer der Kienmühle
 		oldWaehlscheibeFun();
+		ZD.infoText(1, F("Kienmühle 1275"));
 		break;
 	case 337766: //EEPROM
 		user.cleanEEPROM();
@@ -734,12 +778,14 @@ void nochSchierCheck(void) {
 	if (oldBatterieStatus != power.getPowerState()) {
 		switch (power.getPowerState()) {
 		case zPower::powerState::BATT_LOW:
-			sound.mp3Play(20,4);
+			sound.mp3Play(20, 4);
 			ZD.infoText(1, F("Beda, bitte nochschiern. Strom is weng."));
 			break;
 		case zPower::powerState::BATT_ULTRALOW:
-			sound.mp3Play(20,6);
+			sound.mp3Play(20, 6);
 			ZD.infoText(1, F("BEEEEDAAAAAA! NOCHSCHIEEEERN!"));
+			break;
+		default:
 			break;
 		}
 	}
@@ -1080,7 +1126,7 @@ void spezialprogramm(uint32_t input) {
 			break;
 		case 2:
 			sound.mp3Pause();
-			sprintf_P(buf, PSTR("status %d"), sound.mp3D.playStatus);
+			sprintf_P(buf, PSTR("Status %d"), sound.mp3D.playStatus);
 			ZD.infoText(1, buf);
 			break;
 		case 3:
@@ -1098,7 +1144,7 @@ void spezialprogramm(uint32_t input) {
 				sound.mp3AddToPlaylist(folder, song);
 				sprintf_P(buf,
 						PSTR("Lied %d in Ordner %d zu Playlist hinzugefügt"),
-						20 + varContent, sound.mp3D.songsInPlayList);
+						song,folder);
 				ZD.infoText(1, buf);
 				logbuch.logSystemMsg(buf);
 			} else if (varContent > 10 && varContent < 20) {
