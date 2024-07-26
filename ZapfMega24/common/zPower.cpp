@@ -256,7 +256,7 @@ void zPower::goSleep(void) {
 //		soundstate = sound.pruefe();
 //		sprintf(buf, "sound %d standby %d ", soundstate, sound.mp3D.standby);
 //	} while (soundstate != sound.AUDIO_STANDBY);
-	ZD.infoText(1, buf);
+	//ZD.infoText(1, buf);
 	ZD.fillScreen(BLACK);
 	ZD.showBMP(F("/bmp/DOOM02.bmp"), 80, 60); //320x200
 	uint8_t wochadog = logbuch.getWochadog();
@@ -385,12 +385,12 @@ void zPower::goSleep(void) {
 
 		check();
 		temp.holeDaten();
-		if (millis() - sleepMillis > 60000) {
-			sleepMinuten++;
-		}
-		if (sleepMinuten >= 15) {
-			logbuch.logAfterZapf();
-		}
+//		if (millis() - sleepMillis > 60000) {
+//			sleepMinuten++;
+//		}
+//		if (sleepMinuten >= 15) {
+//			logbuch.logAfterZapf();
+//		}
 
 		oldeinsteller = einsteller;
 		if (helligkeit > 20) {

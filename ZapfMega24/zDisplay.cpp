@@ -87,7 +87,7 @@ void zDisplay::infoText(bool withLog, const char *text) {
 	u8g2.print(text);
 	infoWarteZeit = millis();
 	infoGezeigt = true;
-	if (!DEBUG_A && withLog) {
+	if (withLog) {
 		logbuch.logSystemMsg(text);
 	}
 }

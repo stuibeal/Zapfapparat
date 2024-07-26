@@ -164,13 +164,13 @@ bool zLog::logSystemMsg(const __FlashStringHelper *sysMsg) {
 
 bool zLog::logSystemMsg(const char *sysMsg) {
 	//sound._SMF->close();
-
+    char filename[27];
 	bool fileStatus = 1;
 	RTC_DCF.getDateTime(&dateTime);
 	SD.chdir("/");
-	sprintf_P(buf, PSTR("/log/syslog_%02u%02u%2u.log"), dateTime.getDay(), dateTime.getMonth(),
+	sprintf_P(filename, PSTR("/log/syslog_%02u%02u%02u.log"), dateTime.getDay(), dateTime.getMonth(),
 			dateTime.getYear());
-	FsFile systemLogFile = SD.open(buf, FILE_WRITE);
+	FsFile systemLogFile = SD.open(filename, FILE_WRITE);
 	fileStatus = systemLogFile;
 	if (fileStatus) {
 		char timeBuf[22]="";
