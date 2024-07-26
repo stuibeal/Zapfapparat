@@ -258,13 +258,16 @@ void zapfErrorProg() {
 }
 void preZapf(uint8_t nummer) {
 	sound.setStandby(true); //dann checkt er nicht ob er ausschalten soll
+	//ZD.infoText(1, F("vor sound on"));
+	sound.on();
 	kienmuehle = 0; /*wenn man sich verwählt hat bei der Nummerneingabe wirds gelöscht*/
 	user.aktuell = nummer;
 	user.oldZapfStatus = user.zapfModus::zapfStandby;
 	user.zapfStatus = user.zapfModus::zapfBeginn;
 	sprintf_P(buf, PSTR("User Nr %d: %s angemeldet"), user.aktuell,
-			user.getName());
-	logbuch.logSystemMsg(buf);
+			user.userN[user.aktuell]);
+	//logbuch.logSystemMsg(buf);
+	ZD.infoText(1, buf);
 }
 
 void zapfBeginnProg(void) {
@@ -292,8 +295,6 @@ void zapfBeginnProg(void) {
 		flowmeter.flowDataSend(SET_USER_ML, user.getMenge());
 		temp.sendeBefehl(BEGIN_ZAPF, 0x0);
 		userShow();  // Zeigt die Userdaten an
-		while (sound.pruefe() != sound.AUDIO_STANDBY) {
-		}
 		auswahlZeit = millis();
 		ZD.infoText(1, F("BITTE ZAPFHAHN BETÄTIGEN"));
 	}
@@ -513,13 +514,6 @@ void dauerCheck(void) {
 	checkImmer();
 
 	ZD.infoCheck();
-
-	if (temp.getBlockInnenTemp() < (int16_t) user.bierTemp[19]) {
-		power.setLed(11, 1);
-	}
-	if (temp.getBlockAussenTemp() + 5 < (int16_t) user.bierTemp[19]) {
-		power.setLed(0, 1);
-	}
 
 	if (digitalRead(WSready)) {
 		waehlscheibe();
@@ -765,7 +759,10 @@ void waehlFunktionen() {
 		sound.mp3AddToPlaylist(1, 2);
 		ZD.infoText(1, F("Feliz Navidad!"));
 		break;
-
+	case 27265: //BRANTL
+		sound.mp3AddToPlaylist(20,3);
+		ZD.infoText(1, F("Der Geschmack von Freiheit und Abendteuer"));
+		break;
 	default:
 		spezialprogramm(kienmuehle);
 		break;
@@ -796,13 +793,19 @@ void seltencheck(void) {
 	nochSchierCheck();
 	temp.requestSensors();
 	power.check();
+	if (temp.getBlockInnenTemp() < (int16_t) user.bierTemp[19]) {
+		power.setLed(11, 1);
+	}
+	if (temp.getBlockAussenTemp() + 5 < (int16_t) user.bierTemp[19]) {
+		power.setLed(0, 1);
+	}
 }
 
 void belohnungsMusik() {
 	if (user.getBierTag() > 2000 && user.getMusik() == 0) {
 		user.setMusik(1);
 		delay(1000); //for the bing
-		sound.mp3PlayAndWait(29, 1); //fällt mir im moment nix ein
+		sound.mp3PlayAndWait(29, 6); //packerl voll
 		sound.mp3Play(user.aktuell, 1);
 	}
 	if (user.getBierTag() > 2500 && user.getMusik() == 1) {
@@ -829,10 +832,14 @@ void belohnungsMusik() {
 	}
 	if (user.aktuell == 3 || user.aktuell == 5) {
 		if (user.getBierTag() > 4000 && user.getMusik() == 4) {
-			user.setMusik(0);
+			user.setMusik(5);
 			delay(1000); //for the bing
+			sound.mp3PlayAndWait(29, 1); //da fällt mir im moment nix ein
 			sound.mp3Play(user.aktuell, 5);
 		}
+	}
+	if (user.getBierTag()> 4500){
+		sound.mp3Play(1,2); // feliz navidad
 	}
 }
 
@@ -840,7 +847,7 @@ void belohnungsMusik() {
 void infoseite(void) {
 	power.tastenLed(2, 255);
 	ZD.infoscreen();
-	if (!sound.mp3D.playTheList) {
+	if (!sound.mp3D.playTheList && sound.mp3D.playStatus != sound.S_PLAYING) {
 		if (user.aktuell == 0) {
 			sound.mp3Play(20, 5); //ebi du bist die vier
 		}
@@ -974,27 +981,30 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 			ZD.printProgrammInfoZeilen(5, 1, F("Restbierzähler rückgesetzt."));
 			break;
 		case 4: // GHI  INFO
-			ZD.printProgrammInfo(F("Information"));
+			ZD.printProgrammInfo(F("Audio Info"));
 			do {
-				sprintf_P(buf, PSTR("Status: Aud%d Play%d"), sound.pruefe(),sound.mp3D.playStatus);
+				sprintf_P(buf, PSTR("Status: Aud%d Play%d"), sound.pruefe(),
+						sound.mp3D.playStatus);
 				ZD.printProgrammInfoZeilen(1, 1, buf);
-				sprintf_P(buf, PSTR("YX5300 Status: %d"), sound.mp3D.lastMp3Status);
+				sprintf_P(buf, PSTR("YX5300 Status: %d"),
+						sound.mp3D.lastMp3Status);
 				ZD.printProgrammInfoZeilen(2, 1, buf);
-				sprintf_P(buf, PSTR("Playing: F:%2d S:%2d"), sound.getPlFolder(),
-						sound.getPlSong());
+				sprintf_P(buf, PSTR("Playing: F:%2d S:%2d"),
+						sound.getPlFolder(), sound.getPlSong());
 				ZD.printProgrammInfoZeilen(3, 1, buf);
-				sprintf_P(buf, PSTR("Playlist: %2d/%2d"), sound.getPlaylistPlace(),
-						sound.getPlaylistSize());
+				sprintf_P(buf, PSTR("Playlist: %2d/%2d"),
+						sound.getPlaylistPlace(), sound.getPlaylistSize());
 				ZD.printProgrammInfoZeilen(4, 1, buf);
 				sprintf_P(buf, PSTR("PlayTheList: %d"), sound.mp3D.playTheList);
 				ZD.printProgrammInfoZeilen(5, 1, buf);
 				sprintf_P(buf, PSTR("Audio Standby: %d"), sound.mp3D.standby);
 				ZD.printProgrammInfoZeilen(6, 1, buf);
-				sprintf_P(buf, PSTR("Wartezeit: A%d P%d"), sound.getWartezeit(), sound.getPlWartezeit());
+				sprintf_P(buf, PSTR("Wartezeit: A%d P%d"), sound.getWartezeit(),
+						sound.getPlWartezeit());
 				ZD.printProgrammInfoZeilen(7, 1, buf);
 				delay(100);
-			} while(digitalRead(TASTE1_PIN));
-			kienmuehle = 0;
+			} while (digitalRead(TASTE1_PIN));
+			kienmuehle *= 10;
 			break;
 		case 5: //LKJ LICHT
 			ZD.printProgrammInfo(F("Lichtprogramm"));
@@ -1004,10 +1014,16 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 			ZD.printProgrammInfoZeilen(4, 1, F("4 Licht aus"));
 			ZD.printProgrammInfoZeilen(1, 2, F("6 SchLampe an"));
 			ZD.printProgrammInfoZeilen(2, 2, F("7 SchLampe aus"));
-
 			break;
 		case 6: //MNO MIDI
 			ZD.printProgrammInfo(F("MIDI Steuerung"));
+			ZD.printProgrammInfoZeilen(1, 1, F("1 Reset")); //4248
+			ZD.printProgrammInfoZeilen(1, 2, F("2 Pause"));
+			ZD.printProgrammInfoZeilen(2, 1, F("3 Resume"));
+			ZD.printProgrammInfoZeilen(2, 2, F("4 Close"));
+			ZD.printProgrammInfoZeilen(3, 1, F("5 Heil Prosit"));
+			ZD.printProgrammInfoZeilen(4, 1, F("6 Skyfall"));
+
 			break;
 		case 7: //PQRS Schlafen
 			ZD.printProgrammInfo(F("Schlafprogramm"));
@@ -1083,7 +1099,9 @@ void spezialprogramm(uint32_t input) {
 			ZD.infoText(1, F("Fassgröße über 65l nicht möglich!"));
 		}
 		break;
-
+	case 4:
+		ZD.infoText(1, F("Audioinformation beendet"));
+		break;
 	case 5:
 		// LICHT
 		switch (varContent) {
@@ -1104,6 +1122,38 @@ void spezialprogramm(uint32_t input) {
 			break;
 		case 7: // SchLampe aus
 			power.schLampeControl(0);
+			break;
+		}
+		break;
+	case 6:
+		switch (varContent) {
+		case 1:
+			ZD.infoText(1, F("MIDI reset"));
+			sound.midiReset();
+			break;
+		case 2:
+			ZD.infoText(1, F("MIDI pause"));
+			sound._SMF->pause(1);
+			break;
+		case 3:
+			ZD.infoText(1, F("MIDI resume"));
+			sound._SMF->pause(0);
+			break;
+		case 4:
+			ZD.infoText(1, F("MIDI close"));
+			sound._SMF->close();
+			break;
+		case 5:
+			break;
+		case 6:
+			break;
+		default:
+			if (varContent > 100) {
+				uint16_t midinumber= varContent -100;
+				sound.loadSingleMidi(midinumber);
+				ZD.infoText(1, buf);
+				sound._SMF->pause(0);
+			}
 			break;
 		}
 		break;
@@ -1169,7 +1219,9 @@ void spezialprogramm(uint32_t input) {
 		break;
 
 	default:
-		ZD.infoText(1, F("Auswahl nicht möglich"));
+		sprintf_P(buf, PSTR("Auswahl %d-%d nicht möglich"), varSet, varContent);
+		ZD.infoText(1, buf);
+
 		kienmuehle = 0;
 		break;
 	}

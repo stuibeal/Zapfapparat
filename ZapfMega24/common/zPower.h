@@ -85,7 +85,8 @@ public:
 
 private:
 
-	void dimLight(uint16_t lichtpin, uint16_t anfang, uint16_t ende,
+	void dimLightHelper(uint16_t pin, uint8_t wert);
+	void dimLight(uint16_t lichtpin, uint8_t anfang, uint8_t ende,
 			uint16_t delaytime);
 	void setAllWSLed(uint16_t helligkeit);
 	uint8_t inVoltage;

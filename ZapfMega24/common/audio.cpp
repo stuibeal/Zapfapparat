@@ -8,7 +8,7 @@
 #include "audio.h"
 #include "globalVariables.h"
 #include "avr/pgmspace.h"
-
+#include "midiFiles.h"
 //#include "gemein.h"
 
 /* Merke:
@@ -80,7 +80,7 @@ void audio::starte(SdFat *pSD, MD_MIDIFile *pSMF, MD_YX5300 *pMp3) {
 
 	_SMF->begin(_sd);
 	_SMF->setMidiHandler(midiCallback);
-	_SMF->setFileFolder("/midi/");
+	//_SMF->setFileFolder("/midi/");
 	_SMF->looping(true);
 
 	stromAn();
@@ -102,7 +102,8 @@ void audio::starte(SdFat *pSD, MD_MIDIFile *pSMF, MD_YX5300 *pMp3) {
 uint8_t audio::pruefe() {
 	wartezeit = millis() - audioMillis;
 	_mp3->check();
-//	if (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END) {
+
+	//	if (mp3D.lastMp3Status == MD_YX5300::STS_FILE_END) {
 //		mp3D.playStatus = S_STOPPED;
 //		mp3D.lastMp3Status = 0;
 //	}
@@ -118,7 +119,7 @@ uint8_t audio::pruefe() {
 		if (mp3D.playTheList) {
 			state = AUDIO_PLAYLIST;
 		}
-		if (wartezeit >= 12000) {
+		if (wartezeit > 12000) {
 			/**
 			 * Wenn MP3 File End = true
 			 * UND
@@ -176,32 +177,34 @@ uint8_t audio::pruefe() {
 	case AUDIO_STANDBY:
 		audioMillis = millis();
 		if (!mp3D.standby) {
-			audioMillis = millis();
 			state = AUDIO_ON;
+		}
+		if (mp3D.playTheList) {
+			state = AUDIO_PLAYLIST;
+			mp3D.standby = 0;
 		}
 		break;
 	case AUDIO_PLAYLIST:
-		audioMillis= millis();
+		audioMillis = millis();
 		checkPlayList();
 		break;
 	} /*switch*/
-
 	return state;
 }
 
 void audio::checkPlayList() {
-	if (mp3D.playStatus == S_STOPPED) {
-		plWartezeit = millis() - plMillis;
+	if (mp3D.playStatus == S_PLAYING) {
+		plMillis = millis();
 	}
-	if (mp3D.playStatus == S_STOPPED && mp3D.oldPlayStatus == S_PLAYING)
-		mp3D.oldPlayStatus = S_STOPPED;
-	/*|| mp3D.lastMp3Status == MD_YX5300::STS_VERSION)*/
-	{
-		if (mp3D.actualPlayListSong < mp3D.songsInPlayList) {
-			mp3NextSongOnPlaylist();
-		}
-		if (mp3D.actualPlayListSong == mp3D.songsInPlayList) {
+	plWartezeit = millis() - plMillis;
+
+	if (mp3D.playStatus == S_STOPPED) {
+		if (mp3D.actualPlayListSong < mp3D.songsInPlayList && plWartezeit > 1000) {
 			plMillis = millis();
+			mp3D.actualPlayListSong++;
+			mp3D.playStatus = S_PLAYING;
+			mp3Play(playlistFolder[mp3D.actualPlayListSong],
+					playlistSong[mp3D.actualPlayListSong]);
 		}
 	}
 	if (mp3D.playStatus == S_STOPPED && plWartezeit > 10000) {
@@ -214,7 +217,11 @@ void audio::checkPlayList() {
 void audio::on() {
 	if (state == AUDIO_OFF) {
 		state = AUDIO_RESTART;
-		pruefe();
+		uint8_t onStatus = AUDIO_OFF;
+		do {
+			onStatus = pruefe();
+		} while (onStatus != AUDIO_PLAYLIST && onStatus != AUDIO_ON
+				&& onStatus != AUDIO_STANDBY);
 	}
 }
 
@@ -237,42 +244,28 @@ void audio::setStandby(bool stby) {
 
 void audio::mp3Play(uint8_t folder, uint8_t song) {
 	on();
-	mp3D.playStatus = S_PLAYING;
-	pruefe();
-	mp3D.lastMp3Status = 0;
-//	while (pruefe() != AUDIO_ON && pruefe() != AUDIO_STANDBY) {
-//	}
 	_mp3->playSpecific(folder, song);
-
+	audioMillis = millis();
+	delay(200);
+	mp3D.playStatus = S_PLAYING; //nach play, sonst überschreibt die antwort den playstate
+	mp3D.lastMp3Status = 0;
 }
 
 void audio::mp3PlayAndWait(uint8_t folder, uint8_t song) {
-	on();
-	mp3D.playStatus = S_PLAYING;
-	pruefe();
-	mp3D.lastMp3Status = 0;
 	mp3Play(folder, song);
 	do {
-		sound.pruefe();
-		if (DEBUG_A) {
-			ZD.infoText(0, buf);
-			delay(200);
-		}
+		pruefe();
+		delay(200);
 	} while (mp3D.playStatus == S_PLAYING);
+	audioMillis = millis();
 }
 
 void audio::mp3AddToPlaylist(uint8_t folder, uint8_t song) {
-	//on();
+	on();
 	mp3D.songsInPlayList++;
 	playlistFolder[mp3D.songsInPlayList] = folder;
 	playlistSong[mp3D.songsInPlayList] = song;
-	if (mp3D.songsInPlayList == 1) {
-		mp3D.actualPlayListSong = 1;
-		mp3Play(playlistFolder[mp3D.actualPlayListSong],
-				playlistSong[mp3D.actualPlayListSong]);
-		mp3D.playTheList = true;
-	}
-
+	mp3D.playTheList = true;
 }
 
 void audio::mp3ClearPlaylist(void) {
@@ -459,11 +452,18 @@ void audio::loadLoopMidi(const char *midiFile) {
 	_SMF->pause(true);
 }
 
-void audio::loadSingleMidi(const char *midiFile) {
-	_SMF->close();
-	_SMF->load(midiFile);
-	_SMF->looping(false);
-	_SMF->pause(true);
+void audio::loadSingleMidi(uint16_t midinumber) {
+	uint16_t midiArraySize = sizeof(miditunes)/sizeof(miditunes[0]);
+	if (midinumber < midiArraySize) {
+		_SMF->close();
+	    strcpy_P(buf, (char *)pgm_read_ptr(&(miditunes[midinumber-1])));
+		_SMF->load(buf);
+		_SMF->looping(false);
+		_SMF->pause(true);
+
+	} else {
+		sprintf_P(buf, PSTR("Max Midifile %d"), midiArraySize);
+	}
 }
 
 void audio::tickMetronome(void) {

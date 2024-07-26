@@ -39,7 +39,7 @@ void zPower::beginPower() {
 
 	wsLed.begin();
 	wsLed.setFrequency(200, 0);
-
+	bkMachineState = WORK;
 	pinMode(OTHER_MC_PIN, OUTPUT);
 	digitalWrite(OTHER_MC_PIN, HIGH);
 	pinMode(TASTE1_PIN, INPUT);
@@ -51,6 +51,7 @@ void zPower::beginPower() {
 	pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
 	analogWrite(LCD_BACKLIGHT_PIN, 0);
 	ledGrundbeleuchtung();
+
 }
 
 void zPower::check() {
@@ -79,8 +80,10 @@ void zPower::check() {
 		if (helligkeit > 100) {
 			helligkeit = 100;
 		}
-		autoLight();
-		lcdAutoLight();
+		if (bkMachineState == WORK) {
+			autoLight();
+			lcdAutoLight();
+		}
 	}
 
 }
@@ -152,7 +155,7 @@ void zPower::schLampeControl(uint8_t offon) {
 }
 
 void zPower::zapfLichtControl(uint8_t pwmValue) {
-	if (bkPowerState <= powerState::BATT_NORMAL) {
+	if (bkPowerState <= powerState::BATT_NORMAL || bkMachineState == GO_SLEEP) {
 		flowmeter.flowDataSend(LED_FUN_4, 0b11111111, pwmValue);
 	} else {
 		flowmeter.flowDataSend(LED_FUN_4, 0b11111111, 0);
@@ -207,57 +210,66 @@ void zPower::setBackLight(void) {
 	}
 	flowmeter.flowDataSend(DIM_LED_TO_WERT, 127, ledBrightness); //LEDFun ausschalten
 }
-void zPower::dimLight(uint16_t lichtpin, uint16_t anfang, uint16_t ende,
+void zPower::dimLightHelper(uint16_t pin, uint8_t wert) {
+	switch (pin) {
+	case 0:
+		setAllWSLed(wert * 4);
+		break;
+	case 1:
+		zapfLichtControl(wert);
+		break;
+	default:
+		analogWrite(pin, wert);
+		break;
+	}
+}
+
+void zPower::dimLight(uint16_t lichtpin, uint8_t anfang, uint8_t ende,
 		uint16_t delaytime) {
 	if (anfang < ende) {
-		for (uint16_t x = anfang; x < ende + 1; x++) {
-			if (lichtpin > 0) {
-				if (lichtpin == 1) {
-					zapfLichtControl(x);
-				} else {
-					analogWrite(lichtpin, x);
-				}
-			} else {
-				setAllWSLed(x * 4);
-			}
+		for (uint8_t x = anfang; x < ende; x++) {
+			dimLightHelper(lichtpin, x);
 			delay(delaytime);
 		}
+		dimLightHelper(lichtpin, ende);
 	} else {
-		for (uint16_t x = anfang; x > ende - 1; x--) {
-			if (lichtpin > 0) {
-				if (lichtpin == 1) {
-					zapfLichtControl(x);
-				} else {
-					analogWrite(lichtpin, x);
-				}
-			} else {
-				setAllWSLed(x * 4);
-			}
+		for (uint8_t x = anfang; x > ende; x--) {
+			dimLightHelper(lichtpin, x);
 			delay(delaytime);
 		}
-		if (lichtpin > 0) {
-			analogWrite(lichtpin, ende);
-		} else {
-			setAllWSLed(ende);
-		}
+		dimLightHelper(lichtpin, ende);
 	}
-
 }
 
 void zPower::goSleep(void) {
+	bkMachineState = GO_SLEEP;
+	sound._SMF->close();
 	logbuch.logAfterZapf();
 	logbuch.logSystemMsg(F("Schläft ein..."));
 	digitalWrite(Z_SCH_LAMPE_PIN, 1);
-	sound.setStandby(1);
 	sound.mp3ClearPlaylist();
 	sound.playStop();
+	sound.setStandby(1);
 	sound.on();
-	while (sound.pruefe() != sound.AUDIO_STANDBY) {
-	}
+	uint8_t soundstate = sound.AUDIO_OFF;
+//	do {
+//		soundstate = sound.pruefe();
+//		sprintf(buf, "sound %d standby %d ", soundstate, sound.mp3D.standby);
+//	} while (soundstate != sound.AUDIO_STANDBY);
 	ZD.infoText(1, buf);
 	ZD.fillScreen(BLACK);
 	ZD.showBMP(F("/bmp/DOOM02.bmp"), 80, 60); //320x200
-	switch (logbuch.getWochadog()) {
+	uint8_t wochadog = logbuch.getWochadog();
+	/* es ist erst nächster Tag wenns hell wird*/
+	//logbuch.dateTime.setHour(2);
+	if (logbuch.dateTime.getHour() <8) {
+		if (wochadog > logbuch.MODA) {
+			wochadog--;
+		} else {
+			wochadog = logbuch.SUNDA;
+		}
+	}
+	switch (wochadog) {
 	case logbuch.MODA:
 		sound.mp3AddToPlaylist(23, 4); //USA
 		sound.mp3AddToPlaylist(28, 1); //Anne 10 Mark
@@ -274,12 +286,13 @@ void zPower::goSleep(void) {
 		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
 		break;
 	case logbuch.PFINSDA:
-		sound.mp3AddToPlaylist(23, 9); //DDR
+		sound.mp3AddToPlaylist(23, 2); //Bayernhymne
+		sound.mp3AddToPlaylist(23, 6); //Deutschlandlied
 		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
 		sound.mp3AddToPlaylist(23, 7); //Grossvater
 		break;
 	case logbuch.FREIDA:
-		sound.mp3AddToPlaylist(23, 2); //Bayernhymne
+		sound.mp3AddToPlaylist(23, 9); //DDR
 		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
 		sound.mp3AddToPlaylist(23, 7); //Grossvater
 		break;
@@ -294,14 +307,26 @@ void zPower::goSleep(void) {
 		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
 		break;
 	}
+
+	do {
+		soundstate = sound.pruefe();
+//		sprintf(buf, "s %d", soundstate);
+//		ZD.infoText(0, buf);
+	} while (soundstate != sound.AUDIO_PLAYLIST);
+	do {
+		soundstate = sound.pruefe();
+//		sprintf(buf, "p %d", soundstate);
+//		ZD.infoText(0, buf);
+	} while (sound.mp3D.playStatus != sound.S_PLAYING);
+
 	dimLight(LCD_BACKLIGHT_PIN, 255, 0, 20);
 	temp.sendeBefehl(ZAPFEN_STREICH, 0);
 	dimLight(TASTE1_LED, TASTEN_LED_NORMAL, 255, 30);
 	dimLight(TASTE2_LED, TASTEN_LED_NORMAL, 255, 30);
 	digitalWrite(FLOW_SM6020, 0);
-	dimLight(0, GRUEN_LED_ABGEDUNKELT / 4, 255, 3);
+	dimLight(0, GRUEN_LED_ABGEDUNKELT / 4, 255, 5);
 	drucker.schaltAus();
-	dimLight(1, 0, 255, 15); //0: WS Led 1: Zapflicht
+	dimLight(1, 0, 255, 20); //0: WS Led 1: Zapflicht
 	ZD.showBMP(F("/bmp/DOOM02b.bmp"), 80, 60); //320x200
 
 	bool playNotGNF = 1;
@@ -310,8 +335,8 @@ void zPower::goSleep(void) {
 		if (sound.getPlFolder() == 23 && sound.getPlSong() == 1) {
 			playNotGNF = 0;
 		}
-		sprintf(buf, "f %d s %d ", sound.getPlFolder(), sound.getPlSong());
-		ZD.infoText(0, buf);
+//		sprintf(buf, "f %d s %d ", sound.getPlFolder(), sound.getPlSong());
+//		ZD.infoText(0, buf);
 
 		delay(100);
 
@@ -321,6 +346,7 @@ void zPower::goSleep(void) {
 	user.clearDayUserData();
 	user.writeDataToEEPROM();
 	ventil.closeValve();
+	ZD.infoText(1, F("Tagesbenutzerdaten gelöscht"));
 	do {
 		ventil.check();
 	} while (ventil.getValveProzent() > 0);
@@ -330,12 +356,12 @@ void zPower::goSleep(void) {
 	delay(2000);
 
 	logbuch.disableDCF77LED();
-	dimLight(LCD_BACKLIGHT_PIN, 0, 255, 30);
+	dimLight(LCD_BACKLIGHT_PIN, 0, 255, 100);
 	analogWrite(LCD_BACKLIGHT_PIN, 255);
-	dimLight(TASTE1_LED, 255, 0, 60);
-	dimLight(TASTE2_LED, 255, 0, 60);
-	dimLight(0, 255, 0, 30);
-	dimLight(1, 255, 0, 120); //0: WS Led 1: Zapflicht
+	dimLight(TASTE1_LED, 255, 0, 90);
+	dimLight(TASTE2_LED, 255, 0, 90);
+	dimLight(0, 255, 0, 100);
+	dimLight(1, 255, 0, 200); //0: WS Led 1: Zapflicht
 	zapfLichtControl(0);
 	flowmeter.flowDataSend(ZAPFEN_STREICH, 0);
 
@@ -350,10 +376,22 @@ void zPower::goSleep(void) {
 	while (sound.pruefe() != sound.AUDIO_OFF) {
 	}
 	sound.stromAus();
+	bkMachineState = SLEEP;
 	autoLightBool = 0;
 	uint8_t sleeping = 1;
+	uint32_t sleepMillis = millis();
+	uint16_t sleepMinuten = 0;
 	do {
+
 		check();
+		temp.holeDaten();
+		if (millis() - sleepMillis > 60000) {
+			sleepMinuten++;
+		}
+		if (sleepMinuten >= 15) {
+			logbuch.logAfterZapf();
+		}
+
 		oldeinsteller = einsteller;
 		if (helligkeit > 20) {
 			logbuch.logSystemMsg(F("Aufwachen: Helligkeit über 20"));
@@ -373,9 +411,11 @@ void zPower::goSleep(void) {
 	logbuch.enableDCF77LED();
 	autoLightBool = 1;
 	sound.stromAn();
-
+	bkMachineState = WORK;
 	delay(1000);
+	temp.sendeBefehl(WACH_AUF, 0);
 	analogWrite(LCD_BACKLIGHT_PIN, 0); //0: voll hell
 	anfang();
 	ZD.infoText(1, F("Lust auf ein Frühbierchen?"));
+	sound.mp3AddToPlaylist(20, 2);
 }

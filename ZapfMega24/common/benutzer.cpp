@@ -45,16 +45,21 @@ void benutzer::cleanEEPROM() {
 	}
 }
 
+void benutzer::writeUserDataToEEPROM(uint8_t user) {
+	eeprom_write_word(
+			(uint16_t*) (EEPROM_START_ADDR_BIERGESAMT) + (user * 2),
+			bierGesamt[user]);
+	eeprom_write_word((uint16_t*) (EEPROM_START_ADDR_BIERTAG) + (user * 2),
+			bierTag[user]);
+	eeprom_write_word((uint16_t*) (EEPROM_START_ADDR_MUSIK) + (user *2),
+			(uint16_t)musik[user]);
+}
+
 void benutzer::writeDataToEEPROM() {
 	eeprom_write_word((uint16_t*) 0, restMengeFass);
 	eeprom_write_word((uint16_t*) 2, gesamtMengeTag);
 	eeprom_write_word((uint16_t*) 4, gesamtMengeTotal);
-	eeprom_write_word((uint16_t*) EEPROM_START_ADDR_BIERGESAMT + (aktuell * 2),
-			bierGesamt[aktuell]);
-	eeprom_write_word((uint16_t*) EEPROM_START_ADDR_BIERTAG + (aktuell * 2),
-			bierTag[aktuell]);
-	eeprom_write_byte((uint8_t*) EEPROM_START_ADDR_MUSIK + aktuell,
-			musik[aktuell]);
+	writeUserDataToEEPROM(aktuell);
 }
 
 void benutzer::readDataFromEEPROM() {
@@ -67,8 +72,8 @@ void benutzer::readDataFromEEPROM() {
 				(uint16_t*) EEPROM_START_ADDR_BIERGESAMT + (x * 2));
 		bierTag[x] = eeprom_read_word(
 				(uint16_t*) EEPROM_START_ADDR_BIERTAG + (x * 2));
-		musik[x] = eeprom_read_byte(
-				(uint8_t*) EEPROM_START_ADDR_MUSIK + aktuell);
+		musik[x] = (uint8_t) eeprom_read_word(
+				(uint16_t*) EEPROM_START_ADDR_MUSIK + (x*2));
 	}
 
 }
@@ -133,6 +138,7 @@ void benutzer::clearDayUserData() {
 		user.bierTag[x] = 0;
 		user.musik[x] = 0;
 		user.godMode[x] = 0;
+		writeUserDataToEEPROM(x);
 	}
 
 }

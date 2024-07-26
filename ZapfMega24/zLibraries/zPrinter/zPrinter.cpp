@@ -108,6 +108,14 @@ void zPrinter::printerZapfEnde() {
 		printer.print(F("Gesamtmenge: "));
 		printer.print(user.getBierGesamt());
 		printer.println(F(" ml"));
+		if (user.getMusik() > 0) {
+			printer.print(F("Zapfmusik: "));
+			printer.println(user.getMusik());
+		}
+		if (user.getGodMode() > 0) {
+			printer.print(F("Godmode: "));
+			printer.println(user.getGodMode());
+		}
 		printer.print(F("Zapfhahntemperatur: "));
 		temp.requestSensors();
 		printer.print(temp.getHahnTemp()/100);

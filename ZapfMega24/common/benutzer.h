@@ -86,6 +86,7 @@ private:
 	uint16_t oldBierGesamt[arrayGroesse];
 	uint8_t godMode[arrayGroesse];
 
+	void writeUserDataToEEPROM(uint8_t user);
 };
 
 #endif /* BENUTZER_H_ */

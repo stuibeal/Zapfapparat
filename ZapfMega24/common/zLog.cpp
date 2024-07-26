@@ -80,6 +80,7 @@ bool zLog::logAfterZapf(void) {
 	// jeden Tag ein File für Zapfdaten
 	bool fileStatus = 1;
 	//Zeit einlesen
+	//sound._SMF->close();
 	RTC_DCF.getDateTime(&dateTime);
 	SD.chdir("/");
 	sprintf_P(buf, PSTR("/log/LOG_%02u%02u%2u.csv"), dateTime.getDay(), dateTime.getMonth(),
@@ -139,6 +140,8 @@ bool zLog::logAfterZapf(void) {
 }
 
 bool zLog::logSystemMsg(const __FlashStringHelper *sysMsg) {
+	//sound._SMF->close();
+
 	bool fileStatus = 1;
 	RTC_DCF.getDateTime(&dateTime);
 	SD.chdir("/");
@@ -160,6 +163,8 @@ bool zLog::logSystemMsg(const __FlashStringHelper *sysMsg) {
 }
 
 bool zLog::logSystemMsg(const char *sysMsg) {
+	//sound._SMF->close();
+
 	bool fileStatus = 1;
 	RTC_DCF.getDateTime(&dateTime);
 	SD.chdir("/");
