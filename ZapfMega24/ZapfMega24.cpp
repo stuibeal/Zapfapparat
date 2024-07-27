@@ -403,6 +403,10 @@ void zapfEndeProg(void) {
 		sound._SMF->close();
 		sound.midiSilence();
 		ventil.check();
+		if (user.lastZapfMenge - user.getMenge() + user.zapfMenge == 0) {
+			sprintf_P(buf, PSTR("Kompliment, %s! Perfekte Zapfung!"), user.userN[user.aktuell]);
+			ZD.infoText(1, buf);
+		}
 		/*Sollte der noch weiterzapfen*/
 		while (digitalRead(FLOW_WINDOW)) {
 			checkWhileZapfing();
@@ -493,11 +497,13 @@ void checkWhileZapfing() {
 
 void checkImmer() {
 	if (((millis() - oldTime) > 500)) {
-		power.check();
-		temp.holeDaten();
-		flowmeter.flowDataSend(GET_ML, 0, 0);
+		if (!sound.mp3D.pauseForMidi) {
+			power.check();
+			temp.holeDaten();
+			flowmeter.flowDataSend(GET_ML, 0, 0);
+			showZapfapparatData();
+		}
 		oldTime = millis();
-		showZapfapparatData();
 		sound.pruefe();
 	}
 }
@@ -1161,11 +1167,11 @@ void spezialprogramm(uint32_t input) {
 				sound.loadSingleMidi(midinumber);
 				ZD.infoText(1, buf);
 				sound._SMF->pause(0);
-			} else if (varContent > 999 & varContent < 4000) {
+			} else if (varContent > 999 && varContent < 4000) {
 				uint8_t eventNummer = varContent / 1000;
 				uint16_t eventDaten = varContent % 1000;
-				if (eventDaten > 127) {
-					eventDaten = 127;
+				if (eventDaten > 255) {
+					eventDaten = 255;
 				}
 				static midi_event waehlEv;
 				waehlEv.size = 3;
@@ -1182,6 +1188,8 @@ void spezialprogramm(uint32_t input) {
 					waehlEv.data[2] = eventDaten; //velocity
 					sound.on();
 					sound.midiCallback(&waehlEv);
+					sprintf_P(buf, PSTR("MIDI 0:%d 1:%d 2:%d"),waehlEv.data[0], waehlEv.data[1], waehlEv.data[2]);
+					ZD.infoText(1, buf);
 					break;
 				}
 			}

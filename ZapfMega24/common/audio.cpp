@@ -125,8 +125,10 @@ uint8_t audio::pruefe() {
 			 * UND
 			 * MIDI End of File (ausgespielt) ODER Trackcount == 0
 			 */
-			if (mp3D.playStatus == S_STOPPED
-					&& (_SMF->isEOF() || (_SMF->getTrackCount() == 0))) {
+			if (_SMF->isEOF() || (_SMF->getTrackCount() == 0)) {
+				mp3D.pauseForMidi = 0;
+			}
+			if (mp3D.playStatus == S_STOPPED && mp3D.pauseForMidi == 0) {
 				digitalWrite(AUDIO_AMP, LOW); //AMP aus
 				audioMillis = millis();
 				state = AUDIO_SHUTDOWN;
@@ -199,7 +201,8 @@ void audio::checkPlayList() {
 	plWartezeit = millis() - plMillis;
 
 	if (mp3D.playStatus == S_STOPPED) {
-		if (mp3D.actualPlayListSong < mp3D.songsInPlayList && plWartezeit > 1000) {
+		if (mp3D.actualPlayListSong < mp3D.songsInPlayList
+				&& plWartezeit > 1000) {
 			plMillis = millis();
 			mp3D.actualPlayListSong++;
 			mp3D.playStatus = S_PLAYING;
@@ -244,7 +247,7 @@ void audio::setStandby(bool stby) {
 
 void audio::mp3Play(uint8_t folder, uint8_t song) {
 	on();
-	sprintf_P(buf, PSTR("Spielt Lied %d in Ordner %d"), song,folder);
+	sprintf_P(buf, PSTR("Spielt Lied %d in Ordner %d"), song, folder);
 	logbuch.logSystemMsg(buf);
 	_mp3->playSpecific(folder, song);
 	audioMillis = millis();
@@ -444,20 +447,20 @@ void audio::loadLoopMidi(const __FlashStringHelper *midiFile) {
 }
 
 void audio::loadSingleMidi(uint16_t midinumber) {
-	uint16_t midiArraySize = sizeof(miditunes)/sizeof(miditunes[0]);
+	uint16_t midiArraySize = sizeof(miditunes) / sizeof(miditunes[0]);
 	if (midinumber < midiArraySize) {
 		_SMF->close();
 		midiSilence();
-	    strcpy_P(buf, (char *)pgm_read_ptr(&(miditunes[midinumber-1])));
+		strcpy_P(buf, (char*) pgm_read_ptr(&(miditunes[midinumber - 1])));
 		_SMF->load(buf);
 		_SMF->looping(false);
 		_SMF->pause(true);
+		mp3D.pauseForMidi = 1;
 
 	} else {
 		sprintf_P(buf, PSTR("Max Midifile %d"), midiArraySize);
 	}
 }
-
 
 void audio::loadLoopMidi(const char *midiFile) {
 	_SMF->close();
@@ -468,20 +471,24 @@ void audio::loadLoopMidi(const char *midiFile) {
 	}
 	_SMF->looping(true);
 	_SMF->pause(true);
+	mp3D.pauseForMidi = 1;
+
 }
 
 void audio::loadLoopMidi(uint16_t midinumber) {
-	uint16_t midiArraySize = sizeof(miditunes)/sizeof(miditunes[0]);
+	uint16_t midiArraySize = sizeof(miditunes) / sizeof(miditunes[0]);
 	if (midinumber < midiArraySize) {
 		_SMF->close();
 		midiSilence();
-		strcpy_P(buf, (char *)pgm_read_ptr(&(miditunes[midinumber-1])));
+		strcpy_P(buf, (char*) pgm_read_ptr(&(miditunes[midinumber - 1])));
 		uint8_t status = _SMF->load(buf);
 		if (status != 0) {
 			sprintf_P(buf, PSTR("MIDI Filestatus: %d"), status);
 		}
 		_SMF->looping(true);
 		_SMF->pause(true);
+		mp3D.pauseForMidi = 1;
+
 
 	} else {
 		sprintf_P(buf, PSTR("Max Midifile %d"), midiArraySize);
