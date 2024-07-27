@@ -447,6 +447,7 @@ void audio::loadSingleMidi(uint16_t midinumber) {
 	uint16_t midiArraySize = sizeof(miditunes)/sizeof(miditunes[0]);
 	if (midinumber < midiArraySize) {
 		_SMF->close();
+		midiSilence();
 	    strcpy_P(buf, (char *)pgm_read_ptr(&(miditunes[midinumber-1])));
 		_SMF->load(buf);
 		_SMF->looping(false);
@@ -460,6 +461,7 @@ void audio::loadSingleMidi(uint16_t midinumber) {
 
 void audio::loadLoopMidi(const char *midiFile) {
 	_SMF->close();
+	midiSilence();
 	uint8_t status = _SMF->load(midiFile);
 	if (status != 0) {
 		sprintf_P(buf, PSTR("MIDI Filestatus: %d"), status);
@@ -472,6 +474,7 @@ void audio::loadLoopMidi(uint16_t midinumber) {
 	uint16_t midiArraySize = sizeof(miditunes)/sizeof(miditunes[0]);
 	if (midinumber < midiArraySize) {
 		_SMF->close();
+		midiSilence();
 		strcpy_P(buf, (char *)pgm_read_ptr(&(miditunes[midinumber-1])));
 		uint8_t status = _SMF->load(buf);
 		if (status != 0) {

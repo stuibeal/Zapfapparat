@@ -978,9 +978,10 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 		case 2: // ABC APPARAT
 			ZD.printProgrammInfo(F("Apparat"));
 			ZD.printProgrammInfoZeilen(1, 1, F("LEAN: Reinigung"));
-			ZD.printProgrammInfoZeilen(2, 1, F("UF00: Daten löschen"));
-			ZD.printProgrammInfoZeilen(4, 1, F("VORSICHT!"));
-			ZD.printProgrammInfoZeilen(5, 1, F("WEG  IST WEG."));
+			ZD.printProgrammInfoZeilen(3, 1, F("UF00: Daten löschen"));
+			ZD.printProgrammInfoZeilen(4, 1, F("Für Neues Ereignis."));
+			ZD.printProgrammInfoZeilen(5, 1, F("VORSICHT!"));
+			ZD.printProgrammInfoZeilen(6, 1, F("WEG  IST WEG."));
 			break;
 		case 3: // DEF FASS
 			ZD.printProgrammInfo(F("Fasswechsel"));
@@ -1015,20 +1016,22 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 			ZD.printProgrammInfo(F("Lichtprogramm"));
 			ZD.printProgrammInfoZeilen(1, 1, F("ICHT: An")); //4248
 			ZD.printProgrammInfoZeilen(2, 1, F("2 Auto aus"));
-			ZD.printProgrammInfoZeilen(3, 1, F("3 Auto an"));
-			ZD.printProgrammInfoZeilen(4, 1, F("4 Licht aus"));
-			ZD.printProgrammInfoZeilen(1, 2, F("6 SchLampe an"));
-			ZD.printProgrammInfoZeilen(2, 2, F("7 SchLampe aus"));
+			ZD.printProgrammInfoZeilen(2, 2, F("3 Auto an"));
+			ZD.printProgrammInfoZeilen(3, 1, F("4 Licht aus"));
+			ZD.printProgrammInfoZeilen(4, 1, F("6 Z SchLampe an"));
+			ZD.printProgrammInfoZeilen(5, 1, F("7 Z SchLampe aus"));
 			break;
 		case 6: //MNO MIDI
 			ZD.printProgrammInfo(F("MIDI Steuerung"));
-			ZD.printProgrammInfoZeilen(1, 1, F("1 Reset")); //4248
+			ZD.printProgrammInfoZeilen(1, 1, F("1 Reset"));
 			ZD.printProgrammInfoZeilen(1, 2, F("2 Pause"));
 			ZD.printProgrammInfoZeilen(2, 1, F("3 Resume"));
 			ZD.printProgrammInfoZeilen(2, 2, F("4 Close"));
-			ZD.printProgrammInfoZeilen(3, 1, F("5 Heil Prosit"));
-			ZD.printProgrammInfoZeilen(4, 1, F("6 Skyfall"));
-
+			ZD.printProgrammInfoZeilen(3, 1, F("Nummer über 500 spielt Datei"));
+			ZD.printProgrammInfoZeilen(4, 1, F("z.B. 612 spielt Datei 112"));
+			ZD.printProgrammInfoZeilen(5, 1, F("Event1: 1xxx (channel)"));
+			ZD.printProgrammInfoZeilen(6, 1, F("Event2: 2xxx (pitch)"));
+			ZD.printProgrammInfoZeilen(7, 1, F("Event3: 3xxx (velocity)"));
 			break;
 		case 7: //PQRS Schlafen
 			ZD.printProgrammInfo(F("Schlafprogramm"));
@@ -1061,8 +1064,11 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 
 void spezialprogramm(uint32_t input) {
 	uint16_t varSet = 0;
-	uint16_t varContent = 0;
-	if (input > 9999 && input < 100000) {
+	uint32_t varContent = 0;
+	if (input > 99999 && input < 1000000) {
+		varSet = input / 100000;  //1x Varset
+		varContent = input % 100000;  //5x Content
+	} else if (input > 9999 && input < 100000) {
 		varSet = input / 10000;  //1x Varset
 		varContent = input % 10000;  //4x Content
 	} else if (input > 999 && input < 10000) {
@@ -1130,11 +1136,21 @@ void spezialprogramm(uint32_t input) {
 			break;
 		}
 		break;
+		/*
+		 ZD.printProgrammInfoZeilen(3, 1, F("Nummer über 500 spielt Datei"));
+		 ZD.printProgrammInfoZeilen(4, 1, F("z.B. 612 spielt Datei 112"));
+		 ZD.printProgrammInfoZeilen(5, 1, F("Event1: 1xxx (channel)"));
+		 ZD.printProgrammInfoZeilen(6, 1, F("Event2: 2xxx (pitch)"));
+		 ZD.printProgrammInfoZeilen(7, 1, F("Event3: 3xxx (velocity)"));
+
+		 */
+
 	case 6:
 		switch (varContent) {
 		case 1:
 			ZD.infoText(1, F("MIDI reset"));
 			sound.midiReset();
+			sound.midiSilence();
 			break;
 		case 2:
 			ZD.infoText(1, F("MIDI pause"));
@@ -1148,18 +1164,35 @@ void spezialprogramm(uint32_t input) {
 			ZD.infoText(1, F("MIDI close"));
 			sound._SMF->close();
 			break;
-		case 5:
-			break;
-		case 6:
-			break;
 		default:
-			if (varContent > 100) {
-				uint16_t midinumber = varContent - 100;
+			if (varContent > 500 && varContent < 999) {
+				uint16_t midinumber = varContent - 500;
 				sound.loadSingleMidi(midinumber);
 				ZD.infoText(1, buf);
 				sound._SMF->pause(0);
+			} else if (varContent > 999 & varContent < 4000) {
+				uint8_t eventNummer = varContent /1000;
+				uint16_t eventDaten = varContent % 1000;
+				if (eventDaten > 127) {
+					eventDaten = 127;
+				}
+				static midi_event waehlEv;
+				waehlEv.size = 3;
+				switch (eventNummer) {
+				case 1:
+					waehlEv.data[0] = eventDaten; //HEX 09: note on /9: channel 10
+					break;
+				case 2:
+					waehlEv.data[1] = eventDaten; //PITCH (note number)
+					break;
+				case 3:
+					waehlEv.data[2] = eventDaten; //velocity
+					sound.on();
+					sound.midiCallback(&waehlEv);
+					break;
+				}
 			}
-			break;
+				break;
 		}
 		break;
 	case 7: //sleep
