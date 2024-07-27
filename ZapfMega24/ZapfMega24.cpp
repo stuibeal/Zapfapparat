@@ -1175,6 +1175,8 @@ void spezialprogramm(uint32_t input) {
 					break;
 				case 2:
 					waehlEv.data[1] = eventDaten; //PITCH (note number)
+					sound.on();
+					sound.midiCallback(&waehlEv);
 					break;
 				case 3:
 					waehlEv.data[2] = eventDaten; //velocity
