@@ -1136,15 +1136,6 @@ void spezialprogramm(uint32_t input) {
 			break;
 		}
 		break;
-		/*
-		 ZD.printProgrammInfoZeilen(3, 1, F("Nummer über 500 spielt Datei"));
-		 ZD.printProgrammInfoZeilen(4, 1, F("z.B. 612 spielt Datei 112"));
-		 ZD.printProgrammInfoZeilen(5, 1, F("Event1: 1xxx (channel)"));
-		 ZD.printProgrammInfoZeilen(6, 1, F("Event2: 2xxx (pitch)"));
-		 ZD.printProgrammInfoZeilen(7, 1, F("Event3: 3xxx (velocity)"));
-
-		 */
-
 	case 6:
 		switch (varContent) {
 		case 1:
@@ -1171,7 +1162,7 @@ void spezialprogramm(uint32_t input) {
 				ZD.infoText(1, buf);
 				sound._SMF->pause(0);
 			} else if (varContent > 999 & varContent < 4000) {
-				uint8_t eventNummer = varContent /1000;
+				uint8_t eventNummer = varContent / 1000;
 				uint16_t eventDaten = varContent % 1000;
 				if (eventDaten > 127) {
 					eventDaten = 127;
@@ -1192,7 +1183,7 @@ void spezialprogramm(uint32_t input) {
 					break;
 				}
 			}
-				break;
+			break;
 		}
 		break;
 	case 7: //sleep
