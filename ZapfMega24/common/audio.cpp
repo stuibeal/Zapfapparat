@@ -244,6 +244,8 @@ void audio::setStandby(bool stby) {
 
 void audio::mp3Play(uint8_t folder, uint8_t song) {
 	on();
+	sprintf_P(buf, PSTR("Spielt Lied %d in Ordner %d"), song,folder);
+	logbuch.logSystemMsg(buf);
 	_mp3->playSpecific(folder, song);
 	audioMillis = millis();
 	delay(200);
@@ -434,13 +436,27 @@ void audio::midiNextEvent(void) {
 		_SMF->close();
 		midiSilence();
 	}
-
 }
 
 void audio::loadLoopMidi(const __FlashStringHelper *midiFile) {
 	strcpy_P(buf, (const char*) midiFile);
 	loadLoopMidi(buf);
 }
+
+void audio::loadSingleMidi(uint16_t midinumber) {
+	uint16_t midiArraySize = sizeof(miditunes)/sizeof(miditunes[0]);
+	if (midinumber < midiArraySize) {
+		_SMF->close();
+	    strcpy_P(buf, (char *)pgm_read_ptr(&(miditunes[midinumber-1])));
+		_SMF->load(buf);
+		_SMF->looping(false);
+		_SMF->pause(true);
+
+	} else {
+		sprintf_P(buf, PSTR("Max Midifile %d"), midiArraySize);
+	}
+}
+
 
 void audio::loadLoopMidi(const char *midiFile) {
 	_SMF->close();
@@ -452,13 +468,16 @@ void audio::loadLoopMidi(const char *midiFile) {
 	_SMF->pause(true);
 }
 
-void audio::loadSingleMidi(uint16_t midinumber) {
+void audio::loadLoopMidi(uint16_t midinumber) {
 	uint16_t midiArraySize = sizeof(miditunes)/sizeof(miditunes[0]);
 	if (midinumber < midiArraySize) {
 		_SMF->close();
-	    strcpy_P(buf, (char *)pgm_read_ptr(&(miditunes[midinumber-1])));
-		_SMF->load(buf);
-		_SMF->looping(false);
+		strcpy_P(buf, (char *)pgm_read_ptr(&(miditunes[midinumber-1])));
+		uint8_t status = _SMF->load(buf);
+		if (status != 0) {
+			sprintf_P(buf, PSTR("MIDI Filestatus: %d"), status);
+		}
+		_SMF->looping(true);
 		_SMF->pause(true);
 
 	} else {
@@ -540,7 +559,7 @@ void audio::godModeSound(uint8_t godMode) {
 		loadLoopMidi(F("/midi/Tdisco.mid"));
 		break;
 	case INDY:
-		loadLoopMidi(F("/midi/indy4Theme and Opening Credits.mid"));
+		loadLoopMidi(F("/midi/indy4Theme_and_Opening_Credits.mid"));
 		break;
 	case JUBI:
 		loadLoopMidi(F("/midi/leaving_schlosskeller_bummbuumm.mid"));
@@ -552,7 +571,7 @@ void audio::godModeSound(uint8_t godMode) {
 		loadLoopMidi(F("/midi/ilgiornodeigiorni.mid"));
 		break;
 	case GLORIA:
-		loadLoopMidi(F("/midi/Gloria 1999(k).mid"));
+		loadLoopMidi(F("/midi/Gloria_1999(k).mid"));
 		break;
 	case VAGABONDO:
 		loadLoopMidi(F("/midi/Io_vagabondo.mid"));

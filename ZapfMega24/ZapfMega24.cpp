@@ -813,11 +813,7 @@ void belohnungsMusik() {
 		sound.mp3Play(user.aktuell, 3);
 	}
 	if (user.getBierTag() > 3500 && user.getMusik() == 3) {
-		if (user.aktuell == 3 || user.aktuell == 5) {
-			user.setMusik(4);
-		} else {
-			user.setMusik(4);
-		}
+		user.setMusik(4);
 		delay(1000); //for the bing
 		sound.mp3PlayAndWait(29, 4); //na
 		sound.mp3Play(user.aktuell, 4);
@@ -830,8 +826,30 @@ void belohnungsMusik() {
 			sound.mp3Play(user.aktuell, 5);
 		}
 	}
-	if (user.getBierTag() > 4500) {
+	if (user.getBierTag() > 4000 && user.getMusik() == 4) {
+		delay(1000); //for the bing
+		sound.mp3Play(34, 15); // Endlich Nichtschwimmer
+		user.setMusik(5);
+	}
+	if (user.getBierTag() > 4500 && user.getMusik() == 5) {
+		delay(1000); //for the bing
+		sound.mp3Play(19, 4); // alles wird gut
+		user.setMusik(6);
+	}
+	if (user.getBierTag() > 5000 && user.getMusik() == 6) {
+		delay(1000); //for the bing
+		sound.mp3Play(31, 45); // Rythm is a dancer
+		user.setMusik(7);
+	}
+	if (user.getBierTag() > 5500 && user.getMusik() == 7) {
+		delay(1000); //for the bing
+		sound.mp3Play(31, 65); // ist das so
+		user.setMusik(8);
+	}
+	if (user.getBierTag() > 6000 && user.getMusik() == 8) {
+		delay(1000); //for the bing
 		sound.mp3Play(1, 2); // feliz navidad
+		user.setMusik(9);
 	}
 }
 

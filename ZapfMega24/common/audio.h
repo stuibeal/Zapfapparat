@@ -77,6 +77,7 @@ public:
 	void midiSilence(void);
 	void midiNextEvent(void);
 	void loadLoopMidi(const __FlashStringHelper *midiFile);
+	void loadLoopMidi(uint16_t midinumber);
 	void loadLoopMidi(const char*);
 	void loadSingleMidi(uint16_t midinumber);
 	void tickMetronome(void);
