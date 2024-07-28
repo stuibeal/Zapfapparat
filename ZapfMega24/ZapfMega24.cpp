@@ -404,7 +404,8 @@ void zapfEndeProg(void) {
 		sound.midiSilence();
 		ventil.check();
 		if (user.lastZapfMenge - user.getMenge() + user.zapfMenge == 0) {
-			sprintf_P(buf, PSTR("Kompliment, %s! Perfekte Zapfung!"), user.userN[user.aktuell]);
+			sprintf_P(buf, PSTR("Kompliment, %s! Perfekte Zapfung!"),
+					user.userN[user.aktuell]);
 			ZD.infoText(1, buf);
 		}
 		/*Sollte der noch weiterzapfen*/
@@ -764,7 +765,7 @@ void waehlFunktionen() {
 	case 92837: //XAVER   xaver fischer Trio
 		sound.mp3FillShufflePlaylist(24);
 		ZD.infoText(1, F("Xaver Fischer Trio installiert"));
-	break;
+		break;
 	default:
 		spezialprogramm(kienmuehle);
 		break;
@@ -1192,7 +1193,8 @@ void spezialprogramm(uint32_t input) {
 					waehlEv.data[2] = eventDaten; //velocity
 					sound.on();
 					sound.midiCallback(&waehlEv);
-					sprintf_P(buf, PSTR("MIDI 0:%d 1:%d 2:%d"),waehlEv.data[0], waehlEv.data[1], waehlEv.data[2]);
+					sprintf_P(buf, PSTR("MIDI 0:%d 1:%d 2:%d"), waehlEv.data[0],
+							waehlEv.data[1], waehlEv.data[2]);
 					ZD.infoText(1, buf);
 					break;
 				}
@@ -1235,7 +1237,17 @@ void spezialprogramm(uint32_t input) {
 			sound.mp3ClearPlaylist();
 			break;
 		default:
-			if (varContent > 100) {
+			if (varContent > 10000 && varContent < 20000) {
+				uint16_t tempVarContent = varContent - 10000;
+				uint8_t folder = tempVarContent / 100;
+				uint8_t song = tempVarContent % 100;
+				if (song > 0 && folder > 0) {
+					sound.mp3Play(folder, song);
+					sprintf_P(buf, PSTR("The Admin played Folder %d Song %d"),
+							folder, song);
+					ZD.infoText(1, buf);
+				}
+			} else if (varContent > 100) {
 				uint8_t folder = 1;
 				uint8_t song = 1;
 				folder = 30 + (varContent / 100);
@@ -1251,15 +1263,6 @@ void spezialprogramm(uint32_t input) {
 						20 + varContent, sound.mp3D.songsInPlayList);
 				ZD.infoText(1, buf);
 				delay(2000);
-			} else if (varContent >10000 && varContent < 20000) {
-				uint16_t tempVarContent = varContent-10000;
-				uint8_t folder = tempVarContent /100;
-				uint8_t song = tempVarContent %100;
-				if (song >0 && folder >0) {
-					sound.mp3Play(folder,song);
-					sprintf_P(buf, PSTR("The Admin played Folder %d Song %d"),folder, song);
-					ZD.infoText(1, buf );
-				}
 			} else {
 				ZD.infoText(1, F("Kannst Du irgendwas?"));
 			}
