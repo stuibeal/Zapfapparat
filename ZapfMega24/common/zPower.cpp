@@ -262,7 +262,7 @@ void zPower::goSleep(void) {
 	uint8_t wochadog = logbuch.getWochadog();
 	/* es ist erst nächster Tag wenns hell wird*/
 	//logbuch.dateTime.setHour(2);
-	if (logbuch.dateTime.getHour() <8) {
+	if (logbuch.dateTime.getHour() < 8) {
 		if (wochadog > logbuch.MODA) {
 			wochadog--;
 		} else {
@@ -274,37 +274,43 @@ void zPower::goSleep(void) {
 		sound.mp3AddToPlaylist(23, 4); //USA
 		sound.mp3AddToPlaylist(28, 1); //Anne 10 Mark
 		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
+		sound.mp3AddToPlaylist(21, 8); //Schwarzmann mia glangt dass
 		break;
 	case logbuch.ERDA:
-		sound.mp3AddToPlaylist(23, 5); //Luxemburg
+		sound.mp3AddToPlaylist(23, 2); //Bayernhymne
 		sound.mp3AddToPlaylist(28, 2); //Anne de Henn
 		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
+		sound.mp3AddToPlaylist(21, 5); //STS Irgendwann bleib i dann dort
 		break;
 	case logbuch.MIGGA:
-		sound.mp3AddToPlaylist(23, 6); //Deutschlandlied
+		sound.mp3AddToPlaylist(23, 11); //Schweiz
 		sound.mp3AddToPlaylist(29, 8); //berger unanagenehmer teil
 		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
+		sound.mp3AddToPlaylist(10, 2); //Pfeffer Alphorn
 		break;
 	case logbuch.PFINSDA:
 		sound.mp3AddToPlaylist(23, 2); //Bayernhymne
 		sound.mp3AddToPlaylist(23, 6); //Deutschlandlied
 		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
-		sound.mp3AddToPlaylist(23, 7); //Grossvater
+		sound.mp3AddToPlaylist(21, 4); //Schwarzmann Schlaflied
 		break;
 	case logbuch.FREIDA:
 		sound.mp3AddToPlaylist(23, 9); //DDR
 		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
-		sound.mp3AddToPlaylist(23, 7); //Grossvater
 		break;
 	case logbuch.SAMSDA:
 		sound.mp3AddToPlaylist(23, 2); //Bayernhymne
 		sound.mp3AddToPlaylist(28, 3); //Anne De weiber
+		sound.mp3AddToPlaylist(21, 7); //Gekommen um zu bleiben
 		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
+		sound.mp3AddToPlaylist(21, 2); //Ninna Nanna
 		break;
 	case logbuch.SUNDA:
+		sound.mp3AddToPlaylist(23, 5); //Luxemburg
 		sound.mp3AddToPlaylist(23, 3); //EUROPA
 		sound.mp3AddToPlaylist(29, 1); //Berger da fällt mir im moment nix ein
 		sound.mp3AddToPlaylist(23, 1); //Gute nach Freunde
+		sound.mp3AddToPlaylist(23, 7); //Grossvater
 		break;
 	}
 

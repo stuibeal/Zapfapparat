@@ -763,7 +763,7 @@ void waehlFunktionen() {
 		break;
 	case 92837: //XAVER   xaver fischer Trio
 		sound.mp3FillShufflePlaylist(24);
-		ZD.infoText(1, F("Xaver Fischer Trio installiert"))
+		ZD.infoText(1, F("Xaver Fischer Trio installiert"));
 	break;
 	default:
 		spezialprogramm(kienmuehle);
@@ -1103,23 +1103,7 @@ void spezialprogramm(uint32_t input) {
 			break;
 		case 8300: // a ufnull
 			user.clearAllUserData();
-			logbuch.logSystemMsg(F("AUFNU    Schweiz
-
-Sa: gekommen um zu bleiben, hymnen,  Ninna Nanna
-
-So: grossvater
-
-Mo: Pfeffer Alphorn
-
-Di: Mir glangt dass i woass dass i kannt
-
-Mi: irgendwann blei i dann dort
-
-Do: Schlaflied
-
-Fr Picard
-
-LL: Alle Daten gelöscht"));
+			logbuch.logSystemMsg(F("AUFNULL: Alle Daten gelöscht"));
 		}
 		break;
 
