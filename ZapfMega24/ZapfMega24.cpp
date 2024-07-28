@@ -754,13 +754,17 @@ void waehlFunktionen() {
 		ZD.infoText(1, F("WDR Westblick"));
 		break;
 	case 33549: //feliz
-		sound.mp3AddToPlaylist(1, 2);
+		sound.mp3AddToPlaylist(21, 6);
 		ZD.infoText(1, F("Feliz Navidad!"));
 		break;
 	case 27265: //BRANTL
 		sound.mp3AddToPlaylist(20, 3);
 		ZD.infoText(1, F("Der Geschmack von Freiheit und Abendteuer"));
 		break;
+	case 92837: //XAVER   xaver fischer Trio
+		sound.mp3FillShufflePlaylist(24);
+		ZD.infoText(1, F("Xaver Fischer Trio installiert"))
+	break;
 	default:
 		spezialprogramm(kienmuehle);
 		break;
@@ -1099,7 +1103,23 @@ void spezialprogramm(uint32_t input) {
 			break;
 		case 8300: // a ufnull
 			user.clearAllUserData();
-			logbuch.logSystemMsg(F("AUFNULL: Alle Daten gelöscht"));
+			logbuch.logSystemMsg(F("AUFNU    Schweiz
+
+Sa: gekommen um zu bleiben, hymnen,  Ninna Nanna
+
+So: grossvater
+
+Mo: Pfeffer Alphorn
+
+Di: Mir glangt dass i woass dass i kannt
+
+Mi: irgendwann blei i dann dort
+
+Do: Schlaflied
+
+Fr Picard
+
+LL: Alle Daten gelöscht"));
 		}
 		break;
 
@@ -1247,6 +1267,15 @@ void spezialprogramm(uint32_t input) {
 						20 + varContent, sound.mp3D.songsInPlayList);
 				ZD.infoText(1, buf);
 				delay(2000);
+			} else if (varContent >10000 && varContent < 20000) {
+				uint16_t tempVarContent = varContent-10000;
+				uint8_t folder = tempVarContent /100;
+				uint8_t song = tempVarContent %100;
+				if (song >0 && folder >0) {
+					sound.mp3Play(folder,song);
+					sprintf_P(buf, PSTR("The Admin played Folder %d Song %d"),folder, song);
+					ZD.infoText(1, buf );
+				}
 			} else {
 				ZD.infoText(1, F("Kannst Du irgendwas?"));
 			}
