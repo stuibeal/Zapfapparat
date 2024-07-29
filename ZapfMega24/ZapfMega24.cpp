@@ -989,10 +989,10 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 		case 2: // ABC APPARAT
 			ZD.printProgrammInfo(F("Apparat"));
 			ZD.printProgrammInfoZeilen(1, 1, F("LEAN: Reinigung"));
-			ZD.printProgrammInfoZeilen(3, 1, F("UF00: Daten löschen"));
-			ZD.printProgrammInfoZeilen(4, 1, F("Für Neues Ereignis."));
-			ZD.printProgrammInfoZeilen(5, 1, F("VORSICHT!"));
-			ZD.printProgrammInfoZeilen(6, 1, F("WEG  IST WEG."));
+			ZD.printProgrammInfoZeilen(2, 1, F("UF00: Daten löschen"));
+			ZD.printProgrammInfoZeilen(3, 1, F("ACHTUNG! WEG IS WEG!"));
+			ZD.printProgrammInfoZeilen(4, 1, F("STB1 Audio Standby an"));
+			ZD.printProgrammInfoZeilen(5, 1, F("STB0 Audio Standby aus"));
 			break;
 		case 3: // DEF FASS
 			ZD.printProgrammInfo(F("Fasswechsel"));
@@ -1038,7 +1038,7 @@ void showSpezialProgrammInfo(uint8_t programmNummer) {
 			ZD.printProgrammInfoZeilen(1, 2, F("2 Pause"));
 			ZD.printProgrammInfoZeilen(2, 1, F("3 Resume"));
 			ZD.printProgrammInfoZeilen(2, 2, F("4 Close"));
-			ZD.printProgrammInfoZeilen(3, 1, F("Nummer über 500 spielt Datei"));
+			ZD.printProgrammInfoZeilen(3, 1, F("Nummer > 500 spielt Datei"));
 			ZD.printProgrammInfoZeilen(4, 1, F("z.B. 612 spielt Datei 112"));
 			ZD.printProgrammInfoZeilen(5, 1, F("Event1: 1xxx (channel)"));
 			ZD.printProgrammInfoZeilen(6, 1, F("Event2: 2xxx (pitch)"));
@@ -1107,6 +1107,12 @@ void spezialprogramm(uint32_t input) {
 			logbuch.logSystemMsg(F("AUFNULL: Alle Daten gelöscht"));
 		}
 		break;
+		case 7821: //STB1
+			sound.setStandby(1);
+			break;
+		case 7820: //STB0
+			sound.setStandby(0);
+			break;
 
 	case 3:
 		// F für Fass
