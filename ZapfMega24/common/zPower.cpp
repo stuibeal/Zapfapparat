@@ -333,6 +333,7 @@ void zPower::goSleep(void) {
 	dimLight(0, GRUEN_LED_ABGEDUNKELT / 4, 255, 5);
 	drucker.schaltAus();
 	dimLight(1, 0, 255, 20); //0: WS Led 1: Zapflicht
+	ZD.infoText(0, F("nach dimlight"));
 	ZD.showBMP(F("/bmp/DOOM02b.bmp"), 80, 60); //320x200
 
 	bool playNotGNF = 1;
@@ -385,8 +386,8 @@ void zPower::goSleep(void) {
 	bkMachineState = SLEEP;
 	autoLightBool = 0;
 	uint8_t sleeping = 1;
-	uint32_t sleepMillis = millis();
-	uint16_t sleepMinuten = 0;
+//	uint32_t sleepMillis = millis();
+//	uint16_t sleepMinuten = 0;
 	do {
 
 		check();
