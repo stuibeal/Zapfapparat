@@ -212,10 +212,10 @@ void zPower::setBackLight(void) {
 }
 void zPower::dimLightHelper(uint16_t pin, uint8_t wert) {
 	switch (pin) {
-	case 0:
+	case 2000:
 		setAllWSLed(wert * 4);
 		break;
-	case 1:
+	case 3000:
 		zapfLichtControl(wert);
 		break;
 	default:
@@ -330,9 +330,9 @@ void zPower::goSleep(void) {
 	dimLight(TASTE1_LED, TASTEN_LED_NORMAL, 255, 30);
 	dimLight(TASTE2_LED, TASTEN_LED_NORMAL, 255, 30);
 	digitalWrite(FLOW_SM6020, 0);
-	dimLight(0, GRUEN_LED_ABGEDUNKELT / 4, 255, 5);
+	dimLight(2000, GRUEN_LED_ABGEDUNKELT / 4, 255, 5);
 	drucker.schaltAus();
-	dimLight(1, 0, 255, 20); //0: WS Led 1: Zapflicht
+	dimLight(3000, 3, 255, 20); //0: WS Led 1: Zapflicht
 	ZD.infoText(0, F("nach dimlight"));
 	ZD.showBMP(F("/bmp/DOOM02b.bmp"), 80, 60); //320x200
 
@@ -367,8 +367,8 @@ void zPower::goSleep(void) {
 	analogWrite(LCD_BACKLIGHT_PIN, 255);
 	dimLight(TASTE1_LED, 255, 0, 90);
 	dimLight(TASTE2_LED, 255, 0, 90);
-	dimLight(0, 255, 0, 100);
-	dimLight(1, 255, 0, 200); //0: WS Led 1: Zapflicht
+	dimLight(2000, 255, 0, 100);
+	dimLight(3000, 255, 0, 200); //2000: WS Led 3000: Zapflicht
 	zapfLichtControl(0);
 	flowmeter.flowDataSend(ZAPFEN_STREICH, 0);
 
@@ -391,7 +391,7 @@ void zPower::goSleep(void) {
 	do {
 
 		check();
-		temp.holeDaten();
+		//temp.holeDaten(); der is aus
 //		if (millis() - sleepMillis > 60000) {
 //			sleepMinuten++;
 //		}
@@ -421,6 +421,7 @@ void zPower::goSleep(void) {
 	bkMachineState = WORK;
 	delay(1000);
 	temp.sendeBefehl(WACH_AUF, 0);
+	flowmeter.flowDataSend(WACH_AUF, 1);
 	analogWrite(LCD_BACKLIGHT_PIN, 0); //0: voll hell
 	anfang();
 	ZD.infoText(1, F("Lust auf ein Frühbierchen?"));
